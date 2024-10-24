@@ -42,6 +42,7 @@ function handleUpdated(tabId, changeInfo, tabInfo) {
             executeScript(tabId, "row_highlight.js")
             executeScript(tabId, "academy_buttons.js")
             executeScript(tabId, "players.js")
+            executeScript(tabId, "calendar.js")
         }
         
         start()

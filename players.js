@@ -1,7 +1,7 @@
 (function() {
     const playersModulePrefix = "players"
     
-    console.log("players.js script loaded...")
+    console.log(`${playersModulePrefix}: players.js script loaded...`)
     
     // Recreates the denomination used on the website, used for coloring the numbers
     function denomination(value) {
