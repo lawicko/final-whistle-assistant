@@ -1,19 +1,24 @@
 {
-  "manifest_version": 2,
-  "name": "Final Whistle Assistant",
-  "version": "1.0",
-
-  "description": "Displays additional information when browsing FinalWhistle website.",
-
-  "icons": {
-    "48": "icons/fw-logo-48.png",
-    "96": "icons/fw-logo-96.png"
-  },
-
-  "content_scripts": [
-    {
-      "matches": ["*://*.finalwhistle.org/*/players"],
-      "js": ["assistant.js"]
-    }
-  ]
+    "manifest_version": 2,
+    "name": "Final Whistle Assistant",
+    "version": "1.0",
+    
+    "description": "Displays additional information when browsing FinalWhistle website.",
+    
+    "icons": {
+        "48": "icons/fw-logo-48.png",
+        "96": "icons/fw-logo-96.png"
+    },
+    
+    "background": {
+        "scripts": ["assistant.js"],
+        "persistent": false,
+        "type": "module"
+    },
+    
+    "permissions": [
+        "scripting",
+        "tabs",
+        "*://*.finalwhistle.org/*"
+    ]
 }
