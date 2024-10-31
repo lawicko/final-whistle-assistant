@@ -1,5 +1,9 @@
-// This will be used as the class prefix to be able to quickly remove DOM elements added by this extension
+// The class for the new nodes inserted by the plugin, so that they can be easily found and managed later
 const pluginNodeClass = "FinalWhistlePlugin"
+
+// The node that will be observed for mutations
+const alwaysPresentNode = document.querySelector("div.wrapper");
+
 const constantsModulePrefix = "constants"
 
-console.log(`${constantsModulePrefix}: constants.js script loaded...`)
+console.log(`${new Date().toLocaleString()} ${constantsModulePrefix}: constants.js script loaded...`)

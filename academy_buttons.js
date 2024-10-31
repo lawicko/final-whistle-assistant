@@ -2,7 +2,7 @@
     
     const academyButtonsModulePrefix = "academy_buttons"
     
-    console.log(`${academyButtonsModulePrefix}: academy_buttons.js script loaded...`)
+    console.log(`${new Date().toLocaleString()} ${academyButtonsModulePrefix}: academy_buttons.js script loaded...`)
     
     // Select the node that will be observed for mutations
     const targetNode = document.querySelector("table > button.btn-danger");

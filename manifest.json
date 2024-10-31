@@ -18,7 +18,12 @@
     
     "permissions": [
         "scripting",
+        "storage",
         "tabs",
         "*://*.finalwhistle.org/*"
-    ]
+    ],
+    
+    "options_ui": {
+      "page": "options/options.html"
+    }
 }

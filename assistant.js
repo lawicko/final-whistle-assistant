@@ -4,8 +4,8 @@ const filter = {
     urls: [pattern1],
 };
 
-var isLoadingScripts = false
-var scriptsLoaded = false
+const loadedMap = new Map()
+const lastURLMap = new Map()
 
 async function executeScript(tabId, scriptName) {
     try {
@@ -33,22 +33,40 @@ async function executeScript(tabId, scriptName) {
 }
 
 function handleUpdated(tabId, changeInfo, tabInfo) {
-    if (!scriptsLoaded && !isLoadingScripts && changeInfo.status === "complete" && changeInfo.url) {
-        isLoadingScripts = true
-        console.info("Changed attributes: ", changeInfo);
-        
-        async function start() {
-            executeScript(tabId, "constants.js")
-            executeScript(tabId, "row_highlight.js")
-            executeScript(tabId, "academy_buttons.js")
-            executeScript(tabId, "players.js")
-            executeScript(tabId, "calendar.js")
-        }
-        
-        start()
-        isLoadingScripts = false
-        scriptsLoaded = true
+    if (changeInfo.status === "complete" && changeInfo.url) {
+        console.debug("Changed attributes: ", changeInfo)
+        handleURLChanged(tabId, changeInfo.url)
     }
+}
+
+async function handleURLChanged(tabId, url) {
+    if (loadedMap.get(tabId)) {
+        if (lastURLMap.get(tabId) == url) {
+            await loadModules(tabId, url)
+            browser.tabs.sendMessage(tabId, { url: url })
+        } else {
+            browser.tabs.sendMessage(tabId, { url: url })
+        }
+    } else {
+        await loadModules(tabId, url)
+        browser.tabs.sendMessage(tabId, { url: url })
+    }
+    lastURLMap.set(tabId, url)
+}
+
+async function loadModules(tabId, url) {
+    loadedMap.set(tabId, false)
+    
+    async function start() {
+        await executeScript(tabId, "constants.js")
+        await executeScript(tabId, "row_highlight.js")
+        await executeScript(tabId, "academy_buttons.js")
+        await executeScript(tabId, "players.js")
+        await executeScript(tabId, "calendar.js")
+    }
+    
+    await start()
+    loadedMap.set(tabId, true)
 }
 
 browser.tabs.onUpdated.addListener(handleUpdated, filter);
