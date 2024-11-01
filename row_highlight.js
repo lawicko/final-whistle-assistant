@@ -51,7 +51,7 @@ const rowsObserver = new MutationObserver(rowsObservingCallback);
 browser.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${rowHighlightModulePrefix} Message from the background script:`);
     console.log(request.url);
-    if (request.url.endsWith("players") || request.url.endsWith("#Squad")) {
+    if (request.url.endsWith("players") || request.url.endsWith("#Squad") || request.url.endsWith("training")) {
         // Start observing the target node for configured mutations
         rowsObserver.observe(alwaysPresentNode, rowsObservingConfig);
         console.debug(`${new Date().toLocaleString()} ${rowHighlightModulePrefix} Started the div.wrapper observation`)
