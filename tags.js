@@ -38,7 +38,7 @@ addCSS(".fa-tag::before { text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0
 browser.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${tagsModulePrefix} Message from the background script:`);
     console.log(request.url);
-    if (request.url.endsWith("players") || request.url.endsWith("training")) {
+    if (request.url.endsWith("players") || request.url.endsWith("training") || request.url.endsWith("training#Reports") || request.url.endsWith("training#Drills")) {
         // Start observing the target node for configured mutations
         tagsObserver.observe(alwaysPresentNode, tagsObservactionConfig);
         console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix} Started the div.wrapper observation`)
