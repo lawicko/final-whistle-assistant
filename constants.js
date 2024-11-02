@@ -6,4 +6,6 @@ const alwaysPresentNode = document.querySelector("div.wrapper");
 
 const constantsModulePrefix = "constants"
 
+const addCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css
+
 console.log(`${new Date().toLocaleString()} ${constantsModulePrefix}: constants.js script loaded...`)

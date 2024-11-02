@@ -63,6 +63,7 @@ async function loadModules(tabId, url) {
         await executeScript(tabId, "academy_buttons.js")
         await executeScript(tabId, "players.js")
         await executeScript(tabId, "calendar.js")
+        await executeScript(tabId, "tags.js")
     }
     
     await start()
