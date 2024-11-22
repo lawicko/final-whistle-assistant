@@ -29,7 +29,7 @@ function onError(e) {
 /*
 On opening the options page, fetch stored settings and update the UI with them.
 */
-const gettingStoredSettings = browser.storage.local.get();
+const gettingStoredSettings = chrome.storage.local.get();
 //gettingStoredSettings.then(updateUI, onError);
 
 /*

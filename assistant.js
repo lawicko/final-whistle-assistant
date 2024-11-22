@@ -70,4 +70,4 @@ async function loadModules(tabId, url) {
     loadedMap.set(tabId, true)
 }
 
-browser.tabs.onUpdated.addListener(handleUpdated, filter);
+chrome.tabs.onUpdated.addListener(handleUpdated);
