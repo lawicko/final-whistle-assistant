@@ -51,7 +51,7 @@ function appendMidfieldContribution() {
     let offensiveMidfieldDominanceMax = (100 + 200 + 200) * 0.5
     let offensiveMidfieldDominanceFlexibleMax = (100 + 200 + 200) * 0.8
     for (let i = 1; i < rows.length; i++) {
-        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span");
+        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
         
         // Because we are listening to the changes on the insides of the table, it is possible that some updates come in-between when the cells are not yet populated, so for this cases we don't need to do anything
         if (valueNodes.length < 8) {
@@ -64,6 +64,8 @@ function appendMidfieldContribution() {
         let PA = Number(valueNodes[3].innerHTML.replace(/\D/g,''));
         let TA = Number(valueNodes[6].innerHTML.replace(/\D/g,''));
         let DP = Number(valueNodes[7].innerHTML.replace(/\D/g,''));
+        
+//        console.info(`${new Date().toLocaleString()} ${playersModulePrefix}: SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
         
         let longShot = (SC + Math.min(2 * SC, PA)) / 2
         let longShotDenomination = longShot / longShotMax
