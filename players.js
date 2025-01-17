@@ -87,7 +87,14 @@ function appendMidfieldContribution() {
         
         var tdLS = document.createElement("td");
         tdLS.className = pluginNodeClass
-        tdLS.innerHTML = '<span class="denom' + longShotDenominationNormalized + '">' + Math.trunc(longShot) + '</span>';
+        tdLS.innerHTML = `<div class="plugin-has-hover-card denom${longShotDenominationNormalized}">${Math.trunc(longShot)}
+                            <div class="plugin-hover-card hovercard-detail">
+                                <span>formula: (SC + min(2 * SC, PA)) / 2</span>
+                                <span>(${SC} + min(2 * ${SC}, ${PA})) / 2</span>
+                                <span>(${SC} + ${Math.min(2 * SC, PA)}) / 2</span>
+                                <span>${SC + Math.min(2 * SC, PA)} / 2 = ${(SC + Math.min(2 * SC, PA)) / 2}</span>
+                            </div>
+                          </div>`
         rows[i].appendChild(tdLS);
         
         var tdMD = document.createElement("td");
@@ -162,3 +169,28 @@ browser.runtime.onMessage.addListener((request) => {
         console.debug(`${new Date().toLocaleString()} ${playersModulePrefix} Skipped (or disconnected) the div.wrapper observation`)
     }
 })
+
+addCSS(`
+    .plugin-has-hover-card {
+        position: relative;
+    }
+    .plugin-has-hover-card:hover .plugin-hover-card.hovercard-detail {
+        display: flex;
+        opacity: 1;
+        visibility: visible;
+        width: auto;
+        height: auto;
+        margin: auto;
+        padding: 8px;
+        flex-direction: column;
+
+        position: absolute;
+        left:0;
+        transform:translateX(-104%);
+        top: -9px;
+    }
+
+    .plugin-hover-card.hovercard-detail span {
+        white-space: nowrap;
+    }
+`)
