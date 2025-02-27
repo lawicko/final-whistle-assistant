@@ -28,7 +28,7 @@ const calendarObservationCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const calendarObserver = new MutationObserver(calendarObservationCallback);
 
-browser.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${calendarModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("fixtures") || request.url.endsWith("club")) {

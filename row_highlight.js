@@ -48,7 +48,7 @@ const rowsObservingCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const rowsObserver = new MutationObserver(rowsObservingCallback);
 
-browser.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${rowHighlightModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("players") || request.url.endsWith("#Squad") || request.url.endsWith("training")) {

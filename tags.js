@@ -35,7 +35,7 @@ const tagsObserver = new MutationObserver(tagsObservationCallback);
 
 addCSS(".fa-tag::before { text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; }")
 
-browser.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${tagsModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("players") || request.url.endsWith("training") || request.url.endsWith("training#Reports") || request.url.endsWith("training#Drills")) {

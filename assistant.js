@@ -10,7 +10,7 @@ const lastURLMap = new Map()
 async function executeScript(tabId, scriptName) {
     try {
         console.log(`executeScript ${scriptName}`);
-        let resultsArray = await browser.scripting.executeScript({
+        let resultsArray = await chrome.scripting.executeScript({
             target: {
                 tabId: tabId,
                 allFrames: true,
@@ -33,23 +33,32 @@ async function executeScript(tabId, scriptName) {
 }
 
 function handleUpdated(tabId, changeInfo, tabInfo) {
-    if (changeInfo.status === "complete" && changeInfo.url) {
+    console.debug(`handleUpdated called`)
+    console.debug(`tabId: ${tabId}`)
+    console.debug(`changeInfo: ${JSON.stringify(changeInfo)}`)
+    console.debug(`tabInfo: ${JSON.stringify(tabInfo)}`)
+    // On Firefox the new url comes in the changeInfo, on Chrome-based browsers the only way is to get it from the tabInfo
+    let url = changeInfo.url || tabInfo.url
+    if (changeInfo.status === "complete" && url) {
         console.debug("Changed attributes: ", changeInfo)
-        handleURLChanged(tabId, changeInfo.url)
+        handleURLChanged(tabId, url)
     }
 }
 
 async function handleURLChanged(tabId, url) {
     if (loadedMap.get(tabId)) {
         if (lastURLMap.get(tabId) == url) {
+            // This is the case when you reload the website, then the modules need to be loaded again
             await loadModules(tabId, url)
-            browser.tabs.sendMessage(tabId, { url: url })
+            chrome.tabs.sendMessage(tabId, { url: url })
         } else {
-            browser.tabs.sendMessage(tabId, { url: url })
+            // This is the case when the url has changed because of the js or other natigation that is not a hard reload
+            chrome.tabs.sendMessage(tabId, { url: url })
         }
     } else {
+        // Nothing was loaded before, so the modules need to be loaded
         await loadModules(tabId, url)
-        browser.tabs.sendMessage(tabId, { url: url })
+        chrome.tabs.sendMessage(tabId, { url: url })
     }
     lastURLMap.set(tabId, url)
 }
@@ -71,3 +80,4 @@ async function loadModules(tabId, url) {
 }
 
 chrome.tabs.onUpdated.addListener(handleUpdated);
+console.debug(`assistant.js loaded`)
