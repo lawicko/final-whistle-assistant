@@ -1,3 +1,8 @@
+if (typeof browser == "undefined") {
+    // Chrome does not support the browser namespace yet.
+    globalThis.browser = chrome;
+}
+
 const calendarModulePrefix = "calendar"
 
 console.log(`${new Date().toLocaleString()} ${calendarModulePrefix}: calendar.js script loaded...`)
@@ -28,7 +33,7 @@ const calendarObservationCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const calendarObserver = new MutationObserver(calendarObservationCallback);
 
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${calendarModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("fixtures") || request.url.endsWith("club")) {

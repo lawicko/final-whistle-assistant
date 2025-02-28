@@ -1,3 +1,8 @@
+if (typeof browser == "undefined") {
+    // Chrome does not support the browser namespace yet.
+    globalThis.browser = chrome;
+}
+
 const tagsModulePrefix = "tags"
 
 console.log(`${new Date().toLocaleString()} ${tagsModulePrefix}: tags.js script loaded...`)
@@ -35,7 +40,7 @@ const tagsObserver = new MutationObserver(tagsObservationCallback);
 
 addCSS(".fa-tag::before { text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; }")
 
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${tagsModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("players") || request.url.endsWith("training") || request.url.endsWith("training#Reports") || request.url.endsWith("training#Drills")) {

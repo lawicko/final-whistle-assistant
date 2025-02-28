@@ -1,3 +1,8 @@
+if (typeof browser == "undefined") {
+    // Chrome does not support the browser namespace yet.
+    globalThis.browser = chrome;
+}
+
 const pluginRowHighlightClass = "player-selected"
 const rowHighlightModulePrefix = "row_highlight"
 
@@ -48,7 +53,7 @@ const rowsObservingCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const rowsObserver = new MutationObserver(rowsObservingCallback);
 
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${rowHighlightModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("players") || request.url.endsWith("#Squad") || request.url.endsWith("training")) {

@@ -1,3 +1,8 @@
+if (typeof browser == "undefined") {
+    // Chrome does not support the browser namespace yet.
+    globalThis.browser = chrome;
+}
+
 const pattern1 = "*://*.finalwhistle.org/*";
 
 const filter = {
@@ -10,7 +15,7 @@ const lastURLMap = new Map()
 async function executeScript(tabId, scriptName) {
     try {
         console.log(`executeScript ${scriptName}`);
-        let resultsArray = await chrome.scripting.executeScript({
+        let resultsArray = await browser.scripting.executeScript({
             target: {
                 tabId: tabId,
                 allFrames: true,
@@ -50,15 +55,15 @@ async function handleURLChanged(tabId, url) {
         if (lastURLMap.get(tabId) == url) {
             // This is the case when you reload the website, then the modules need to be loaded again
             await loadModules(tabId, url)
-            chrome.tabs.sendMessage(tabId, { url: url })
+            browser.tabs.sendMessage(tabId, { url: url })
         } else {
             // This is the case when the url has changed because of the js or other natigation that is not a hard reload
-            chrome.tabs.sendMessage(tabId, { url: url })
+            browser.tabs.sendMessage(tabId, { url: url })
         }
     } else {
         // Nothing was loaded before, so the modules need to be loaded
         await loadModules(tabId, url)
-        chrome.tabs.sendMessage(tabId, { url: url })
+        browser.tabs.sendMessage(tabId, { url: url })
     }
     lastURLMap.set(tabId, url)
 }
@@ -79,5 +84,5 @@ async function loadModules(tabId, url) {
     loadedMap.set(tabId, true)
 }
 
-chrome.tabs.onUpdated.addListener(handleUpdated);
+browser.tabs.onUpdated.addListener(handleUpdated);
 console.debug(`assistant.js loaded`)

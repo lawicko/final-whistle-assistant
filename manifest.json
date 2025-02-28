@@ -11,6 +11,7 @@
     },
     
     "background": {
+        "scripts": ["assistant.js"],
         "service_worker": "assistant.js",
         "type": "module"
     },

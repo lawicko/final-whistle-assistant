@@ -1,3 +1,8 @@
+if (typeof browser == "undefined") {
+    // Chrome does not support the browser namespace yet.
+    globalThis.browser = chrome;
+}
+
 const playersModulePrefix = "players"
 
 console.log(`${new Date().toLocaleString()} ${playersModulePrefix}: players.js script loaded...`)
@@ -188,7 +193,7 @@ const playersObservingCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const playersObserver = new MutationObserver(playersObservingCallback);
 
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
     console.log(`${new Date().toLocaleString()} ${playersModulePrefix} Message from the background script:`);
     console.log(request.url);
     if (request.url.endsWith("players")) {
