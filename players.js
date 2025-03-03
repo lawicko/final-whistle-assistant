@@ -28,27 +28,30 @@ function createHeaders() {
     
     var thLS = document.createElement('th');
     thLS.className = pluginNodeClass
-    thLS.innerHTML = `<div class="plugin-has-hover-card">LS
+    thLS.innerHTML = 
+                        `<div class="plugin-has-hover-card">LS
                             <div class="plugin-hover-card hovercard-detail">
-                            <span>Long Shot</span>
+                                <span>Long Shot</span>
                             </div>
                           </div>`;
     firstRow.appendChild(thLS);
     
     var thMD = document.createElement('th');
     thMD.className = pluginNodeClass
-    thMD.innerHTML = `<div class="plugin-has-hover-card">MD
+    thMD.innerHTML = 
+                        `<div class="plugin-has-hover-card">MD
                             <div class="plugin-hover-card hovercard-detail">
-                            <span>Midfield Dominance</span>
+                                <span>Midfield Dominance</span>
                             </div>
                           </div>`;
     firstRow.appendChild(thMD);
     
     var thAMD = document.createElement('th');
     thAMD.className = pluginNodeClass
-    thAMD.innerHTML = `<div class="plugin-has-hover-card">AMD
+    thAMD.innerHTML = 
+                        `<div class="plugin-has-hover-card">AMD
                             <div class="plugin-hover-card hovercard-detail">
-                            <span>Advanced Midfield Dominance</span>
+                                <span>Advanced Midfield Dominance</span>
                             </div>
                           </div>`;
     firstRow.appendChild(thAMD);
@@ -108,7 +111,8 @@ function appendMidfieldContribution() {
         
         var tdLS = document.createElement("td");
         tdLS.className = pluginNodeClass
-        tdLS.innerHTML = `<div class="plugin-has-hover-card denom${longShotDenominationNormalized}">${Math.trunc(longShot)}
+        tdLS.innerHTML = 
+                        `<div class="plugin-has-hover-card denom${longShotDenominationNormalized}">${Math.trunc(longShot)}
                             <div class="plugin-hover-card hovercard-detail">
                                 <span>formula: (SC + min(2 * SC, PA)) / 2</span>
                                 <span>(${SC} + min(2 * ${SC}, ${PA})) / 2</span>
@@ -120,7 +124,8 @@ function appendMidfieldContribution() {
         
         var tdMD = document.createElement("td");
         tdMD.className = pluginNodeClass
-        tdMD.innerHTML = `<div class="plugin-has-hover-card denom${midfieldDominanceDenominationNormalized}">${midfieldDominanceContribution}
+        tdMD.innerHTML =  
+                                            `<div class="plugin-has-hover-card denom${midfieldDominanceDenominationNormalized}">${midfieldDominanceContribution}
                                                 <div class="plugin-hover-card hovercard-detail">
                                                     <span>formula: PA + min(OP + BC, TA + DP)</span>
                                                     <span>${PA} + min(${OP} + ${BC}, ${TA} + ${DP})</span>
@@ -133,7 +138,8 @@ function appendMidfieldContribution() {
         var tdAMD = document.createElement("td");
         tdAMD.className = pluginNodeClass
         let arrowOff = advancedMidfieldDominanceContribution > midfieldDominanceContribution ? "⇑" : ""
-        tdAMD.innerHTML =`<div class="plugin-has-hover-card denom${advancedMidfieldDominanceDenominationNormalized}">${Math.trunc(advancedMidfieldDominanceContribution)}
+        tdAMD.innerHTML = 
+                                            `<div class="plugin-has-hover-card denom${advancedMidfieldDominanceDenominationNormalized}">${Math.trunc(advancedMidfieldDominanceContribution)}
                                                 <div class="plugin-hover-card hovercard-detail">
                                                     <span>formula: (PA + min(OP + BC, TA + DP)) * 0.5</span>
                                                     <span>(${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) )* 0.5</span>
@@ -209,6 +215,21 @@ browser.runtime.onMessage.addListener((request) => {
 addCSS(`
     .plugin-has-hover-card {
         position: relative;
+    }
+    .plugin-has-hover-card .plugin-hover-card.hovercard-detail {
+        display: flex;
+        opacity: 0;
+        visibility: hidden;
+        width: auto;
+        height: auto;
+        margin: auto;
+        padding: 8px;
+        flex-direction: column;
+
+        position: absolute;
+        left:0;
+        transform:translateX(-104%);
+        top: -9px;
     }
     .plugin-has-hover-card:hover .plugin-hover-card.hovercard-detail {
         display: flex;
