@@ -1,5 +1,5 @@
 {
-    "manifest_version": 3,
+    "manifest_version": 2,
     "name": "Final Whistle Assistant",
     "version": "1.0.3",
     
@@ -12,17 +12,14 @@
     
     "background": {
         "scripts": ["assistant.js"],
-        "service_worker": "assistant.js",
+        "persistent": false,
         "type": "module"
     },
-    
-    "host_permissions": [
-        "*://*.finalwhistle.org/*"
-    ],
     
     "permissions": [
         "scripting",
         "storage",
+         "*://*.finalwhistle.org/*",
         "tabs"
     ],
     
