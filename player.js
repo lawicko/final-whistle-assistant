@@ -22,50 +22,6 @@ function denomination(value) {
     return den
 }
 
-// Adds the headers to the players table
-// function createHeaders() {
-//     var firstRow = document.querySelector("table > tr:first-of-type");
-    
-//     var thLS = document.createElement('th');
-//     thLS.className = pluginNodeClass
-//     thLS.innerHTML = 
-//                         `<div class="plugin-has-hover-card">LS
-//                             <div class="plugin-hover-card hovercard-detail">
-//                                 <span>Long Shot</span>
-//                             </div>
-//                           </div>`;
-//     firstRow.appendChild(thLS);
-    
-//     var thMD = document.createElement('th');
-//     thMD.className = pluginNodeClass
-//     thMD.innerHTML = 
-//                         `<div class="plugin-has-hover-card">MD
-//                             <div class="plugin-hover-card hovercard-detail">
-//                                 <span>Midfield Dominance</span>
-//                             </div>
-//                           </div>`;
-//     firstRow.appendChild(thMD);
-    
-//     var thAMD = document.createElement('th');
-//     thAMD.className = pluginNodeClass
-//     thAMD.innerHTML = 
-//                         `<div class="plugin-has-hover-card">AMD
-//                             <div class="plugin-hover-card hovercard-detail">
-//                                 <span>Advanced Midfield Dominance</span>
-//                             </div>
-//                           </div>`;
-//     firstRow.appendChild(thAMD);
-    
-//     // var thAMDFlex = document.createElement('th');
-//     // thAMDFlex.className = pluginNodeClass
-//     // thAMDFlex.innerHTML = `<div class="plugin-has-hover-card">AMDF
-//     //                         <div class="plugin-hover-card hovercard-detail">
-//     //                         <span>Advanced Midfield Dominance Flexible</span>
-//     //                         </div>
-//     //                       </div>`;
-//     // firstRow.appendChild(thAMDFlex);
-// }
-
 // Calculates and adds the cells with the midfield contribution values for each player
 function appendMidfieldContributionForPlayer(tableNode) {
     console.info(`${new Date().toLocaleString()} ${playerModulePrefix}: appending the midfield contribution...`)
@@ -235,11 +191,6 @@ function cleanUpNodeForPlayer(tableNode) {
     tableNode.querySelectorAll(`tr.${pluginNodeClass}`).forEach(el => el.remove())
 }
 
-// function isShowingGoalkeepers() {
-//     let goalkeeperFilter = document.querySelector("div.lineup-filter > span.goalkeeper > span")
-//     return (goalkeeperFilter != "undefined" && goalkeeperFilter.innerHTML != "-")
-// }
-
 // Options for the observer (which mutations to observe)
 const playerObservingConfig = { attributes: false, childList: true, subtree: true, characterData: false };
 
@@ -265,12 +216,7 @@ const playerObservingCallback = (mutationList, observer) => {
         
         
         cleanUpNodeForPlayer(targetTable)
-        
-        //if (!isShowingGoalkeepers()) {
-            // createHeaders()
-            appendMidfieldContributionForPlayer(targetTable)
-        //} else {
-        //}
+        appendMidfieldContributionForPlayer(targetTable)
         observer.observe(alwaysPresentNode, playerObservingConfig);
     } else {
         console.debug(`${new Date().toLocaleString()} ${playerModulePrefix}: Could not find the table, or the table is empty, observing...`)
