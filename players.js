@@ -67,7 +67,7 @@ function createHeaders() {
 }
 
 // Calculates and adds the cells with the midfield contribution values for each player
-function appendMidfieldContribution() {
+function appendMidfieldContributionForPlayers() {
     console.info(`${new Date().toLocaleString()} ${playersModulePrefix}: appending the midfield contribution...`)
     let rows = document.querySelectorAll("table > tr");
     let longShotMax = (100 + Math.min(2*100, 100)) / 2
@@ -158,7 +158,7 @@ function appendMidfieldContribution() {
     }
 }
 
-function cleanUpNode(tableNode) {
+function cleanUpNodeForPlayers(tableNode) {
     console.info(`${new Date().toLocaleString()} ${playersModulePrefix}: removing the old cells...`)
     tableNode.querySelectorAll(`td.${pluginNodeClass}`).forEach(el => el.remove());
     tableNode.querySelectorAll(`th.${pluginNodeClass}`).forEach(el => el.remove());
@@ -183,11 +183,11 @@ const playersObservingCallback = (mutationList, observer) => {
 //        mutationList.forEach(el => console.info(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
         
         
-        cleanUpNode(tableNode)
+        cleanUpNodeForPlayers(tableNode)
         
         if (!isShowingGoalkeepers()) {
             createHeaders()
-            appendMidfieldContribution()
+            appendMidfieldContributionForPlayers()
         } else {
         }
         observer.observe(alwaysPresentNode, playersObservingConfig);

@@ -75,6 +75,7 @@ async function loadModules(tabId, url) {
         await executeScript(tabId, "constants.js")
         await executeScript(tabId, "row_highlight.js")
         await executeScript(tabId, "academy_buttons.js")
+        await executeScript(tabId, "player.js")
         await executeScript(tabId, "players.js")
         await executeScript(tabId, "calendar.js")
         await executeScript(tabId, "tags.js")
