@@ -1,39 +1,53 @@
-const usernameInput = document.querySelector("#username");
-const passwordInput = document.querySelector("#password");
+// Use chrome.storage.sync or chrome.storage.local
+// (sync lets settings follow user across devices)
+const storage = chrome.storage.local;
 
-/*
-Store the currently selected settings using browser.storage.local.
-*/
-function storeSettings() {
-  browser.storage.local.set({
-    authCredentials: {
-      username: usernameInput.value,
-      password: passwordInput.value
+// Save settings when changed
+function saveOptions() {
+    // Collect all checkboxes
+    const modules = {
+        academy_buttons: document.getElementById('academy_buttons').checked,
+        calendar: document.getElementById('calendar').checked,
+        player: document.getElementById('player').checked,
+        players: document.getElementById('players').checked,
+        row_highlight: document.getElementById('row_highlight').checked,
+        tags: document.getElementById('tags').checked,
+    };
+
+    // Collect all colors
+    const colors = {};
+    for (let i = 1; i <= 9; i++) {
+        colors[`color${i}`] = document.getElementById(`color${i}`).value;
     }
-  });
+
+    // Save both to storage
+    storage.set({ modules, colors }, () => {
+        console.log("Options saved", { modules, colors });
+    });
 }
 
-/*
-Update the options UI with the settings values retrieved from storage,
-or the default settings if the stored settings are empty.
-*/
-function updateUI(restoredSettings) {
-  usernameInput.value = restoredSettings.authCredentials.username || "";
-  passwordInput.value = restoredSettings.authCredentials.password || "";
+// Restore settings when page is opened
+function restoreOptions() {
+    storage.get(["modules", "colors"], (result) => {
+        if (result.modules) {
+            Object.keys(result.modules).forEach((key) => {
+                const el = document.getElementById(key);
+                if (el) el.checked = result.modules[key];
+            });
+        }
+
+        if (result.colors) {
+            Object.keys(result.colors).forEach((key) => {
+                const el = document.getElementById(key);
+                if (el) el.value = result.colors[key];
+            });
+        }
+    });
 }
 
-function onError(e) {
-  console.error(e);
-}
+// Add listeners to inputs
+document.addEventListener("DOMContentLoaded", restoreOptions);
 
-/*
-On opening the options page, fetch stored settings and update the UI with them.
-*/
-const gettingStoredSettings = chrome.storage.local.get();
-//gettingStoredSettings.then(updateUI, onError);
-
-/*
-On blur, save the currently selected settings.
-*/
-//usernameInput.addEventListener("blur", storeSettings);
-//passwordInput.addEventListener("blur", storeSettings);
+document.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("change", saveOptions);
+});

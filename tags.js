@@ -7,6 +7,60 @@ const tagsModulePrefix = "tags"
 
 console.log(`${new Date().toLocaleString()} ${tagsModulePrefix}: tags.js script loaded...`)
 
+const storage = browser.storage.local
+
+async function applyCustomColorsForTags() {
+  try {
+    // Load colors from storage (with defaults)
+    const { colors = {} } = await storage.get("colors");
+
+    // Option 1: Inline styles for existing elements
+    // document.querySelectorAll("i.denom3").forEach(el => {
+    //   el.style.color = color;
+    // });
+
+    // Option 2: Inject CSS rule so future elements are styled too
+    const style = document.createElement("style");
+    style.textContent = `
+        i.denom1 {
+            color: ${colors.color1} !important;
+        }
+        i.denom2 {
+            color: ${colors.color2} !important;
+        }
+        i.denom3 {
+            color: ${colors.color3} !important;
+        }
+        i.denom4 {
+            color: ${colors.color4} !important;
+        }
+        i.denom5 {
+            color: ${colors.color5} !important;
+        }
+        i.denom6 {
+            color: ${colors.color6} !important;
+        }
+        i.denom7 {
+            color: ${colors.color7} !important;
+        }
+        i.denom8 {
+            color: ${colors.color8} !important;
+        }
+        i.denom9 {
+            color: ${colors.color9} !important;
+        }
+    `;
+    document.head.appendChild(style);
+
+  } catch (err) {
+    console.error("Failed to apply custom colors for tags:", err);
+  }
+}
+
+// Run the function
+applyCustomColorsForTags();
+
+
 // Options for the observer (which mutations to observe)
 const tagsObservactionConfig = { attributes: false, childList: true, subtree: true, characterData: false }
 
