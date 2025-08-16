@@ -74,6 +74,7 @@ function appendMidfieldContributionForPlayers() {
     let midfieldDominanceMax = 100 + 200
     let advancedMidfieldDominanceMax = (100 + 200) * 0.5
     let advancedMidfieldDominanceFlexibleMax = 100 + 200
+    let constitutionTreshold = 50
     for (let i = 1; i < rows.length; i++) {
         let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
         
@@ -86,6 +87,7 @@ function appendMidfieldContributionForPlayers() {
         let OP = Number(valueNodes[1].innerHTML.replace(/\D/g,''));
         let BC = Number(valueNodes[2].innerHTML.replace(/\D/g,''));
         let PA = Number(valueNodes[3].innerHTML.replace(/\D/g,''));
+        let CO = Number(valueNodes[5].innerHTML.replace(/\D/g,''));
         let TA = Number(valueNodes[6].innerHTML.replace(/\D/g,''));
         let DP = Number(valueNodes[7].innerHTML.replace(/\D/g,''));
         
@@ -95,11 +97,11 @@ function appendMidfieldContributionForPlayers() {
         let longShotDenomination = longShot / longShotMax
         let longShotDenominationNormalized = denomination(longShotDenomination * 100)
         
-        let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP)
+        let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
         let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
         let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
         
-        let advancedMidfieldDominanceContribution = (PA + Math.min(OP + BC, TA + DP))  * 0.5
+        let advancedMidfieldDominanceContribution = midfieldDominanceContribution  * 0.5
         let advancedMidfieldDominanceDenomination = advancedMidfieldDominanceContribution / advancedMidfieldDominanceMax
         let advancedMidfieldDominanceDenominationNormalized = denomination(advancedMidfieldDominanceDenomination * 100)
         
@@ -127,10 +129,10 @@ function appendMidfieldContributionForPlayers() {
         tdMD.innerHTML =  
                                             `<div class="plugin-has-hover-card denom${midfieldDominanceDenominationNormalized}">${midfieldDominanceContribution}
                                                 <div class="plugin-hover-card hovercard-detail">
-                                                    <span>formula: PA + min(OP + BC, TA + DP)</span>
-                                                    <span>${PA} + min(${OP} + ${BC}, ${TA} + ${DP})</span>
-                                                    <span>${PA} + min(${OP + BC}, ${TA + DP})</span>
-                                                    <span>${PA} + ${Math.min(OP + BC, TA + DP)} = ${PA + Math.min(OP + BC, TA + DP)}</span>
+                                                    <span>formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})</span>
+                                                    <span>${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})</span>
+                                                    <span>${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}</span>
+                                                    <span>${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}</span>
                                                 </div>
                                             </div>`
         rows[i].appendChild(tdMD);
@@ -141,10 +143,8 @@ function appendMidfieldContributionForPlayers() {
         tdAMD.innerHTML = 
                                             `<div class="plugin-has-hover-card denom${advancedMidfieldDominanceDenominationNormalized}">${Math.trunc(advancedMidfieldDominanceContribution)}
                                                 <div class="plugin-hover-card hovercard-detail">
-                                                    <span>formula: (PA + min(OP + BC, TA + DP)) * 0.5</span>
-                                                    <span>(${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) )* 0.5</span>
-                                                    <span>(${PA} + min(${OP + BC}, ${TA + DP})) * 0.5</span>
-                                                    <span>(${PA} + ${Math.min(OP + BC, TA + DP)}) * 0.5 = ${Math.trunc((PA + Math.min(OP + BC, TA + DP)) * 0.5)}</span>
+                                                    <span>formula: MD * 0.5</span>
+                                                    <span>${midfieldDominanceContribution} * 0.5</span>
                                                 </div>
                                             </div>`
          '<span class="denom' + advancedMidfieldDominanceDenominationNormalized + '">' + Math.trunc(advancedMidfieldDominanceContribution) + arrowOff + '</span>';

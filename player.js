@@ -161,7 +161,7 @@ function appendMidfieldContributionForPlayer(tableNode) {
     tdMDCurrent.innerHTML =  
         `<div class="plugin-has-hover-card denom${midfieldDominanceDenominationNormalized}">${midfieldDominanceContribution}
             <div class="plugin-hover-card hovercard-detail">
-                <span>formula: PA + min(OP + BC, TA + DP) + max(0, CO - 50)</span>
+                <span>formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})</span>
                 <span>${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})</span>
                 <span>${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}</span>
                 <span>${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}</span>
