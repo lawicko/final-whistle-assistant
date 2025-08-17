@@ -1,9 +1,9 @@
 # Final Whistle assistant
 I created this browser extension to address some of the problems that, in my opinion, the game interface has. The main idea was to make the midfield dominance easily visible on the squad page as well as on the player page. Midfield dominance being (as of time of writing - August 2025) the main factor in opportunity creation, I think it deserves much more attention than just a mention in the manual.
 
-## Supported brosers
+## Supported browsers & download links
 1. Chromium based browsers like Chrome or Brave - [the extension is available in the Chrome web store](https://chromewebstore.google.com/detail/final-whistle-assistant/hcnoehlpicjabafnchohpbocakdnmimn).
-2. Firefox - [the plugin is available in the Firefox extensions page](https://addons.mozilla.org/en-US/firefox/addon/final-whistle-assistant/)
+2. Firefox - [the extension is available on the Firefox extensions page](https://addons.mozilla.org/en-US/firefox/addon/final-whistle-assistant/)
 
 ## Options - Available modules
 The extension is split into modules, each module is responsible for different functionality and you can turn each module on or off in the extension settings.
@@ -17,7 +17,7 @@ Similarly this is the settings page on the Chromium browsers
 Use it to enable/disable modules you like. Remember to reload the Final Whistle website for the changes to take effect.
 
 ## Academy Buttons module
-The goal of this module is to move the **Hire** and **Fire** buddons apart to prevent accidental misclicks. It was inspired by one of the posts from the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103)
+The goal of this module is to move the **Hire** and **Fire** buttons apart to prevent accidental missclicks. It was inspired by one of the posts from the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103)
 ![Academy Buttons](images/academy_buttons.jpg)
 
 ## Calendar module
