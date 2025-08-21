@@ -30,6 +30,8 @@ Player module adds additional row for the midfield dominance calculation in the 
 ![Player module](images/player.jpg)
 
 As of version **1.1.0** the special talents are **not** taken into account, so keep that in mind that it's not 100% accurate yet.
+In version **1.2.0** the tooltips were added to the computed skills table, explaining the formulas used for calculations.
+![Player module tooltips](images/player_01.jpg)
 
 ## Players module
 The main idea behind the players module is to show the midfield dominance on your squad page. In addition it also shows the long shot ability and midfield dominance when in advanced position (**L/RW**, **OM**, **DM**). If you hover over the numeric values you will see the formulas that are used for calculations.
