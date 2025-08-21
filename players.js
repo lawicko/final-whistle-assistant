@@ -248,6 +248,6 @@ addCSS(`
     }
 
     .plugin-hover-card.hovercard-detail span {
-        white-space: nowrap;
+        white-space: pre-line;
     }
 `)

@@ -184,7 +184,103 @@ function appendMidfieldContributionForPlayer(tableNode) {
     trMD.appendChild(tdMDPot)
 
     tableNode.appendChild(trMD)
+    
+    let updatedCells = tableNode.querySelectorAll("tr td")
+    
+    addHoverCardToCell(updatedCells, "Heading", "Math.floor(0.65 * SC + 0.35 * AE)",
+                       `Math.floor(0.65 * ${SC} + 0.35 * ${AE}) =
+                        Math.floor(${(0.65 * SC).toFixed(2)} + ${(0.35 * AE).toFixed(2)}) =
+                        Math.floor(${((0.65 * SC) + (0.35 * AE)).toFixed(2)}) = ${Math.floor((0.65 * SC) + (0.35 * AE))}`,
+                          `Math.floor(0.65 * ${SC_POT} + 0.35 * ${AE_POT}) =
+                           Math.floor(${(0.65 * SC_POT).toFixed(2)} + ${(0.35 * AE_POT).toFixed(2)}) =
+                           Math.floor(${((0.65 * SC_POT) + (0.35 * AE_POT)).toFixed(2)}) = ${Math.floor((0.65 * SC_POT) + (0.35 * AE_POT))}`)
+    addHoverCardToCell(updatedCells, "Penalty Kick", "Math.floor(Math.max(1.2 * SC, 0.8 * PA))",
+                       `Math.floor(Math.max(1.2 * ${SC}, 0.8 * ${PA})) =
+                        Math.floor(Math.max(${1.2 * SC}, ${0.8 * PA})) = 
+                        Math.floor(${Math.max(1.2 * SC, 0.8 * PA)}) = ${Math.floor(Math.max(1.2 * SC, 0.8 * PA))}`,
+                                              `Math.floor(Math.max(1.2 * ${SC_POT}, 0.8 * ${PA_POT})) =
+                                               Math.floor(Math.max(${1.2 * SC_POT}, ${0.8 * PA_POT})) = 
+                                               Math.floor(${Math.max(1.2 * SC_POT, 0.8 * PA_POT)}) = ${Math.floor(Math.max(1.2 * SC_POT, 0.8 * PA_POT))}`)
+    addHoverCardToCell(updatedCells, "Long Shots", "Math.floor((SC + Math.min(2 * SC, PA)) / 2)",
+                       `Math.floor((${SC} + Math.min(2 * ${SC}, ${PA})) / 2) =
+                        Math.floor((${SC} + Math.min(${2 * SC}, ${PA})) / 2) =
+                        Math.floor((${SC} + ${Math.min(2 * SC, PA)}) / 2) =
+                        Math.floor(${SC + Math.min(2 * SC, PA)} / 2) =
+                        Math.floor(${(SC + Math.min(2 * SC, PA)) / 2}) = ${Math.floor((SC + Math.min(2 * SC, PA)) / 2)}`,
+                                              `Math.floor((${SC_POT} + Math.min(2 * ${SC_POT}, ${PA_POT})) / 2) =
+                                               Math.floor((${SC_POT} + Math.min(${2 * SC_POT}, ${PA_POT})) / 2) =
+                                               Math.floor((${SC_POT} + ${Math.min(2 * SC_POT, PA_POT)}) / 2) =
+                                               Math.floor(${SC_POT + Math.min(2 * SC_POT, PA_POT)} / 2) =
+                                               Math.floor(${(SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2}) = ${Math.floor((SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2)}`)
+    addHoverCardToCell(updatedCells, "Sp. Heading", "Math.floor(0.8 * AE + 0.2 * CO)",
+                       `Math.floor(0.8 * ${AE} + 0.2 * ${CO}) =
+                        Math.floor(${(0.8 * AE).toFixed(2)} + ${(0.2 * CO).toFixed(2)}) =
+                        Math.floor(${(0.8 * AE + 0.2 * CO).toFixed(2)}) = ${Math.floor(0.8 * AE + 0.2 * CO)}`,
+                                              `Math.floor(0.8 * ${AE_POT} + 0.2 * ${CO_POT}) =
+                                               Math.floor(${(0.8 * AE_POT).toFixed(2)} + ${(0.2 * CO_POT).toFixed(2)}) =
+                                               Math.floor(${(0.8 * AE_POT + 0.2 * CO_POT).toFixed(2)}) = ${Math.floor(0.8 * AE_POT + 0.2 * CO_POT)}`)
+    addHoverCardToCell(updatedCells, "Sp. Cross", "Math.floor(0.7 * PA + 0.3 * BC)",
+                       `Math.floor(0.7 * ${PA} + 0.3 * ${BC}) =
+                        Math.floor(${(0.7 * PA).toFixed(2)} + ${(0.3 * BC).toFixed(2)}) =
+                        Math.floor(${(0.7 * PA + 0.3 * BC).toFixed(2)}) = ${Math.floor(0.7 * PA + 0.3 * BC)}`,
+                                              `Math.floor(0.7 * ${PA_POT} + 0.3 * ${BC_POT}) =
+                                               Math.floor(${(0.7 * PA_POT).toFixed(2)} + ${(0.3 * BC_POT).toFixed(2)}) =
+                                               Math.floor(${(0.7 * PA_POT + 0.3 * BC_POT).toFixed(2)}) = ${Math.floor(0.7 * PA_POT + 0.3 * BC_POT)}`)
+//    addHoverCardToCell(updatedCells, "Midfield Dominance", `PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})`)
 }
+
+function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText, potentialTooltipText) {
+    // 1. Find the cell whose text matches targetText
+    let targetCell = Array.from(allCells).find(
+    cell => cell.textContent.trim() === targetText
+    );
+
+    if (!targetCell) {
+    console.warn(`Cell with text "${targetText}" not found.`);
+    return;
+    }
+
+    // 2. Add classes to the parent node
+    const parent = targetCell.parentNode;
+    targetCell.classList.add("plugin-has-hover-card");
+    parent.classList.add("computed-skill-table-row");
+
+    // 3. Remove any existing <div> children
+    parent.querySelectorAll(":scope > div").forEach(div => div.remove());
+
+    // 4. Create tooltip container
+    const tooltipDetail = document.createElement("div");
+    tooltipDetail.classList.add("plugin-hover-card", "hovercard-detail");
+
+    // 5. Create tooltip text span
+    const tooltipSpan = document.createElement("span");
+    tooltipSpan.textContent = tooltipText;
+
+    // 6. Build structure
+    tooltipDetail.appendChild(tooltipSpan);
+    targetCell.appendChild(tooltipDetail);
+    
+    // 7. Add tooltip with the formula to the value cell
+    valueCell = targetCell.nextElementSibling
+    valueCell.classList.add("plugin-has-hover-card");
+    const valueTooltipDetail = document.createElement("div");
+    valueTooltipDetail.classList.add("plugin-hover-card", "hovercard-detail");
+    const valueTooltipSpan = document.createElement("span");
+    valueTooltipSpan.textContent = valueTooltipText
+    valueTooltipDetail.appendChild(valueTooltipSpan)
+    valueCell.appendChild(valueTooltipDetail)
+    
+    // 8. Add tooltip with the formula to the potential cell
+    potentialCell = valueCell.nextElementSibling
+    potentialCell.classList.add("plugin-has-hover-card");
+    const potentialTooltipDetail = document.createElement("div");
+    potentialTooltipDetail.classList.add("plugin-hover-card", "hovercard-detail");
+    const potentialTooltipSpan = document.createElement("span");
+    potentialTooltipSpan.textContent = potentialTooltipText
+    potentialTooltipDetail.appendChild(potentialTooltipSpan)
+    potentialCell.appendChild(potentialTooltipDetail)
+}
+
 
 function cleanUpNodeForPlayer(tableNode) {
     console.info(`${new Date().toLocaleString()} ${playerModulePrefix}: removing the old cells...`)
@@ -254,8 +350,8 @@ addCSS(`
         flex-direction: column;
 
         position: absolute;
-        left:0;
-        transform:translateX(-104%);
+        left:100%;
+        transform:translateX(104%);
         top: -9px;
     }
     .plugin-has-hover-card:hover .plugin-hover-card.hovercard-detail {
@@ -263,18 +359,23 @@ addCSS(`
         opacity: 1;
         visibility: visible;
         width: auto;
+        min-width: 310px;
         height: auto;
         margin: auto;
         padding: 8px;
         flex-direction: column;
 
         position: absolute;
-        left:0;
-        transform:translateX(-104%);
+        left:100%;
+        transform:translateX(104%);
         top: -9px;
     }
 
     .plugin-hover-card.hovercard-detail span {
         white-space: nowrap;
+    }
+
+    .computed-skill-table-row .plugin-has-hover-card .plugin-hover-card.hovercard-detail {
+        background-color: rgb(38, 97, 38);
     }
 `)
