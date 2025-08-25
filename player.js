@@ -3,6 +3,10 @@ if (typeof browser == "undefined") {
     globalThis.browser = chrome;
 }
 
+// Use chrome.storage.sync or chrome.storage.local
+// (sync lets settings follow user across devices)
+const storage = browser.storage.local;
+
 const playerModulePrefix = "player"
 
 console.log(`${new Date().toLocaleString()} ${playerModulePrefix}: player.js script loaded...`)
@@ -281,6 +285,77 @@ function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText,
     potentialCell.appendChild(potentialTooltipDetail)
 }
 
+function getLastPathComponent(removeExtension = false) {
+  const path = window.location.pathname;
+  const parts = path.split("/").filter(Boolean);
+  let last = parts.pop() || "";
+
+  if (removeExtension && last.includes(".")) {
+    last = last.split(".")[0];
+  }
+
+  return last;
+}
+
+function savePlayerData() {
+    // Get all tables on the page
+    const tables = document.querySelectorAll("table");
+
+    const personalityTable = Array.from(tables).find(table =>
+      Array.from(table.querySelectorAll("th")).some(
+        th => th.textContent.trim() === "Personalities"
+      )
+    );
+
+    if (personalityTable) {
+        console.log("✅ Found the table:", personalityTable);
+    } else {
+        console.warn("❌ No personalities table found");
+        return
+    }
+    
+    const result = {};
+    
+    // Loop over each row
+    personalityTable.querySelectorAll("tr").forEach(row => {
+        const link = row.querySelector("a");
+        if (!link) return; // skip rows without <a>
+        
+        const name = link.textContent.trim().toLowerCase();
+        
+        // Count pluses and minuses
+        const plusCount = row.querySelectorAll("i.personality-plus").length;
+        const minusCount = row.querySelectorAll("i.personality-minus").length;
+        
+        let value = 0;
+        if (plusCount > 0) {
+            value = plusCount; // 1 or 2
+        } else if (minusCount > 0) {
+            value = -minusCount; // -1 or -2
+        }
+        
+        result[name] = value;
+    });
+    
+    console.debug(result)
+    
+    const playerID = getLastPathComponent()
+    console.debug(`playerID = ${playerID}`);
+    
+    const data = { personalities: result }
+    console.debug(`stringified data = ${JSON.stringify(data)}`)
+    storage.set({ [playerID]: JSON.stringify(data) }).then(() => {
+        console.debug(`Set data for playerID: ${playerID}`);
+        
+        const stringified = storage.get(playerID).then(result => {
+            console.log(result)
+            console.debug("player module, getting from storage: " + result[playerID]);
+            
+            const storedProfile = JSON.parse(result[playerID]);
+            console.debug(`player profile from storage: ${JSON.stringify(storedProfile, null, 2)}`)
+        });
+    });
+}
 
 function cleanUpNodeForPlayer(tableNode) {
     console.info(`${new Date().toLocaleString()} ${playerModulePrefix}: removing the old cells...`)
@@ -292,6 +367,8 @@ const playerObservingConfig = { attributes: false, childList: true, subtree: tru
 
 // Callback function to execute when mutations are observed
 const playerObservingCallback = (mutationList, observer) => {
+    savePlayerData()
+    
     let tableNodes = document.querySelectorAll("table.table")
 
     let targetTable = null;

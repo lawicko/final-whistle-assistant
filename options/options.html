@@ -20,6 +20,10 @@
                 <label for="calendar">Calendar</label>
             </div>
             <div>
+                <input type="checkbox" id="lineup" name="lineup" checked />
+                <label for="player">Lineup</label>
+            </div>
+            <div>
                 <input type="checkbox" id="player" name="player" checked />
                 <label for="player">Player</label>
             </div>
@@ -81,6 +85,19 @@
             <div>
                 <input type="color" id="color9" name="color 9" value="#f6b73c" />
                 <label for="color9">Color 9</label>
+            </div>
+        </fieldset>
+        
+        <fieldset>
+            <legend>Lineup markup tresholds:</legend>
+            <div>
+                <input type="text" id="composure_treshold" name="composure treshold" value="50" />
+                <label for="composure_treshold">Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, markup will appear next to his name on the lineup->set pieces screen</label>
+            </div>
+            
+            <div>
+                <input type="text" id="arrogance_treshold" name="arrogance treshold" value="50"/>
+                <label for="arrogance_treshold">Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will appear next to his name on the lineup->set pieces screen</label>
             </div>
         </fieldset>
         
