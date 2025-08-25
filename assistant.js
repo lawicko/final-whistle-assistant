@@ -74,7 +74,7 @@ async function loadModules(tabId, url) {
     loadedMap.set(tabId, false)
 
     async function start() {
-        const result = await storage.get(["modules", "colors"]);
+        const result = await storage.get(["modules", "colors", "tresholds"]);
         const modules = result.modules || {};
 
         await executeScript(tabId, "constants.js")
@@ -94,7 +94,16 @@ async function loadModules(tabId, url) {
             await executeScript(tabId, "calendar.js")
         }
         if (modules?.tags) {
-        await executeScript(tabId, "tags.js")
+            console.debug(`Loading tags...`)
+            await executeScript(tabId, "tags.js")
+        } else {
+            console.debug(`No tags in modules...`)
+        }
+        if (modules?.lineup) {
+            console.debug(`Loading lineup...`)
+            await executeScript(tabId, "lineup.js")
+        } else {
+            console.debug(`No lineup in modules...`)
         }
     }
     
@@ -126,16 +135,21 @@ function saveDefaultOptions() {
     colors["color7"] = "#ff9966"
     colors["color8"] = "#ff8833"
     colors["color9"] = "#db6612"
+    
+    const tresholds = {
+        composure_treshold: 50,
+        arrogance_treshold: 50
+    };
 
     // Save both to storage
-    storage.set({ modules, colors }, () => {
-        console.log("Default options saved", { modules, colors });
+    storage.set({ modules, colors, tresholds }, () => {
+        console.log("Default options saved", { modules, colors, tresholds });
     });
 }
 
 async function handleInstalled(details) {
     console.log(`handleInstalled reason: ${details.reason}`);
-    const { modules = {}, colors = {} } = await storage.get(["modules", "colors"]);
+    const { modules = {}, colors = {} } = await storage.get(["modules", "colors", "tresholds"]);
     if (Object.keys(modules).length > 0) {
         console.log("Modules already exist:", modules, "skipping the default options saving...");
     } else {
