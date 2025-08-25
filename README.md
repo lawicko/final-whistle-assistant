@@ -25,36 +25,27 @@ The goal of this module is to move the **Hire** and **Fire** buttons apart to pr
 
 ## Calendar module
 Calendar module adds **Y** and **S** letters to the match marker on the fixtures screen and on the club screen (upcoming matches section). This is again inspired by the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103) and the goal is to help distinguish which match is youth and which match is seniors, for the one of us that can't remember which color is what.
+
 ![Calendar - Fixtures](images/calendar01.jpg)
 ![Calendar - Fixtures](images/calendar02.jpg)
 
 ## Lineup module
 Lineup module displays additional information in a form of markdown on the lineup->set pieces screen. It is designed to give you a quick overview of which players are suited for special roles, like captain or penalty taker. When in doubt, hover over the symbol and a tooltip will be displayed give you additional information.
 ![Lineup - Set pieces](images/lineup01.jpg)
+
 There are several symbols available:
  - 📂 - is used to indicate that there is no information available for this player - just visit the player page and the extension will save the info it needs, then reload the lineup screen
- - ✪ - is used to represent the leadership trait. Here is how colors represent different values:
-  - <span style="color:#FF4500">✪</span> represents -2
-  - <span style="color:#FFD700">✪</span> represents -1
-  - <span style="color:#4CBB17">✪</span> represents 1
-  - <span style="color:#228B22">✪</span> represents 2
- - ○ - is used to represent the composure trait. Here is how colors represent different values:
-  - <span style="color:#FF4500">○</span> represents -2
-  - <span style="color:#FFD700">○</span> represents -1
-  - <span style="color:#4CBB17">○</span> represents 1
-  - <span style="color:#228B22">○</span> represents 2
- - ♛ - is used to represent the arrogance trait. Here is how colors represent different values:
-  - <span style="color:#FF4500">♛</span> represents -2
-  - <span style="color:#FFD700">♛</span> represents -1
- - ⚖ - is used to represent the sportsmanship trait. Here is how colors represent different values:
-  - <span style="color:#FF4500">⚖</span> represents -2
-  - <span style="color:#FFD700">⚖</span> represents -1
-  - <span style="color:#4CBB17">⚖</span> represents 1
-  - <span style="color:#228B22">⚖</span> represents 2
+ - ✪ - is used to represent the leadership trait
+ - ○ - is used to represent the composure trait
+ - ♛ - is used to represent the arrogance trait
+ - ⚖ - is used to represent the sportsmanship trait
 
-You will notice that sometimes the symbols don't appear even if a player has the specified personality trait. This is to limit the clutter, as you may safely ignore some of the information that is not relevant. For instance leadership and sportsmanship is always displayed because it's relevant for all players - you want to see which players are suited or not to be a captain, and you want to see which players are likely to foul to decide who to place on CB or DM, but also for other positions <span style="color:#FF4500">⚖</span> is better avoided so this information is always useful. However composure is only important for players that shoot the ball, so is only showed for forwards and players with relevant penalty kick skill (see next paragraph). Similarly, arrogance in context of offside plays is only relevant if the player plays in defence, so only defenders and players with relevant DP skill (see next paragraph) will have it. 
+You will notice that sometimes the symbols don't appear even if a player has the specified personality trait. This is to limit the clutter, as you may safely ignore some of the information that is not relevant. For instance leadership and sportsmanship is always displayed because it's relevant for all players - you want to see which players are suited or not to be a captain, and you want to see which players are likely to foul to decide who to place on CB or DM, but also for other positions sportsmanship -2 is better avoided so this information is always useful. However composure is only important for players that shoot the ball, so is only showed for forwards and players with relevant penalty kick skill (see below). Similarly, arrogance in context of offside plays is only relevant if the player plays in defence, so only defenders and players with relevant DP skill (see below) will have it. 
 
-Some fine tuning options are available for the lineup module in the extension options.
+Some fine tuning options are available for the lineup module in the extension options:
+
+![Firefox lineup settings](images/lineup_options.jpg)
+
  - Composure treshold can be used to fine tune which players will display the composure symbol - the composure treshold defines the penalty kick value above which the symbol will be shown. For instance, you would assume that your defensive midfielder with awful scoring should not show the composure symbol, however if he has awesome passing he may be considered for taking a penalty in which case the composure symbol next to his name would still be useful.
  - Arrogance treshold can be used to fine tune which players will displaye the arrogance symbol - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will appear next to his name. It's defined like this for two reaosns: for your senior or youth teams you may want to set a different treshold because the skill difference is usually significant, and for the substitute players we don't know which of them are coming in as defenders, so linking it to DP skill allows for narrowing it down and showing the arrogance symbol only for the relevant subs.
 
