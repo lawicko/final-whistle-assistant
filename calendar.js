@@ -1,8 +1,3 @@
-if (typeof browser == "undefined") {
-    // Chrome does not support the browser namespace yet.
-    globalThis.browser = chrome;
-}
-
 const calendarModulePrefix = "calendar"
 
 console.log(`${new Date().toLocaleString()} ${calendarModulePrefix}: calendar.js script loaded...`)

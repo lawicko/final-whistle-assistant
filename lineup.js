@@ -1,8 +1,3 @@
-if (typeof browser == "undefined") {
-    // Chrome does not support the browser namespace yet.
-    globalThis.browser = chrome;
-}
-
 const lineupModulePrefix = "lineup"
 
 console.log(`${new Date().toLocaleString()} ${lineupModulePrefix}: lineup.js script loaded...`)

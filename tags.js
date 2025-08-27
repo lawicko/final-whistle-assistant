@@ -1,13 +1,6 @@
-if (typeof browser == "undefined") {
-    // Chrome does not support the browser namespace yet.
-    globalThis.browser = chrome;
-}
-
 const tagsModulePrefix = "tags"
 
 console.log(`${new Date().toLocaleString()} ${tagsModulePrefix}: tags.js script loaded...`)
-
-const storage = browser.storage.local
 
 async function applyCustomColorsForTags() {
   try {

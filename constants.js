@@ -6,6 +6,15 @@ const alwaysPresentNode = document.querySelector("div.wrapper");
 
 const constantsModulePrefix = "constants"
 
+if (typeof browser == "undefined") {
+    // Chrome does not support the browser namespace yet.
+    globalThis.browser = chrome;
+}
+
+// Use chrome.storage.sync or chrome.storage.local
+// (sync lets settings follow user across devices)
+const storage = browser.storage.local;
+
 const addCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css
 
 console.log(`${new Date().toLocaleString()} ${constantsModulePrefix}: constants.js script loaded...`)

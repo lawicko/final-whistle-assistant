@@ -1,12 +1,3 @@
-if (typeof browser == "undefined") {
-    // Chrome does not support the browser namespace yet.
-    globalThis.browser = chrome;
-}
-
-// Use chrome.storage.sync or chrome.storage.local
-// (sync lets settings follow user across devices)
-const storage = browser.storage.local;
-
 const playerModulePrefix = "player"
 
 console.log(`${new Date().toLocaleString()} ${playerModulePrefix}: player.js script loaded...`)
