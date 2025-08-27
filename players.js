@@ -63,7 +63,7 @@ function createHeaders() {
 
 // Calculates and adds the cells with the midfield contribution values for each player
 function appendMidfieldContributionForPlayers() {
-    console.info(`${new Date().toLocaleString()} ${playersModulePrefix}: appending the midfield contribution...`)
+    console.log(`${new Date().toLocaleString()} ${playersModulePrefix}: appending the midfield contribution...`)
     let rows = document.querySelectorAll("table > tr");
     let longShotMax = (100 + Math.min(2*100, 100)) / 2
     let midfieldDominanceMax = 100 + 200
@@ -86,7 +86,7 @@ function appendMidfieldContributionForPlayers() {
         let TA = Number(valueNodes[6].innerHTML.replace(/\D/g,''));
         let DP = Number(valueNodes[7].innerHTML.replace(/\D/g,''));
         
-//        console.info(`${new Date().toLocaleString()} ${playersModulePrefix}: SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
+//        console.debug(`${new Date().toLocaleString()} ${playersModulePrefix}: SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
         
         let longShot = (SC + Math.min(2 * SC, PA)) / 2
         let longShotDenomination = longShot / longShotMax
@@ -104,7 +104,7 @@ function appendMidfieldContributionForPlayers() {
         // let advancedMidfieldDominanceInFlexibleDenomination = advancedMidfieldDominanceInFlexibleContribution / advancedMidfieldDominanceFlexibleMax
         // let advancedMidfieldDominanceInFlexibleDenominationNormalized = denomination(advancedMidfieldDominanceInFlexibleDenomination * 100)
         
-        //console.info("denomination for row ", i, " = ", midfieldDominanceDenomination, " normalized: ", midfieldDominanceDenominationNormalized, " advanced: ", advancedMidfieldDominanceDenomination, " normalized: ", advancedMidfieldDominanceDenominationNormalized, " advanced in flexible: ", advancedMidfieldDominanceInFlexibleDenomination, " normalized: ", advancedMidfieldDominanceInFlexibleDenominationNormalized);
+        //console.debug("denomination for row ", i, " = ", midfieldDominanceDenomination, " normalized: ", midfieldDominanceDenominationNormalized, " advanced: ", advancedMidfieldDominanceDenomination, " normalized: ", advancedMidfieldDominanceDenominationNormalized, " advanced in flexible: ", advancedMidfieldDominanceInFlexibleDenomination, " normalized: ", advancedMidfieldDominanceInFlexibleDenominationNormalized);
         
         var tdLS = document.createElement("td");
         tdLS.className = pluginNodeClass
@@ -154,7 +154,7 @@ function appendMidfieldContributionForPlayers() {
 }
 
 function cleanUpNodeForPlayers(tableNode) {
-    console.info(`${new Date().toLocaleString()} ${playersModulePrefix}: removing the old cells...`)
+    console.log(`${new Date().toLocaleString()} ${playersModulePrefix}: removing the old cells...`)
     tableNode.querySelectorAll(`td.${pluginNodeClass}`).forEach(el => el.remove());
     tableNode.querySelectorAll(`th.${pluginNodeClass}`).forEach(el => el.remove());
 }
@@ -175,7 +175,7 @@ const playersObservingCallback = (mutationList, observer) => {
         
         console.debug(`${new Date().toLocaleString()} ${playersModulePrefix}: Found the following table: `, tableNode)
         console.debug(`${new Date().toLocaleString()} ${playersModulePrefix}: tableNode.rows.length: ${tableNode.rows.length}`)
-//        mutationList.forEach(el => console.info(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
+//        mutationList.forEach(el => console.debug(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
         
         
         cleanUpNodeForPlayers(tableNode)

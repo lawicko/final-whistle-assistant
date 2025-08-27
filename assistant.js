@@ -78,32 +78,34 @@ async function loadModules(tabId, url) {
         const modules = result.modules || {};
 
         await executeScript(tabId, "constants.js")
-        if (modules?.row_highlight) {
-            await executeScript(tabId, "row_highlight.js")
-        }
+        
         if (modules?.academy_buttons) {
+            console.info(`Loading academy_buttons...`)
             await executeScript(tabId, "academy_buttons.js")
         }
+        if (modules?.calendar) {
+            console.info(`Loading calendar...`)
+            await executeScript(tabId, "calendar.js")
+        }
+        if (modules?.lineup) {
+            console.info(`Loading lineup...`)
+            await executeScript(tabId, "lineup.js")
+        }
         if (modules?.player) {
+            console.info(`Loading player...`)
             await executeScript(tabId, "player.js")
         }
         if (modules?.players) {
+            console.info(`Loading players...`)
             await executeScript(tabId, "players.js")
         }
-        if (modules?.calendar) {
-            await executeScript(tabId, "calendar.js")
+        if (modules?.row_highlight) {
+            console.info(`Loading row_highlight...`)
+            await executeScript(tabId, "row_highlight.js")
         }
         if (modules?.tags) {
-            console.debug(`Loading tags...`)
+            console.info(`Loading tags...`)
             await executeScript(tabId, "tags.js")
-        } else {
-            console.debug(`No tags in modules...`)
-        }
-        if (modules?.lineup) {
-            console.debug(`Loading lineup...`)
-            await executeScript(tabId, "lineup.js")
-        } else {
-            console.debug(`No lineup in modules...`)
         }
     }
     
@@ -113,49 +115,66 @@ async function loadModules(tabId, url) {
 
 browser.tabs.onUpdated.addListener(handleUpdated);
 
-function saveDefaultOptions() {
-    // Collect all checkboxes
-    const modules = {
+const defaultOptions = {
+    modules: {
         academy_buttons: true,
         calendar: true,
+        lineup: true,
         player: true,
         players: true,
         row_highlight: true,
-        tags: true,
-    };
-
-    // Collect all colors
-    const colors = {};
-    colors["color1"] = "#c96a68"
-    colors["color2"] = "#afb248"
-    colors["color3"] = "#33cccc"
-    colors["color4"] = "#ffffff"
-    colors["color5"] = "#dcc6c6"
-    colors["color6"] = "#ff99cc"
-    colors["color7"] = "#ff9966"
-    colors["color8"] = "#ff8833"
-    colors["color9"] = "#db6612"
-    
-    const tresholds = {
+        tags: true
+    },
+    colors: {
+        color1: "#c96a68",
+        color2: "#afb248",
+        color3: "#33cccc",
+        color4: "#ffffff",
+        color5: "#dcc6c6",
+        color6: "#ff99cc",
+        color7: "#ff9966",
+        color8: "#ff8833",
+        color9: "#db6612"
+    },
+    tresholds: {
         composure_treshold: 50,
         arrogance_treshold: 50
-    };
-
-    // Save both to storage
-    storage.set({ modules, colors, tresholds }, () => {
-        console.log("Default options saved", { modules, colors, tresholds });
-    });
+    }
 }
 
 async function handleInstalled(details) {
     console.log(`handleInstalled reason: ${details.reason}`);
-    const { modules = {}, colors = {} } = await storage.get(["modules", "colors", "tresholds"]);
-    if (Object.keys(modules).length > 0) {
-        console.log("Modules already exist:", modules, "skipping the default options saving...");
-    } else {
-        console.log("Looks like this is the initial installation, saving the default options...")
-        saveDefaultOptions();
+    const { modules = {}, colors = {}, tresholds = {} } = await storage.get(["modules", "colors", "tresholds"]);
+    for (const key in defaultOptions.modules) {
+        if (!(key in modules)) {
+            console.info(`Found a missing key (${key}) in the modules loaded from storage, assigned the value from the default modules (${defaultOptions.modules[key]})`)
+            modules[key] = defaultOptions.modules[key];
+        }
     }
+    console.info("Saving modules", modules)
+    storage.set({ modules: modules }, () => {
+        console.info("Modules saved", { modules });
+    });
+    
+    for (const key in defaultOptions.colors) {
+        if (!(key in colors)) {
+            console.info(`Found a missing key (${key}) in the colors loaded from storage, assigned the value from the default colors (${defaultOptions.colors[key]})`)
+            colors[key] = defaultOptions.colors[key];
+        }
+    }
+    storage.set({ colors: colors }, () => {
+        console.info("Colors saved", { colors });
+    });
+    
+    for (const key in defaultOptions.tresholds) {
+        if (!(key in tresholds)) {
+            console.info(`Found a missing key (${key}) in the tresholds loaded from storage, assigned the value from the default tresholds (${defaultOptions.tresholds[key]})`)
+            tresholds[key] = defaultOptions.tresholds[key];
+        }
+    }
+    storage.set({ tresholds: tresholds }, () => {
+        console.info("Tresholds saved", { tresholds });
+    });
 }
 browser.runtime.onInstalled.addListener(handleInstalled);
 
