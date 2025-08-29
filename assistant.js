@@ -3,7 +3,7 @@ if (typeof browser == "undefined") {
     globalThis.browser = chrome;
 }
 
-const storage = browser.storage.local
+const storage = browser.storage.sync
 
 const pattern1 = "*://*.finalwhistle.org/*";
 

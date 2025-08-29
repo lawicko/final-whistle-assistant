@@ -5,7 +5,7 @@ if (typeof browser == "undefined") {
 
 // Use chrome.storage.sync or chrome.storage.local
 // (sync lets settings follow user across devices)
-const storage = browser.storage.local;
+const storage = browser.storage.sync;
 
 // Save settings when changed
 function saveOptions() {

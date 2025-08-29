@@ -71,6 +71,17 @@ Tags module makes player tags much bigger and allows you to customize tag colors
 ![Tags on the training screen](images/tags02.jpg)
 
 ## Version history
+### 1.4.0 - current version
+ - Fixed the empty folder icon not disappearing when the player data is read in another tab and the table updates
+ - Fixed inconsistent tooltips in the player module
+ - Transitioned to storage.sync and started storing all the player data under one key in storage
+### 1.3.1
+ - Moved global browser override and storage definition to constants, cleaned up the rest of the files where it was used
+ - Fixed lineup module not being saved properly and the console logging inconsistencies
+### 1.3.0
+ - Added lineup module
+### 1.2.0
+ - Added computed skills tooltips in the player module
 ### 1.1.0 - current version
  - Added working options screen
 ### 1.0.4

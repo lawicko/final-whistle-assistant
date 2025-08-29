@@ -54,19 +54,21 @@ function lastPathComponent(url) {
 }
 
 async function loadValuesForComponents(components) {
-  const result = await storage.get(components);
-
-  return components.map(key => {
-    const raw = result[key];
-    if (!raw) return null; // missing key
-
-    try {
-      return JSON.parse(raw); // parse JSON string
-    } catch (e) {
-      console.warn(`Failed to parse JSON for key "${key}":`, raw);
-      return null; // fallback if JSON invalid
-    }
-  });
+    const playerData = await storage.get('player-data')
+    
+    const result = playerData['player-data']
+    
+    return components.map(key => {
+        const raw = result[key];
+        if (!raw) return null; // missing key
+        
+        try {
+            return JSON.parse(raw); // parse JSON string
+        } catch (e) {
+            console.warn(`Failed to parse JSON for key "${key}":`, raw);
+            return null; // fallback if JSON invalid
+        }
+    });
 }
 
 async function processLineup() {
