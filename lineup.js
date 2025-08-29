@@ -113,6 +113,14 @@ async function processLineup() {
             }
             
             continue
+        } else {
+            const spans = pLinks[i].parentNode.parentNode.parentNode.querySelectorAll("span");
+            
+            spans.forEach(span => {
+                if (span.textContent.trim() === "📂") {
+                    span.remove();
+                }
+            });
         }
         console.debug(`Found profile for ${name}, applying...`)
         const leadership = profile['personalities']['leadership']
