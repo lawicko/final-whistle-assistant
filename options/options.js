@@ -13,6 +13,7 @@ function saveOptions() {
     const modules = {
         academy_buttons: document.getElementById('academy_buttons').checked,
         calendar: document.getElementById('calendar').checked,
+        match: document.getElementById('match').checked,
         player: document.getElementById('player').checked,
         players: document.getElementById('players').checked,
         row_highlight: document.getElementById('row_highlight').checked,

@@ -91,6 +91,10 @@ async function loadModules(tabId, url) {
             console.info(`Loading lineup...`)
             await executeScript(tabId, "lineup.js")
         }
+        if (modules?.match) {
+            console.info(`Loading match...`)
+            await executeScript(tabId, "match.js")
+        }
         if (modules?.player) {
             console.info(`Loading player...`)
             await executeScript(tabId, "player.js")
@@ -120,6 +124,7 @@ const defaultOptions = {
         academy_buttons: true,
         calendar: true,
         lineup: true,
+        match: true,
         player: true,
         players: true,
         row_highlight: true,
