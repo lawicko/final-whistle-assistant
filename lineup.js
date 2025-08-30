@@ -72,6 +72,73 @@ async function loadValuesForComponents(components) {
     });
 }
 
+function proposePenaltyTakers(takers) {
+    // Do we already have it?
+    if (document.querySelector('#proposed-penalty-takers')) {
+        return
+    }
+        
+    // Find all h5 elements
+    const headers = document.querySelectorAll("h5");
+    
+    // Find the one with the text "Penalty Takers"
+    const targetHeader = Array.from(headers).find( h => h.textContent.trim() === "Penalty Takers" );
+    
+    if (!targetHeader) {
+        console.info("No Penalty Takers header, will try to find it when the page changes. ")
+        return
+    }
+    
+    const proposedPenaltyTakers = document.createElement("ol");
+    proposedPenaltyTakers.id = 'proposed-penalty-takers'
+    console.debug('Will iterate takers.recommended: ', takers.recommended)
+    for (const taker of takers.recommended) {
+        console.debug('creating takerSpan')
+        var takerSpan = document.createElement('li')
+        takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+        takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+        console.debug('appending takerSpan to proposedPenaltyTakers')
+        proposedPenaltyTakers.appendChild(takerSpan)
+        
+        if (taker.composure) {
+            const composureSpan = document.createElement("span");
+            composureSpan.classList.add('composure')
+            composureSpan.textContent = " ○"
+            switch (taker.composure) {
+                case -2:
+                    composureSpan.classList.add('doubleNegative');
+                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
+                    break;
+                case -1:
+                    composureSpan.classList.add('negative');
+                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
+                    break;
+                case 1:
+                    composureSpan.classList.add('positive');
+                    composureSpan.title = "This player has good composure, consider using him as penalty taker";
+                    break;
+                case 2:
+                    composureSpan.classList.add('doublePositive');
+                    composureSpan.title = "This player has excellent composure, use him as penalty taker";
+                    break;
+                default:
+                    console.warn("Value is unexpected");
+            }
+            takerSpan.appendChild(composureSpan)
+        }
+    }
+    targetHeader.parentNode.after(proposedPenaltyTakers);
+    
+    const proposedPenaltyTakersHeader = document.createElement("h6");
+    proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
+    proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
+    const questionMarkSpan = document.createElement("span")
+    questionMarkSpan.textContent = "\uf29c"
+    questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, there are currently not enough players with the penalty kick skill above the composure treshold to recommend here."
+    proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
+    targetHeader.parentNode.after(proposedPenaltyTakersHeader);
+}
+
 async function processLineup() {
     const pLinks = getPlayerLinks('#ngb-nav-2-panel > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('#ngb-nav-2-panel > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
@@ -84,6 +151,12 @@ async function processLineup() {
     // Load tresholds from storage
     const { tresholds = {} } = await storage.get("tresholds");
     console.debug(`Loaded tresholds from storage: `, tresholds)
+    
+    var proposedPenaltyTakersArray = {
+        recommended: [],
+        discouraged: []
+    }
+    var penaltyTakersWithoutComposure = []
     
     for (let i = 0; i < pLinks.length; i++) {
         const profile = profiles[i]
@@ -135,38 +208,49 @@ async function processLineup() {
             applyLeadership(pLinks[i], profile['personalities']['leadership'])
         }
         
-        if (composure) {
-            // First check if on FW position
-            // Get all siblings
-            const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
+        // For adding composure and recommended penalty takers
+        // First check if on FW position
+        // Get all siblings
+        const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
 
-            // Check if any sibling has a <span> with the class "attack-zone"
-            const hasSiblingWithSpan = siblings.some(sib => sib.querySelector('span.attack-zone') !== null);
-            const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
-            
-            // Alternatively check if the effective penalty kick skill is reasonable
-            const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
-            var reasonablePenaltyKick = false
+        // Check if any sibling has a <span> with the class "attack-zone"
+        const hasSiblingWithSpan = siblings.some(sib => sib.querySelector('span.attack-zone') !== null);
+        const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
+        
+        // Alternatively check if the effective penalty kick skill is reasonable
+        const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
+        var reasonablePenaltyKick = false
+        if (skills.length == 8) { // goalkeepers have only 6 skills
+            const SC = skills[0].querySelector('span[class^="denom"]').textContent.trim();
+            const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
+            const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
             const composure_treshold = tresholds['composure_treshold'] ?? 50
-            if (skills.length == 8) { // goalkeepers have only 6 skills
-                const SC = skills[0].querySelector('span[class^="denom"]').textContent.trim();
-                const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
-                const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
+            if (composure) {
                 if (penaltyKick > composure_treshold) {
-                    console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, setting reasonablePenaltyKick to true`);
-                    reasonablePenaltyKick = true
+                    if (composure > 0) {
+                        console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, composure ${composure} > 0, setting reasonablePenaltyKick to true`);
+                        reasonablePenaltyKick = true
+                        proposedPenaltyTakersArray.recommended.push({ name: name, penaltyKick: penaltyKick, composure: composure });
+                    } else {
+                        console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, but composure ${composure} < 0, leaving reasonablePenaltyKick as false`);
+                        proposedPenaltyTakersArray.discouraged.push({ name: name, penaltyKick: penaltyKick, composure: composure });
+                    }
                 } else {
                     console.debug(`processing composure, penaltyKick = ${penaltyKick} below reasonable level, leaving reasonablePenaltyKick as false`);
                 }
+                
+
+                if (hasSiblingWithSpan || (isSub && reasonablePenaltyKick)) {
+                  console.debug(`applying composure: ${composure} to ${name}`)
+                  applyComposure(pLinks[i], composure)
+                } else {
+                  console.log('Has composure in profile, but not in the attack zone or penaltyKick under reasonable level, skipping...');
+                }
             } else {
                 console.debug(`processing composure, but the player is not an outfielder, leaving reasonablePenaltyKick as false`);
-            }
-
-            if (hasSiblingWithSpan || (isSub && reasonablePenaltyKick)) {
-              console.debug(`applying composure: ${composure} to ${name}`)
-              applyComposure(pLinks[i], composure)
-            } else {
-              console.log('Has composure in profile, but not in the attack zone or penaltyKick under reasonable level, skipping...');
+                if (penaltyKick > composure_treshold) {
+                    penaltyTakersWithoutComposure.push({ name: name, penaltyKick: penaltyKick, composure: 0 })
+                }
             }
         }
         
@@ -221,6 +305,29 @@ async function processLineup() {
 //            }
         }
     }
+    
+    penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
+    console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
+    const recommendedWithComposure = proposedPenaltyTakersArray.recommended
+    console.debug('recommendedWithComposure: ', recommendedWithComposure)
+    const proposedCount = 5
+    console.debug(`proposedCount (${proposedCount}) versus recommendedWithComposure.count (${recommendedWithComposure.length})`)
+    if (recommendedWithComposure.length < proposedCount) {
+        var mergedArray = recommendedWithComposure.concat(penaltyTakersWithoutComposure.slice(0, 5 - recommendedWithComposure.length));
+        console.debug('mergedArray: ', mergedArray)
+        
+        mergedArray.sort((a, b) => {
+            const pkDiff = b.penaltyKick - a.penaltyKick;
+            if (pkDiff !== 0) return pkDiff;          // sort by penaltyKick first
+            return b.composure - a.composure;         // tie-breaker by composure
+        });
+        
+        console.debug('mergedArray sorted: ', mergedArray)
+        proposedPenaltyTakersArray.recommended = mergedArray
+    }
+    
+    console.debug('passing to proposePenaltyTakers: ', proposedPenaltyTakersArray)
+    proposePenaltyTakers(proposedPenaltyTakersArray)
 }
 
 function applySportsmanship(element, sportsmanship) {
@@ -396,6 +503,7 @@ browser.runtime.onMessage.addListener((request) => {
 addCSS(`
     span.leadership {
         font-size: 1.4em;
+        cursor: help;
     }
     span.leadership.doublePositive {
         color: #228B22;
@@ -412,6 +520,7 @@ addCSS(`
 
     span.composure {
         font-size: 1.2em;
+        cursor: help;
     }
     span.composure.doublePositive {
         color: #228B22;
@@ -428,6 +537,7 @@ addCSS(`
 
     span.arrogance {
         font-size: 1.2em;
+        cursor: help;
     }
     span.arrogance.negative {
         color: #FFD700;
@@ -438,6 +548,7 @@ addCSS(`
 
     span.sportsmanship {
         font-size: 1.4em;
+        cursor: help;
     }
     span.sportsmanship.doublePositive {
         color: #228B22;
@@ -450,5 +561,23 @@ addCSS(`
     }
     span.sportsmanship.doubleNegative {
         color: #FF4500;
+    }
+
+    ol#proposed-penalty-takers {
+        font-size: .8rem;
+        text-align: center;
+
+        list-style-type: none; /* removes numbers */
+        padding-left: 0;       /* optional: remove indentation */
+        margin-left: 0;  
+    }
+
+    h6#proposed-penalty-takers-header {
+        text-align: center;
+    }
+
+    h6#proposed-penalty-takers-header span {
+        cursor: help;
+        font: 14px/1 FontAwesome;
     }
 `)
