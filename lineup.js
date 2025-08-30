@@ -63,7 +63,8 @@ async function loadValuesForComponents(components) {
         if (!raw) return null; // missing key
         
         try {
-            return JSON.parse(raw); // parse JSON string
+            raw['personalities'] = JSON.parse(raw['personalities'])
+            return raw
         } catch (e) {
             console.warn(`Failed to parse JSON for key "${key}":`, raw);
             return null; // fallback if JSON invalid
