@@ -229,6 +229,79 @@ function getLastPathComponent(removeExtension = false) {
     return last;
 }
 
+async function showInjuries() {
+    const playerID = getLastPathComponent()
+    const playerDataFromStorage = await browser.storage.sync.get('player-data');
+    var loadedPlayerData = playerDataFromStorage['player-data'] || {};
+    console.debug('loadedPlayerData = ', loadedPlayerData)
+    var currentPlayerData = loadedPlayerData[playerID] || {};
+    console.debug('currentPlayerData = ', currentPlayerData)
+    var injuries = currentPlayerData['injuries'];
+    
+    if (injuries && injuries.length > 0) {
+        console.info("injuries for player: ", injuries)
+        
+        const tableContainer = document.querySelector('div.col-lg-4')
+        if (!tableContainer) { return }
+        
+        if (!tableContainer.querySelector("table#injury-table")) {
+            const table = document.createElement('table')
+            table.id = "injury-table"
+            table.classList.add('table')
+            table.classList.add('table-sm')
+            table.classList.add('table-fw')
+            const headerRow = document.createElement('tr')
+            const headerCell = document.createElement('th')
+            headerCell.textContent = 'Recent injuries'
+            headerRow.appendChild(headerCell)
+            table.appendChild(headerRow)
+            for (const injury of injuries) {
+                const row = document.createElement('tr')
+                const cell = document.createElement('td')
+                cell.textContent = injury
+                row.appendChild(cell)
+                table.appendChild(row)
+//                
+//                const row1 = document.createElement('tr')
+//                const cell1 = document.createElement('td')
+//                cell1.textContent = injury
+//                row1.appendChild(cell1)
+//                table.appendChild(row1)
+//                
+//                const row2 = document.createElement('tr')
+//                const cell2 = document.createElement('td')
+//                cell2.textContent = injury
+//                row2.appendChild(cell2)
+//                table.appendChild(row2)
+//                
+//                const row3 = document.createElement('tr')
+//                const cell3 = document.createElement('td')
+//                cell3.textContent = injury
+//                row3.appendChild(cell3)
+//                table.appendChild(row3)
+            }
+            tableContainer.appendChild(table)
+        }
+    }
+}
+
+async function saveMyTeam() {
+    // Check if there are inputs on the page, if yes this is our player
+    const inputCheckbox = document.querySelector('input.form-check-input')
+    if (inputCheckbox) {
+        const link = document.querySelector('table span fw-club-hover a')
+        const clubID = lastPathComponent(link.href)
+        const clubName = link.querySelector('span.club-name').textContent
+        const clubData = {
+            id: clubID,
+            name: clubName
+        }
+        console.info('Saving own club: ', clubData)
+        const key = 'club';
+        await storage.set({ [key]: clubData })
+    }
+}
+
 async function savePlayerData() {
     // Get all tables on the page
     const tables = document.querySelectorAll("table");
@@ -301,7 +374,9 @@ const playerObservingConfig = { attributes: false, childList: true, subtree: tru
 
 // Callback function to execute when mutations are observed
 const playerObservingCallback = (mutationList, observer) => {
+    saveMyTeam()
     savePlayerData()
+    showInjuries()
     
     let tableNodes = document.querySelectorAll("table.table")
     

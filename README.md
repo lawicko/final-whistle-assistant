@@ -72,9 +72,13 @@ Tags module makes player tags much bigger and allows you to customize tag colors
 
 ## Version history
 ### 1.4.0 - current version
+ - Updated the match module to only save the injuries for own players, and added showing injuries to the player module
+ - Implemented recommended penalty takers functionality
+ - Saving player personalities to storage without destroying what can potentially already be there
+ - Added the match module
+ - Transitioned to storage.sync and started storing all the player data under one key in storage
  - Fixed the empty folder icon not disappearing when the player data is read in another tab and the table updates
  - Fixed inconsistent tooltips in the player module
- - Transitioned to storage.sync and started storing all the player data under one key in storage
 ### 1.3.1
  - Moved global browser override and storage definition to constants, cleaned up the rest of the files where it was used
  - Fixed lineup module not being saved properly and the console logging inconsistencies
