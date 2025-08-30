@@ -43,14 +43,14 @@ function hasActiveSetPieces() {
 }
 
 function lastPathComponent(url) {
-  try {
-    const u = new URL(url);         // parse the URL
-    const parts = u.pathname.split("/").filter(Boolean);
-    return parts.pop() || "";       // last component or "" if none
-  } catch (err) {
-    console.error("Invalid URL:", url, err);
-    return null;
-  }
+    try {
+        const u = new URL(url);         // parse the URL
+        const parts = u.pathname.split("/").filter(Boolean);
+        return parts.pop() || "";       // last component or "" if none
+    } catch (err) {
+        console.error("Invalid URL:", url, err);
+        return null;
+    }
 }
 
 async function loadValuesForComponents(components) {
@@ -134,14 +134,14 @@ function proposePenaltyTakers(takers) {
     proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
     const questionMarkSpan = document.createElement("span")
     questionMarkSpan.textContent = "\uf29c"
-    questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, there are currently not enough players with the penalty kick skill above the composure treshold to recommend here."
+    questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
     targetHeader.parentNode.after(proposedPenaltyTakersHeader);
 }
 
 async function processLineup() {
-    const pLinks = getPlayerLinks('#ngb-nav-2-panel > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
-    const hrefs = getHrefList('#ngb-nav-2-panel > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
+    const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
+    const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
     console.debug(hrefs);
     const lastParts = hrefs.map(lastPathComponent);
     console.debug(lastParts)
