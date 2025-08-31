@@ -72,6 +72,8 @@ Tags module makes player tags much bigger and allows you to customize tag colors
 
 ## Version history
 ### 1.4.0 - current version
+ - Implemented minutes played, optimized saving to storage
+ - Implemented a nice display for the recent injuries on the player page
  - Updated the match module to only save the injuries for own players, and added showing injuries to the player module
  - Implemented recommended penalty takers functionality
  - Saving player personalities to storage without destroying what can potentially already be there

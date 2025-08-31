@@ -308,7 +308,7 @@ async function showInjuries() {
     }
 }
 
-async function saveMyTeam() {
+function getMyTeam() {
     // Check if there are inputs on the page, if yes this is our player
     const inputCheckbox = document.querySelector('input.form-check-input')
     if (inputCheckbox) {
@@ -319,13 +319,11 @@ async function saveMyTeam() {
             id: clubID,
             name: clubName
         }
-        console.debug('Saving own club: ', clubData)
-        const key = 'club';
-        await storage.set({ [key]: clubData })
+        return clubData
     }
 }
 
-async function savePlayerData() {
+function getPlayerData() {
     // Get all tables on the page
     const tables = document.querySelectorAll("table");
     
@@ -368,23 +366,31 @@ async function savePlayerData() {
     console.debug('Result of reading the personalities', result)
     
     const playerID = getLastPathComponent()
-    console.debug(`Will save personalities for playerID = ${playerID}`);
     
-    savePersonalitiesToStorage(playerID, result)
+    return {
+        playerID: playerID,
+        personalities: result
+    }
 }
 
-async function savePersonalitiesToStorage(playerID, data) {
+async function saveToStorage(clubData, playerData) {
+    console.info(`Will save personalities for playerID = ${playerData.playerID}`);
     const playerDataFromStorage = await browser.storage.sync.get('player-data');
     var loadedPlayerData = playerDataFromStorage['player-data'] || {};
-    console.debug('loadedPlayerData = ', loadedPlayerData)
-    var currentPlayerData = loadedPlayerData[playerID] || {};
-    console.debug('currentPlayerData = ', currentPlayerData)
-    currentPlayerData['personalities'] = JSON.stringify(data)
-    loadedPlayerData[playerID] = currentPlayerData
+    console.info('loadedPlayerData = ', loadedPlayerData)
+    var currentPlayerData = loadedPlayerData[playerData.playerID] || {};
+    console.info('currentPlayerData = ', currentPlayerData)
+    currentPlayerData['personalities'] = JSON.stringify(playerData.personalities)
+    loadedPlayerData[playerData.playerID] = currentPlayerData
     
-    const key = 'player-data';
-    await storage.set({ [key]: loadedPlayerData })
-    console.debug(`Set data for playerID: ${playerID}`);
+    const preparedForSaving = {
+        club: clubData,
+        "player-data": loadedPlayerData
+    }
+    console.info('preparedForSaving: ', preparedForSaving)
+    
+    await storage.set(preparedForSaving)
+    console.info(`Saved to storage: personalities for playerID: ${playerData.playerID} and club data: `, clubData);
 }
 
 function cleanUpNodeForPlayer(tableNode) {
@@ -397,8 +403,19 @@ const playerObservingConfig = { attributes: false, childList: true, subtree: tru
 
 // Callback function to execute when mutations are observed
 const playerObservingCallback = (mutationList, observer) => {
-    saveMyTeam()
-    savePlayerData()
+    clubData = getMyTeam()
+    if (clubData) {
+        console.info("clubData: ", clubData)
+    }
+    playerData = getPlayerData()
+    if (playerData) {
+        console.info("playerData: ", playerData)
+    }
+    
+    if (clubData && playerData) {
+        saveToStorage(clubData, playerData)
+    }
+    
     showInjuries()
     
     let tableNodes = document.querySelectorAll("table.table")
