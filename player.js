@@ -239,7 +239,7 @@ async function showInjuries() {
     var injuries = currentPlayerData['injuries'];
     
     if (injuries && injuries.length > 0) {
-        console.info("injuries for player: ", injuries)
+        console.debug("injuries for player: ", injuries)
         
         const tableContainer = document.querySelector('div.col-lg-4')
         if (!tableContainer) { return }
@@ -251,34 +251,57 @@ async function showInjuries() {
             table.classList.add('table-sm')
             table.classList.add('table-fw')
             const headerRow = document.createElement('tr')
+            headerRow.classList.add('summary-row')
             const headerCell = document.createElement('th')
-            headerCell.textContent = 'Recent injuries'
+            
+            // For testing multiple rows
+//            const i = injuries[0]
+//            injuries.push(i)
+//            injuries.push(i)
+//            injuries.push(i)
+            
+            if (injuries.length > 1) {
+                const disclosureSpan = document.createElement('span')
+                disclosureSpan.classList.add('disclosure')
+                disclosureSpan.textContent = '▶'
+                headerCell.appendChild(disclosureSpan)
+                
+                // append text without nuking the span
+                headerCell.appendChild(document.createTextNode(' Recent injuries'))
+                
+                headerRow.addEventListener('click', () => {
+                    const disclosure = headerRow.querySelector('.disclosure');
+                    let next = headerRow.nextElementSibling;
+                    const isOpen = disclosure.classList.contains('open');
+                    
+                    // Toggle all subsequent .details-row until another summary-row is found
+                    while (next && !next.classList.contains('summary-row')) {
+                        if (!next.classList.contains('injuries-first-row')) {
+                            next.style.display = isOpen ? 'none' : 'table-row';
+                        }
+                        next = next.nextElementSibling;
+                    }
+                    
+                    disclosure.classList.toggle('open', !isOpen);
+                });
+            } else {
+                headerCell.appendChild(document.createTextNode('Recent injuries'))
+            }
+            
             headerRow.appendChild(headerCell)
             table.appendChild(headerRow)
+            
             for (const injury of injuries) {
                 const row = document.createElement('tr')
+                if (table.querySelector('td')) {
+                    row.classList.add('details-row')
+                } else {
+                    row.classList.add('injuries-first-row')
+                }
                 const cell = document.createElement('td')
                 cell.textContent = injury
                 row.appendChild(cell)
                 table.appendChild(row)
-//                
-//                const row1 = document.createElement('tr')
-//                const cell1 = document.createElement('td')
-//                cell1.textContent = injury
-//                row1.appendChild(cell1)
-//                table.appendChild(row1)
-//                
-//                const row2 = document.createElement('tr')
-//                const cell2 = document.createElement('td')
-//                cell2.textContent = injury
-//                row2.appendChild(cell2)
-//                table.appendChild(row2)
-//                
-//                const row3 = document.createElement('tr')
-//                const cell3 = document.createElement('td')
-//                cell3.textContent = injury
-//                row3.appendChild(cell3)
-//                table.appendChild(row3)
             }
             tableContainer.appendChild(table)
         }
@@ -296,7 +319,7 @@ async function saveMyTeam() {
             id: clubID,
             name: clubName
         }
-        console.info('Saving own club: ', clubData)
+        console.debug('Saving own club: ', clubData)
         const key = 'club';
         await storage.set({ [key]: clubData })
     }
@@ -461,5 +484,25 @@ addCSS(`
     /* Show on hover */
     [data-tooltip]:hover::after {
       opacity: 1;
+    }
+
+    .details-row {
+        display: none; /* all hidden by default */
+    }
+
+    .summary-row {
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .disclosure {
+        display: inline-block;
+        transition: transform 0.2s ease;
+        margin-right: 6px;
+    }
+
+    /* Rotates arrow when open */
+    .disclosure.open {
+        transform: rotate(90deg);
     }
 `)
