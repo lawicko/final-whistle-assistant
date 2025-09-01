@@ -9,18 +9,30 @@ I created this browser extension to address some of the problems that, in my opi
 The extension is split into modules, each module is responsible for different functionality and you can turn each module on or off in the extension settings.
 
 As of version **1.1.0** the settings page on Firefox looks like this
+
 ![Firefox settings page](images/options_firefox.jpg)
 
 As of version **1.3.0** the lineup module is available, and there are additional settings for that module:
+
 ![Firefox lineup settings](images/lineup_options.jpg)
 
 Similarly this is the settings page on the Chromium browsers
+
 ![Chromium settings page](images/options_chromium.jpg)
 
 Use it to enable/disable modules you like. Remember to reload the Final Whistle website for the changes to take effect.
 
+Starting with version **1.4.0** the new setting for player data was added:
+
+![Player data](images/options_player_data.png)
+
+This setting can be used to backup your player data. Player data is all the data you gathered by visiting you players pages, match reports etc. You build this over time by browsing the game website. The extension works best if you visit all the match reports of your team that you can (switching the lineup from starting to finishing) and all the players that you have on your team. This allows the extension to visualize the injuries, minutes played, suggest penalty takers etc. Once you do all that you don't want this data to be lost - this is why I added this additional option. I recommend you do the following: once you visit all the match reports and player pages, got to the settings and copy the content of this new field into a file, and store it somewhere safe - for example Dropbox or another cloud storage service. This way you are sure that if something goes wrong and you loose the data, you can always resotre it from backup. To do that you can paste the conted of your backup directly into the new field and press the save button below. This is also useful for moving your data across browsers (Firefox and Chromium) or different machines.
+
+One more improvement in **1.4.0** is that all the settings except player data now use storage.sync. This means that the information about used modules, colors and tresholds will be carried over to other instances of this browser when you log in there with your account. For example, if you use Firefox and are logged into your Firefox account, you can then install Firefox on another machine and log in there, and your settings will automatically be restored there when the extension is installed.
+
 ## Academy Buttons module
 The goal of this module is to move the **Hire** and **Fire** buttons apart to prevent accidental missclicks. It was inspired by one of the posts from the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103)
+
 ![Academy Buttons](images/academy_buttons.jpg)
 
 ## Calendar module
@@ -31,6 +43,7 @@ Calendar module adds **Y** and **S** letters to the match marker on the fixtures
 
 ## Lineup module
 Lineup module displays additional information in a form of markdown on the lineup->set pieces screen. It is designed to give you a quick overview of which players are suited for special roles, like captain or penalty taker. When in doubt, hover over the symbol and a tooltip will be displayed give you additional information.
+
 ![Lineup - Set pieces](images/lineup01.jpg)
 
 There are several symbols available:
@@ -48,37 +61,58 @@ Some fine tuning options are available for the lineup module in the extension op
 
  - Composure treshold can be used to fine tune which players will display the composure symbol - the composure treshold defines the penalty kick value above which the symbol will be shown. For instance, you would assume that your defensive midfielder with awful scoring should not show the composure symbol, however if he has awesome passing he may be considered for taking a penalty in which case the composure symbol next to his name would still be useful.
  - Arrogance treshold can be used to fine tune which players will displaye the arrogance symbol - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will appear next to his name. It's defined like this for two reaosns: for your senior or youth teams you may want to set a different treshold because the skill difference is usually significant, and for the substitute players we don't know which of them are coming in as defenders, so linking it to DP skill allows for narrowing it down and showing the arrogance symbol only for the relevant subs.
+ 
+Form version **1.4.0** the recommended penalty takers are available. The extension calculates the penalty kick skill for the players in the lineup and recommends the best takers to you. It also takes into account composure personality as the players with positive composure have better chance of shooting on target. Players with negative composure are not recommended by this extension. Normally the extension should recommend 5 players:
+ 
+![Recommended penalty takers](images/lineup02.jpg)
+ 
+In the image you can see that the player with positive composure is prioritised over another player with identical penalty kick skill. Note that players with penalty kick skill below the composure treshold setting (you can adjust this in the extension options) will not be recommended. This may lead to a situation that you have less than 5 recommendations:
+ 
+![Recommended penalty takers youth](images/lineup03.jpg)
+  
+If you feel like one of your players is missing in the recommended set, make sure you visit his page to make sure the extension saves his data, otherwise he is not taken into account during calculations.
+
+## Match module
+Match module gathers the data about injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Currently the quick matches and friendlies are ignored since, to my understanding, they don't contribute to injuries. **For the match module to work correctly you need to visit the match report and switch the lineups from starting to finishing**. [Go to Player module section](#player-module) to see how the data gathered in the match module is utilized there to display the additional information about injuries and minutes played by your players.
 
 ## Player module
 Player module adds additional row for the midfield dominance calculation in the computed properties table on the player page. It shows both current and potential midfield dominance contribution of a player. If you hover over the numeric values you will see the formulas that are used for calculations.
+
 ![Player module](images/player.jpg)
 
-As of version **1.1.0** the special talents are **not** taken into account, so keep that in mind that it's not 100% accurate yet.
-In version **1.2.0** the tooltips were added to the computed skills table, explaining the formulas used for calculations.
+Note that special talents are **not** taken into account yet.
+In version **1.2.0** the tooltips were added to the computed skills table, explaining the formulas used for calculations. Later in version **1.4.0** the tooltips were standardized to look more like native FW tooltips. They now appear on the right of the table and should not obstruct anything else.
+
 ![Player module tooltips](images/player_01.jpg)
+
+From version **1.4.0** the injuries and minutes played functionality is available:
+
+![Player module tooltips](images/player_02.jpg)
+
+For this to work correctly you need to make sure to visit as many match reports as you can and always switch the lineup from starting to finishing, only then the information about injuries and minutes played are visible. Rememeber that this is not the exact value used in the game but rather an estimation based on assumptions and approximations. For instance, I assume that in the game where a player gets injuried all the minutes are counted towards the minutes before that injury, even though it is likely that the player continues to play with the injury until the end of the match. Nevertheless I feel this should still give us pretty good idea about how many minutes a player can usually play before getting injuried, and plan our season accordingly.
 
 ## Players module
 The main idea behind the players module is to show the midfield dominance on your squad page. In addition it also shows the long shot ability and midfield dominance when in advanced position (**L/RW**, **OM**, **DM**). If you hover over the numeric values you will see the formulas that are used for calculations.
+
 ![Players module](images/players.jpg)
 
 ## Row Highlight module
 Row highlight allows you to highlight any row on your or your opponent squad page. It can be useful when analyzing lineups for the upcoming games.
+
 ![Row Highlight module](images/row_highlight.jpg)
 
 ## Tags module
 Tags module makes player tags much bigger and allows you to customize tag colors. The original game interface is not ideal, in my opinion, when it comes to tags size and the color selection. With the tags module you get the ability to choose the colors that are more suitable to your needs - do this in the extension options. The tags on the squad sceen and on the training screen are affected.
+
 ![Tags on the squad screen](images/tags01.jpg)
 ![Tags on the training screen](images/tags02.jpg)
 
 ## Version history
 ### 1.4.0 - current version
- - Implemented minutes played, optimized saving to storage
- - Implemented a nice display for the recent injuries on the player page
- - Updated the match module to only save the injuries for own players, and added showing injuries to the player module
+ - Moved options to the storage.sync, implemented the player data field on the options screen for convenient local data backup
+ - Added injuries and minutes played to the player module
  - Implemented recommended penalty takers functionality
- - Saving player personalities to storage without destroying what can potentially already be there
- - Added the match module
- - Transitioned to storage.sync and started storing all the player data under one key in storage
+ - Added the match module, it saves the injuries and minutes played for own players only, ignoring friendlies and quick matches for match analyses
  - Fixed the empty folder icon not disappearing when the player data is read in another tab and the table updates
  - Fixed inconsistent tooltips in the player module
 ### 1.3.1

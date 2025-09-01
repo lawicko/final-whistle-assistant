@@ -128,7 +128,7 @@ function proposePenaltyTakers(takers) {
     proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
     const questionMarkSpan = document.createElement("span")
     questionMarkSpan.textContent = "\uf29c"
-    questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+    questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
     targetHeader.parentNode.after(proposedPenaltyTakersHeader);
 }
