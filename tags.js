@@ -5,7 +5,8 @@ console.log(`${new Date().toLocaleString()} ${tagsModulePrefix}: tags.js script 
 async function applyCustomColorsForTags() {
   try {
     // Load colors from storage (with defaults)
-    const { colors = {} } = await storage.get("colors");
+    const optionsStorage = browser.storage.sync;
+    const { colors = {} } = await optionsStorage.get("colors");
 
     // Option 1: Inline styles for existing elements
     // document.querySelectorAll("i.denom3").forEach(el => {

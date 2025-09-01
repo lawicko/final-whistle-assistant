@@ -229,20 +229,80 @@ function getLastPathComponent(removeExtension = false) {
     return last;
 }
 
+function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
+    console.debug("***************** minutesPlayedBetween *****************")
+    const dateMap = new Map(
+        Object.entries(minutesPlayed).map(([dateStr, value]) => [
+            new Date(dateStr),  // key = Date
+            parseInt(value, 10) // value = integer
+        ])
+    );
+    console.debug("dateMap: ", dateMap)
+    
+    const injuryDates = injurDatesAsStrings.map(str => new Date(str));
+    console.debug("injuryDates: ", injuryDates)
+    
+    var results = []
+    var previousInjuryDate = new Date()
+    for (const injuryDate of injuryDates) {
+        console.debug("Processing injury date: ", injuryDate)
+        var sum = 0
+        
+        for (const [date, minutes] of dateMap.entries()) {
+            console.debug("Found ", minutes, " played on ", date)
+            console.debug("Checking if ", date, " is between ", injuryDate, "and", previousInjuryDate)
+            if (date > injuryDate && date <= previousInjuryDate) {
+                sum += minutes
+                console.debug("It is, new sum: ", sum)
+            } else {
+                console.debug("It is not, skipping...")
+            }
+        }
+        results.push(sum)
+        previousInjuryDate = injuryDate
+    }
+    
+    const firstKnownInjuryDate = injuryDates[injuryDates.length - 1]
+    var sum = 0
+    for (const [date, minutes] of dateMap.entries()) {
+        if (date <= firstKnownInjuryDate) {
+            sum += minutes
+        }
+    }
+    results.push(sum)
+    
+    return results
+}
+
 async function showInjuries() {
     const playerID = getLastPathComponent()
-    const playerDataFromStorage = await browser.storage.sync.get('player-data');
+    const playerDataFromStorage = await storage.get('player-data');
     var loadedPlayerData = playerDataFromStorage['player-data'] || {};
     console.debug('loadedPlayerData = ', loadedPlayerData)
     var currentPlayerData = loadedPlayerData[playerID] || {};
     console.debug('currentPlayerData = ', currentPlayerData)
-    var injuries = currentPlayerData['injuries'];
+    const injuries = currentPlayerData['injuries']
+//    const injuries = ["29 Aug 2025, 12:00", "27 Aug 2025, 12:00", "15 Aug 2025, 12:00"]
+    const minutesPlayed = currentPlayerData['minutes-played']
     
     if (injuries && injuries.length > 0) {
         console.debug("injuries for player: ", injuries)
         
-        const tableContainer = document.querySelector('div.col-lg-4')
-        if (!tableContainer) { return }
+        // Calculate minutes played since last injury
+        const minutes = minutesPlayedBetween(minutesPlayed, injuries)
+        console.debug('Minutes played between injuries: ', minutes)
+        
+        const sisterTable = document.querySelector('div.card-body table')
+        if (!sisterTable) { return }
+        const tableContainer = sisterTable.parentNode
+        console.debug("tableContainer: ", tableContainer)
+        
+        if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
+            const span = document.createElement('span')
+            span.id = 'minutes-since-last-injury'
+            span.textContent = `Minutes since last injury: ${minutes[0]}`
+            tableContainer.appendChild(span)
+        }
         
         if (!tableContainer.querySelector("table#injury-table")) {
             const table = document.createElement('table')
@@ -252,22 +312,16 @@ async function showInjuries() {
             table.classList.add('table-fw')
             const headerRow = document.createElement('tr')
             headerRow.classList.add('summary-row')
-            const headerCell = document.createElement('th')
-            
-            // For testing multiple rows
-//            const i = injuries[0]
-//            injuries.push(i)
-//            injuries.push(i)
-//            injuries.push(i)
+            const headerCellRecentInjuries = document.createElement('th')
             
             if (injuries.length > 1) {
                 const disclosureSpan = document.createElement('span')
                 disclosureSpan.classList.add('disclosure')
                 disclosureSpan.textContent = '▶'
-                headerCell.appendChild(disclosureSpan)
+                headerCellRecentInjuries.appendChild(disclosureSpan)
                 
                 // append text without nuking the span
-                headerCell.appendChild(document.createTextNode(' Recent injuries'))
+                headerCellRecentInjuries.appendChild(document.createTextNode(' Recent injuries'))
                 
                 headerRow.addEventListener('click', () => {
                     const disclosure = headerRow.querySelector('.disclosure');
@@ -285,13 +339,22 @@ async function showInjuries() {
                     disclosure.classList.toggle('open', !isOpen);
                 });
             } else {
-                headerCell.appendChild(document.createTextNode('Recent injuries'))
+                headerCellRecentInjuries.appendChild(document.createTextNode('Recent injuries'))
             }
+            const headerCellMinutes = document.createElement('th')
+            headerCellMinutes.classList.add('table-header-minutes')
+            const questionMarkSpan = document.createElement("span")
+            questionMarkSpan.textContent = " \uf29c"
+            questionMarkSpan.title = "Indicates how many minutes the player has played until he sustained the injury (or until the extension started collecting data)"
+            headerCellMinutes.appendChild(document.createTextNode('Minutes'))
+            headerCellMinutes.appendChild(questionMarkSpan)
             
-            headerRow.appendChild(headerCell)
+            headerRow.appendChild(headerCellRecentInjuries)
+            headerRow.appendChild(headerCellMinutes)
             table.appendChild(headerRow)
             
-            for (const injury of injuries) {
+            for (let i = 0; i < injuries.length; i++) {
+                const injury = injuries[i]
                 const row = document.createElement('tr')
                 if (table.querySelector('td')) {
                     row.classList.add('details-row')
@@ -301,6 +364,17 @@ async function showInjuries() {
                 const cell = document.createElement('td')
                 cell.textContent = injury
                 row.appendChild(cell)
+                
+                const index = i + 1
+                if (index < minutes.length) {
+                    console.debug("Value exists:", minutes[index]);
+                    const cell = document.createElement('td')
+                    cell.textContent = minutes[index]
+                    row.appendChild(cell)
+                } else {
+                    console.debug("No value at this index: ", index);
+                }
+                
                 table.appendChild(row)
             }
             tableContainer.appendChild(table)
@@ -374,20 +448,20 @@ function getPlayerData() {
 }
 
 async function saveToStorage(clubData, playerData) {
-    console.info(`Will save personalities for playerID = ${playerData.playerID}`);
-    const playerDataFromStorage = await browser.storage.sync.get('player-data');
+    console.debug(`Will save personalities for playerID = ${playerData.playerID}`);
+    const playerDataFromStorage = await storage.get('player-data');
     var loadedPlayerData = playerDataFromStorage['player-data'] || {};
-    console.info('loadedPlayerData = ', loadedPlayerData)
+    console.debug('loadedPlayerData = ', loadedPlayerData)
     var currentPlayerData = loadedPlayerData[playerData.playerID] || {};
-    console.info('currentPlayerData = ', currentPlayerData)
-    currentPlayerData['personalities'] = JSON.stringify(playerData.personalities)
+    console.debug('currentPlayerData = ', currentPlayerData)
+    currentPlayerData['personalities'] = playerData.personalities
     loadedPlayerData[playerData.playerID] = currentPlayerData
     
     const preparedForSaving = {
         club: clubData,
         "player-data": loadedPlayerData
     }
-    console.info('preparedForSaving: ', preparedForSaving)
+    console.debug('preparedForSaving: ', preparedForSaving)
     
     await storage.set(preparedForSaving)
     console.info(`Saved to storage: personalities for playerID: ${playerData.playerID} and club data: `, clubData);
@@ -521,5 +595,14 @@ addCSS(`
     /* Rotates arrow when open */
     .disclosure.open {
         transform: rotate(90deg);
+    }
+
+    th.table-header-minutes span {
+        cursor: help;
+        font: 14px/1 FontAwesome;
+    }
+    
+    span#minutes-since-last-injury {
+        font-size: .9rem;
     }
 `)

@@ -13,7 +13,7 @@ if (typeof browser == "undefined") {
 
 // Use chrome.storage.sync or chrome.storage.local
 // (sync lets settings follow user across devices)
-const storage = browser.storage.sync;
+const storage = browser.storage.local;
 
 const addCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css
 

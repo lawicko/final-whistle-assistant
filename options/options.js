@@ -5,7 +5,7 @@ if (typeof browser == "undefined") {
 
 // Use chrome.storage.sync or chrome.storage.local
 // (sync lets settings follow user across devices)
-const storage = browser.storage.sync;
+const optionsStorage = browser.storage.sync;
 
 // Save settings when changed
 function saveOptions() {
@@ -34,14 +34,14 @@ function saveOptions() {
     };
 
     // Save both to storage
-    storage.set({ modules, colors, tresholds}, () => {
+    optionsStorage.set({ modules, colors, tresholds}, () => {
         console.log("Options saved", { modules, colors, tresholds});
     });
 }
 
 // Restore settings when page is opened
-function restoreOptions() {
-    storage.get(["modules", "colors", "tresholds"], (result) => {
+async function restoreOptions() {
+    optionsStorage.get(["modules", "colors", "tresholds"], (result) => {
         if (result.modules) {
             Object.keys(result.modules).forEach((key) => {
                 const el = document.getElementById(key);
@@ -63,6 +63,28 @@ function restoreOptions() {
             });
         }
     });
+    
+    // Handling the player data
+    const textarea = document.getElementById("playerData");
+    const saveBtn = document.getElementById("saveBtn");
+
+    // Load existing player-data from storage
+    const stored = await browser.storage.local.get("player-data");
+    console.info("store: ", stored)
+    textarea.value = stored["player-data"]
+        ? JSON.stringify(stored["player-data"], null, 2)  // formatted JSON
+        : "{}"; // default empty object
+
+    // Save back to storage
+    saveBtn.addEventListener("click", async () => {
+        try {
+            const parsed = JSON.parse(textarea.value); // make sure it's valid JSON
+            await browser.storage.local.set({ "player-data": parsed });
+            alert("Player data saved!");
+        } catch (e) {
+            alert("Invalid JSON, please fix it before saving.");
+        }
+    })
 }
 
 // Add listeners to inputs

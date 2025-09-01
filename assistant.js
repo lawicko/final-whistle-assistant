@@ -3,7 +3,7 @@ if (typeof browser == "undefined") {
     globalThis.browser = chrome;
 }
 
-const storage = browser.storage.sync
+const optionsStorage = browser.storage.sync
 
 const pattern1 = "*://*.finalwhistle.org/*";
 
@@ -74,7 +74,7 @@ async function loadModules(tabId, url) {
     loadedMap.set(tabId, false)
 
     async function start() {
-        const result = await storage.get(["modules", "colors", "tresholds"]);
+        const result = await optionsStorage.get(["modules", "colors", "tresholds"]);
         const modules = result.modules || {};
 
         await executeScript(tabId, "constants.js")
@@ -149,7 +149,7 @@ const defaultOptions = {
 
 async function handleInstalled(details) {
     console.log(`handleInstalled reason: ${details.reason}`);
-    const { modules = {}, colors = {}, tresholds = {} } = await storage.get(["modules", "colors", "tresholds"]);
+    const { modules = {}, colors = {}, tresholds = {} } = await optionsStorage.get(["modules", "colors", "tresholds"]);
     for (const key in defaultOptions.modules) {
         if (!(key in modules)) {
             console.info(`Found a missing key (${key}) in the modules loaded from storage, assigned the value from the default modules (${defaultOptions.modules[key]})`)
@@ -157,7 +157,7 @@ async function handleInstalled(details) {
         }
     }
     console.info("Saving modules", modules)
-    storage.set({ modules: modules }, () => {
+    optionsStorage.set({ modules: modules }, () => {
         console.info("Modules saved", { modules });
     });
     
@@ -167,7 +167,7 @@ async function handleInstalled(details) {
             colors[key] = defaultOptions.colors[key];
         }
     }
-    storage.set({ colors: colors }, () => {
+    optionsStorage.set({ colors: colors }, () => {
         console.info("Colors saved", { colors });
     });
     
@@ -177,7 +177,7 @@ async function handleInstalled(details) {
             tresholds[key] = defaultOptions.tresholds[key];
         }
     }
-    storage.set({ tresholds: tresholds }, () => {
+    optionsStorage.set({ tresholds: tresholds }, () => {
         console.info("Tresholds saved", { tresholds });
     });
 }

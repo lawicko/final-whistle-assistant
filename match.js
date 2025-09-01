@@ -9,7 +9,16 @@ async function processMatch() {
     if (dateElement && dateElement.textContent && homeTeamElement && homeTeamElement.textContent && guestTeamElement && guestTeamElement.textContent) {
         console.info('=============================== Processing match from', dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', guestTeamElement.textContent.trim(), '===============================')
     } else {
-        return // page not yet loaded
+        console.info(`=============================== Match processing finished, page not loaded yet ===============================`);
+        return
+    }
+    
+    const competitionSymbol = document.querySelector('div[touranchor="match.header"] div.card-body small > i.bi-trophy')
+    const competitionNameTextValue = competitionSymbol.parentNode.nextElementSibling.textContent
+    const competitionName = competitionNameTextValue.replace(/^[A-Za-z]\s*/, "").trim();
+    if (competitionName == "Friendly" || competitionName == "Quick match") {
+        console.info(`=============================== Match processing finished, skipping the ${competitionName} ===============================`);
+        return
     }
     
     const result = await storage.get('club')
@@ -31,12 +40,16 @@ async function processMatch() {
         const thisClubName = link.textContent.trim()
         return thisClubID === clubID && thisClubName === clubName
     })[0]
+    if (!ownLineupContainer) { // not our match, skip
+        console.info(`=============================== Match processing finished, not our own match ===============================`);
+        return
+    }
     console.debug('ownLineupContainer: ', ownLineupContainer)
     
     const ownPlayers = ownLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
     console.debug('ownPlayers: ', ownPlayers)
 
-    const playerDataFromStorage = await browser.storage.sync.get('player-data');
+    const playerDataFromStorage = await storage.get('player-data');
     var loadedPlayerData = playerDataFromStorage['player-data'] || {};
     console.debug('initial loadedPlayerData = ', loadedPlayerData)
     
@@ -80,7 +93,7 @@ function processInjuries(loadedPlayerData, players, date) {
 }
 
 function saveInjuriesToStorage(loadedPlayerData, playerIDs, date) {
-    console.info('saveInjuriesToStorage for playerIDs: ', playerIDs, ' date: ', date)
+    console.debug('saveInjuriesToStorage for playerIDs: ', playerIDs, ' date: ', date)
     console.debug('inside saveInjuriesToStorage: ', loadedPlayerData)
     
     for (const playerID of playerIDs) {
@@ -115,7 +128,7 @@ function processMinutesPlayed(loadedPlayerData, players, date) {
         console.debug('Did not find any playing players, maybe the starting lineups are displayed?')
         return false
     }
-    console.info('Found these playing players: ', playing)
+    console.debug('Found these playing players: ', playing)
     
     var minutesPlayedDictionary = {}
     for (const playerElement of playing) {
@@ -142,7 +155,7 @@ function processMinutesPlayed(loadedPlayerData, players, date) {
 }
 
 function saveMinutesPlayedToStorage(loadedPlayerData, minutesPlayed) {
-    console.info('saving minutesPlayed: ', minutesPlayed)
+    console.debug('saving minutesPlayed: ', minutesPlayed)
     
     for (const [key, value] of Object.entries(minutesPlayed)) {
         var currentPlayerData = loadedPlayerData[key] || {};

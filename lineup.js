@@ -62,13 +62,7 @@ async function loadValuesForComponents(components) {
         const raw = result[key];
         if (!raw) return null; // missing key
         
-        try {
-            raw['personalities'] = JSON.parse(raw['personalities'])
-            return raw
-        } catch (e) {
-            console.warn(`Failed to parse JSON for key "${key}":`, raw);
-            return null; // fallback if JSON invalid
-        }
+        return raw
     });
 }
 
@@ -146,7 +140,7 @@ async function processLineup() {
     const lastParts = hrefs.map(lastPathComponent);
     console.debug(lastParts)
     const profiles = await loadValuesForComponents(lastParts);
-    console.debug(profiles)
+    console.debug('Profiles: ', profiles)
     
     // Load tresholds from storage
     const { tresholds = {} } = await storage.get("tresholds");
@@ -198,7 +192,7 @@ async function processLineup() {
                 }
             });
         }
-        console.debug(`Found profile for ${name}, applying...`)
+        console.debug(`Found profile for ${name}, applying `, profile['personalities'])
         const leadership = profile['personalities']['leadership']
         const composure = profile['personalities']['composure']
         const arrogance = profile['personalities']['arrogance']
