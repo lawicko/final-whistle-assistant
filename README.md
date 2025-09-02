@@ -83,13 +83,17 @@ Player module adds additional row for the midfield dominance calculation in the 
 Note that special talents are **not** taken into account yet.
 In version **1.2.0** the tooltips were added to the computed skills table, explaining the formulas used for calculations. Later in version **1.4.0** the tooltips were standardized to look more like native FW tooltips. They now appear on the right of the table and should not obstruct anything else.
 
-![Player module tooltips](images/player_01.jpg)
+![Player module tooltips](images/player01.png)
 
 From version **1.4.0** the injuries and minutes played functionality is available:
 
-![Player module tooltips](images/player_02.jpg)
+![Player module tooltips](images/player02.png)
 
 For this to work correctly you need to make sure to visit as many match reports as you can and always switch the lineup from starting to finishing, only then the information about injuries and minutes played are visible. Rememeber that this is not the exact value used in the game but rather an estimation based on assumptions and approximations. For instance, I assume that in the game where a player gets injuried all the minutes are counted towards the minutes before that injury, even though it is likely that the player continues to play with the injury until the end of the match. Nevertheless I feel this should still give us pretty good idea about how many minutes a player can usually play before getting injuried, and plan our season accordingly.
+
+In case your player has not been injured, you will see how many minutes he played without injury:
+
+![Player module tooltips](images/player03.png)
 
 ## Players module
 The main idea behind the players module is to show the midfield dominance on your squad page. In addition it also shows the long shot ability and midfield dominance when in advanced position (**L/RW**, **OM**, **DM**). If you hover over the numeric values you will see the formulas that are used for calculations.

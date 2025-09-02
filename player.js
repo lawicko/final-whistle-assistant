@@ -229,6 +229,13 @@ function getLastPathComponent(removeExtension = false) {
     return last;
 }
 
+function sumMinutes(minutesPlayed) {
+    const sum = Object.values(minutesPlayed)
+      .map(Number)              // convert strings like "54" → number 54
+      .reduce((a, b) => a + b, 0);
+    return sum
+}
+
 function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
     console.debug("***************** minutesPlayedBetween *****************")
     const dateMap = new Map(
@@ -285,17 +292,16 @@ async function showInjuries() {
 //    const injuries = ["29 Aug 2025, 12:00", "27 Aug 2025, 12:00", "15 Aug 2025, 12:00"]
     const minutesPlayed = currentPlayerData['minutes-played']
     
+    const sisterTable = document.querySelector('div.card-body table')
+    if (!sisterTable) { return }
+    const tableContainer = sisterTable.parentNode
+    console.debug("tableContainer: ", tableContainer)
     if (injuries && injuries.length > 0) {
         console.debug("injuries for player: ", injuries)
         
         // Calculate minutes played since last injury
         const minutes = minutesPlayedBetween(minutesPlayed, injuries)
         console.debug('Minutes played between injuries: ', minutes)
-        
-        const sisterTable = document.querySelector('div.card-body table')
-        if (!sisterTable) { return }
-        const tableContainer = sisterTable.parentNode
-        console.debug("tableContainer: ", tableContainer)
         
         if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
             const span = document.createElement('span')
@@ -378,6 +384,14 @@ async function showInjuries() {
                 table.appendChild(row)
             }
             tableContainer.appendChild(table)
+        }
+    } else {
+        const minutesWithoutInjury = sumMinutes(minutesPlayed)
+        if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
+            const span = document.createElement('span')
+            span.id = 'minutes-since-last-injury'
+            span.textContent = `Minutes without injury: ${minutesWithoutInjury}`
+            tableContainer.appendChild(span)
         }
     }
 }
