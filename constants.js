@@ -15,6 +15,10 @@ if (typeof browser == "undefined") {
 // (sync lets settings follow user across devices)
 const storage = browser.storage.local;
 
+function isString(value) {
+    return typeof value === "string" || value instanceof String
+}
+
 const addCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css
 
 console.log(`${new Date().toLocaleString()} ${constantsModulePrefix}: constants.js script loaded...`)

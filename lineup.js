@@ -133,6 +133,28 @@ function proposePenaltyTakers(takers) {
     targetHeader.parentNode.after(proposedPenaltyTakersHeader);
 }
 
+function addNoDataSymbol(container) {
+    const hasNoDataSymbol = Array.from(container.children).some(
+        child => child.textContent.trim() === "📂"
+    );
+
+    if (!hasNoDataSymbol) {
+        const statusSpan = document.createElement("span");
+        statusSpan.textContent = " 📂";
+        statusSpan.title = "No data, visit this player's page to load the necessary data";
+        container.appendChild(statusSpan);
+    }
+}
+
+function removeNoDataSymbol(container) {
+    const spans = container.querySelectorAll("span");
+    spans.forEach(span => {
+        if (span.textContent.trim() === "📂") {
+            span.remove();
+        }
+    });
+}
+
 async function processLineup() {
     const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
@@ -168,35 +190,38 @@ async function processLineup() {
             console.warning('No non-empty span found - unable to determine the player name :(');
         }
         
+        const container = pLinks[i].parentNode.parentNode.parentNode
         if (profile === null) {
             console.debug(`No profile saved in storage for ${name}, skipping...`)
+            addNoDataSymbol(container)
+            continue
+        } else {
+            removeNoDataSymbol(container)
+        }
+        
+        var personalities = profile['personalities']
+        
+        if (!personalities) {
+            console.debug(`No personalities in player profile for ${name}, skipping...`)
             
-            const hasNoDataSymbol = Array.from(pLinks[i].parentNode.parentNode.parentNode.children).some(
-              child => child.textContent.trim() === "📂"
-            );
-            
-            if (!hasNoDataSymbol) {
-                const statusSpan = document.createElement("span");
-                statusSpan.textContent = " 📂"
-                statusSpan.title = "No data, visit this players page to load the necessary data";
-                pLinks[i].parentNode.parentNode.parentNode.appendChild(statusSpan)
-            }
+            addNoDataSymbol(container)
             
             continue
         } else {
-            const spans = pLinks[i].parentNode.parentNode.parentNode.querySelectorAll("span");
-            
-            spans.forEach(span => {
-                if (span.textContent.trim() === "📂") {
-                    span.remove();
-                }
-            });
+            removeNoDataSymbol(container)
         }
-        console.debug(`Found profile for ${name}, applying `, profile['personalities'])
-        const leadership = profile['personalities']['leadership']
-        const composure = profile['personalities']['composure']
-        const arrogance = profile['personalities']['arrogance']
-        const sportsmanship = profile['personalities']['sportsmanship']
+        
+        // compatibility with 1.3.1 and older
+        if (isString(personalities)) {
+            console.info("Applying compatibility with <1.3.1 extension version, personalities are processed into objects")
+            personalities = JSON.parse(personalities)
+        }
+        
+        console.debug(`Found profile for ${name}, applying personalities: `, personalities)
+        const leadership = personalities['leadership']
+        const composure = personalities['composure']
+        const arrogance = personalities['arrogance']
+        const sportsmanship = personalities['sportsmanship']
         
         if (leadership) {
             applyLeadership(pLinks[i], profile['personalities']['leadership'])
@@ -220,6 +245,7 @@ async function processLineup() {
             const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
             const composure_treshold = tresholds['composure_treshold'] ?? 50
             if (composure) {
+                console.debug(`comparing penaltyKick ${penaltyKick} with composure_treshold ${composure_treshold}`)
                 if (penaltyKick > composure_treshold) {
                     if (composure > 0) {
                         console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, composure ${composure} > 0, setting reasonablePenaltyKick to true`);
@@ -283,20 +309,7 @@ async function processLineup() {
         }
         
         if (sportsmanship) {
-//            // First check if on a defensive position
-//            // Get all siblings
-//            const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
-//
-//            // Check if any sibling has a <span> with the class "defence-zone"
-//            const hasSiblingWithSpan = siblings.some(sib => sib.querySelector('span.defence-zone') !== null);
-//            const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
-//            
-//            if (hasSiblingWithSpan || isSub) {
-//              console.debug(`applying sportsmanship: ${sportsmanship} to ${name}`)
-              applySportsmanship(pLinks[i], sportsmanship)
-//            } else {
-//              console.log('Has sportsmanship in profile, but not in the defence zone and not a substitute, skipping...');
-//            }
+            applySportsmanship(pLinks[i], sportsmanship)
         }
     }
     
