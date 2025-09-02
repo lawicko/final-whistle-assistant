@@ -386,7 +386,10 @@ async function showInjuries() {
             tableContainer.appendChild(table)
         }
     } else {
-        const minutesWithoutInjury = sumMinutes(minutesPlayed)
+        var minutesWithoutInjury = 0
+        if (minutesPlayed) {
+            minutesWithoutInjury = sumMinutes(minutesPlayed)
+        }
         if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
             const span = document.createElement('span')
             span.id = 'minutes-since-last-injury'
