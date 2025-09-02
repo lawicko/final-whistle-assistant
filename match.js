@@ -104,7 +104,7 @@ function saveInjuriesToStorage(loadedPlayerData, playerIDs, date) {
         // can't just push, because the match reports can be viewed in random order
         injuries.push(date)
         const dates = injuries.map(s => new Date(s));
-        dates.sort((a, b) => a - b);
+        dates.sort((a, b) => b - a);
         const storageReady = dates.map(d =>
                                        d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
                                        );

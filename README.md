@@ -73,7 +73,9 @@ In the image you can see that the player with positive composure is prioritised 
 If you feel like one of your players is missing in the recommended set, make sure you visit his page to make sure the extension saves his data, otherwise he is not taken into account during calculations.
 
 ## Match module
-Match module gathers the data about injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Currently the quick matches and friendlies are ignored since, to my understanding, they don't contribute to injuries. **For the match module to work correctly you need to visit the match report and switch the lineups from starting to finishing**. [Go to Player module section](#player-module) to see how the data gathered in the match module is utilized there to display the additional information about injuries and minutes played by your players.
+Match module gathers the data about injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Currently the quick matches and friendlies are ignored since, to my understanding, they don't contribute to injuries. **For the match module to work correctly you need to visit the match report and switch the lineups from starting to finishing**.
+
+[Go to Player module section](#player-module) to see how the data gathered in the match module is utilized there to display the additional information about injuries and minutes played by your players.
 
 ## Player module
 Player module adds additional row for the midfield dominance calculation in the computed properties table on the player page. It shows both current and potential midfield dominance contribution of a player. If you hover over the numeric values you will see the formulas that are used for calculations.
@@ -94,6 +96,10 @@ For this to work correctly you need to make sure to visit as many match reports 
 In case your player has not been injured, you will see how many minutes he played without injury:
 
 ![Player module tooltips](images/player03.png)
+
+In case your player has been injuried multiple times, the section becomes expandable, just click on it and it will reveal all the injries and minutes. You can see that with enough data we can start to draw some conclusions on how when the next injury is likely to come:
+
+![Player module tooltips](images/player04.png)
 
 ## Players module
 The main idea behind the players module is to show the midfield dominance on your squad page. In addition it also shows the long shot ability and midfield dominance when in advanced position (**L/RW**, **OM**, **DM**). If you hover over the numeric values you will see the formulas that are used for calculations.
