@@ -22,13 +22,13 @@ Similarly this is the settings page on the Chromium browsers
 
 Use it to enable/disable modules you like. Remember to reload the Final Whistle website for the changes to take effect.
 
-Starting with version **1.4.0** the new setting for player data was added:
+Starting with version **2.0.0** the new setting for player data was added:
 
 ![Player data](images/options_player_data.png)
 
 This setting can be used to backup your player data. Player data is all the data you gathered by visiting you players pages, match reports etc. You build this over time by browsing the game website. The extension works best if you visit all the match reports of your team that you can (switching the lineup from starting to finishing) and all the players that you have on your team. This allows the extension to visualize the injuries, minutes played, suggest penalty takers etc. Once you do all that you don't want this data to be lost - this is why I added this additional option. I recommend you do the following: once you visit all the match reports and player pages, got to the settings and copy the content of this new field into a file, and store it somewhere safe - for example Dropbox or another cloud storage service. This way you are sure that if something goes wrong and you loose the data, you can always resotre it from backup. To do that you can paste the contet of your backup directly into the new field and press the save button below. This is also useful for moving your data across browsers (Firefox and Chromium) or different machines.
 
-One more improvement in **1.4.0** is that all the settings except player data now use storage.sync. This means that the information about used modules, colors and tresholds will be carried over to other instances of this browser when you log in there with your account. For example, if you use Firefox and are logged into your Firefox account, you can then install Firefox on another machine and log in there, and your settings will automatically be restored there when the extension is installed.
+One more improvement in **2.0.0** is that all the settings except player data now use storage.sync. This means that the information about used modules, colors and tresholds will be carried over to other instances of this browser when you log in there with your account. For example, if you use Firefox and are logged into your Firefox account, you can then install Firefox on another machine and log in there, and your settings will automatically be restored there when the extension is installed.
 
 ## Academy Buttons module
 The goal of this module is to move the **Hire** and **Fire** buttons apart to prevent accidental missclicks. It was inspired by one of the posts from the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103)
@@ -59,10 +59,10 @@ Some fine tuning options are available for the lineup module in the extension op
 
 ![Firefox lineup settings](images/lineup_options.jpg)
 
- - Composure treshold can be used to fine tune which players will display the composure symbol - the composure treshold defines the penalty kick value above which the symbol will be shown. For instance, you would assume that your defensive midfielder with awful scoring should not show the composure symbol, however if he has awesome passing he may be considered for taking a penalty in which case the composure symbol next to his name would still be useful. As of version **1.4.0** composure treshold is also used for recommending the penalty takers - essentially the extension will only recommend the players with the penalty kick computed skill value higher than the composure treshold you set in options.
+ - Composure treshold can be used to fine tune which players will display the composure symbol - the composure treshold defines the penalty kick value above which the symbol will be shown. For instance, you would assume that your defensive midfielder with awful scoring should not show the composure symbol, however if he has awesome passing he may be considered for taking a penalty in which case the composure symbol next to his name would still be useful. As of version **2.0.0** composure treshold is also used for recommending the penalty takers - essentially the extension will only recommend the players with the penalty kick computed skill value higher than the composure treshold you set in options.
  - Arrogance treshold can be used to fine tune which players will display the arrogance symbol - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will appear next to his name. It's defined like this for two reasons: for your senior or youth teams you may want to set a different treshold because the skill difference is usually significant, and for the substitute players we don't know which of them are coming in as defenders, so linking it to DP skill allows for narrowing it down and showing the arrogance symbol only for the relevant subs.
  
-Form version **1.4.0** the recommended penalty takers are available. The extension calculates the penalty kick skill for the players in the lineup and recommends the best takers to you. It also takes into account composure personality as the players with positive composure have better chance of shooting on target. Players with negative composure are not recommended by the extension. Note that the extension has a very strong bias towards positive composure - it is possible that players with significantly lower penalty kick skill will be recommended instead of other players without composure trait, even though the other players penalty kick skill is much higher. Normally the extension should recommend 5 players:
+Form version **2.0.0** the recommended penalty takers are available. The extension calculates the penalty kick skill for the players in the lineup and recommends the best takers to you. It also takes into account composure personality as the players with positive composure have better chance of shooting on target. Players with negative composure are not recommended by the extension. Note that the extension has a very strong bias towards positive composure - it is possible that players with significantly lower penalty kick skill will be recommended instead of other players without composure trait, even though the other players penalty kick skill is much higher. Normally the extension should recommend 5 players:
  
 ![Recommended penalty takers](images/lineup02.jpg)
  
@@ -83,11 +83,11 @@ Player module adds additional row for the midfield dominance calculation in the 
 ![Player module](images/player.jpg)
 
 Note that special talents are **not** taken into account yet.
-In version **1.2.0** the tooltips were added to the computed skills table, explaining the formulas used for calculations. Later in version **1.4.0** the tooltips were standardized to look more like native FW tooltips. They now appear on the right of the table and should not obstruct anything else.
+In version **1.2.0** the tooltips were added to the computed skills table, explaining the formulas used for calculations. Later in version **2.0.0** the tooltips were standardized to look more like native FW tooltips. They now appear on the right of the table and should not obstruct anything else.
 
 ![Player module tooltips](images/player01.png)
 
-From version **1.4.0** the injuries and minutes played functionality is available:
+From version **2.0.0** the injuries and minutes played functionality is available:
 
 ![Player module tooltips](images/player02.png)
 
@@ -118,7 +118,7 @@ Tags module makes player tags much bigger and allows you to customize tag colors
 ![Tags on the training screen](images/tags02.jpg)
 
 ## Version history
-### 1.4.0 - current version
+### 2.0.0 - current version
  - Moved options to the storage.sync, implemented the player data field on the options screen for convenient local data backup
  - Added injuries and minutes played to the player module
  - Implemented recommended penalty takers functionality
