@@ -97,7 +97,7 @@ In case your player has not been injured, you will see how many minutes he playe
 
 ![Player module tooltips](images/player03.png)
 
-In case your player has been injuried multiple times, the section becomes expandable, just click on it and it will reveal all the injries and minutes. You can see that with enough data we can start to draw some conclusions on how when the next injury is likely to come:
+In case your player has been injuried multiple times, the section becomes expandable, just click on it and it will reveal all the injries and minutes. You can see that with enough data we can start to draw some conclusions on when the next injury is likely to come:
 
 ![Player module tooltips](images/player04.png)
 
