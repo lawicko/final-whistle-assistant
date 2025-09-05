@@ -66,9 +66,137 @@ async function loadValuesForComponents(components) {
     });
 }
 
+function proposeAnchors(anchors) {
+    // Do we already have it?
+    if (document.querySelector('#proposed-anchors')) {
+        return
+    }
+    
+    // Find all h5 elements
+    const headers = document.querySelectorAll("h5");
+    
+    // Find the one with the text "Penalty Takers"
+    const targetHeader = Array.from(headers).find( h => h.textContent.trim() === "Player Selection" );
+    
+    if (!targetHeader) {
+        console.info("No Player Selection header, will try to find it when the page changes. ")
+        return
+    }
+    
+    const proposedAnchors = document.createElement("ol");
+    proposedAnchors.id = 'proposed-anchors'
+    console.debug('Will iterate anchors: ', anchors)
+    for (const anchor of anchors) {
+        console.debug('creating takerSpan')
+        var takerSpan = document.createElement('li')
+        takerSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
+        takerSpan.textContent = `${anchor.name} (${anchor.AE})`
+        console.debug('appending takerSpan to proposedAnchors')
+        proposedAnchors.appendChild(takerSpan)
+        
+        if (anchor.sportsmanship > 0) {
+            const sportsmanshipSpan = document.createElement("span");
+            sportsmanshipSpan.classList.add('sportsmanship')
+            sportsmanshipSpan.textContent = " ⚖\uFE0E"
+            switch (anchor.sportsmanship) {
+                case 1:
+                    sportsmanshipSpan.classList.add('positive');
+                    sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls.";
+                    break;
+                case 2:
+                    sportsmanshipSpan.classList.add('doublePositive');
+                    sportsmanshipSpan.title = "This players is a fair competitor with excellent sportsmanship, his actions rarely result in fouls.";
+                    break;
+                default:
+                    console.warn("Value is unexpected");
+            }
+            takerSpan.appendChild(sportsmanshipSpan)
+        }
+    }
+    
+    console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
+    const siblingWithAnchor = Array.from(targetHeader.parentNode.parentNode.children)
+    .find(sibling =>
+          sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Anchor"
+          );
+    
+    if (siblingWithAnchor) {
+        console.debug("Found sibling:", siblingWithAnchor);
+    } else {
+        console.warn("No matching sibling found, can't insert the recommended anchors");
+        return
+    }
+    
+    targetHeader.parentNode.parentNode.insertBefore(proposedAnchors, siblingWithAnchor)
+    
+    const proposedAnchorsHeader = document.createElement("h6");
+    proposedAnchorsHeader.id = 'proposed-anchors-header'
+    proposedAnchorsHeader.textContent = "Recommended anchors "
+    const questionMarkSpan = document.createElement("span")
+    questionMarkSpan.textContent = "\uf29c"
+    questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+    proposedAnchorsHeader.appendChild(questionMarkSpan)
+    
+    targetHeader.parentNode.parentNode.insertBefore(proposedAnchorsHeader, proposedAnchors)
+}
+
+// This may be used for both corners and free kicks, so we need to make a destinction when inserting the list
+function proposeCrossTakers(takers) {
+    // Do we already have it?
+    if (document.querySelector('#proposed-corner-takers')) {
+        return
+    }
+    
+    // Find all h5 elements
+    const headers = document.querySelectorAll("h5");
+    
+    // Find the one with the text "Penalty Takers"
+    const targetHeader = Array.from(headers).find( h => h.textContent.trim() === "Player Selection" );
+    
+    if (!targetHeader) {
+        console.info("No Player Selection header, will try to find it when the page changes. ")
+        return
+    }
+    
+    const proposedCrossTakers = document.createElement("ol");
+    proposedCrossTakers.id = 'proposed-corner-takers'
+    console.debug('Will iterate takers: ', takers)
+    for (const taker of takers) {
+        console.debug('creating takerSpan')
+        var takerSpan = document.createElement('li')
+        takerSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
+        takerSpan.textContent = `${taker.name} (${taker.cross})`
+        console.debug('appending takerSpan to proposedCrossTakers')
+        proposedCrossTakers.appendChild(takerSpan)
+    }
+    
+    console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
+    const siblingWithCornerKick = Array.from(targetHeader.parentNode.parentNode.children)
+    .find(sibling =>
+          sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Corner Kick"
+          );
+    
+    if (siblingWithCornerKick) {
+        console.debug("Found sibling:", siblingWithCornerKick);
+    } else {
+        console.warn("No matching sibling found, can't insert the recommended corner takers");
+        return
+    }
+    targetHeader.parentNode.parentNode.insertBefore(proposedCrossTakers, siblingWithCornerKick)
+    
+    const proposedCornerTakersHeader = document.createElement("h6");
+    proposedCornerTakersHeader.id = 'proposed-corner-takers-header'
+    proposedCornerTakersHeader.textContent = "Recommended corner takers "
+    const questionMarkSpan = document.createElement("span")
+    questionMarkSpan.textContent = "\uf29c"
+    questionMarkSpan.title = "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+    proposedCornerTakersHeader.appendChild(questionMarkSpan)
+    targetHeader.parentNode.parentNode.insertBefore(proposedCornerTakersHeader, proposedCrossTakers)
+}
+
 function proposePenaltyTakers(takers) {
     // Do we already have it?
-    if (document.querySelector('#proposed-penalty-takers')) {
+    if (document.querySelector('.proposed-penalty-takers-container') || document.querySelector('#proposed-penalty-takers')) {
         return
     }
         
@@ -83,54 +211,143 @@ function proposePenaltyTakers(takers) {
         return
     }
     
-    const proposedPenaltyTakers = document.createElement("ol");
-    proposedPenaltyTakers.id = 'proposed-penalty-takers'
-    console.debug('Will iterate takers.recommended: ', takers.recommended)
-    for (const taker of takers.recommended) {
-        console.debug('creating takerSpan')
-        var takerSpan = document.createElement('li')
-        takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-        takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
-        console.debug('appending takerSpan to proposedPenaltyTakers')
-        proposedPenaltyTakers.appendChild(takerSpan)
+    if (takers.other.length > 0) {
+        const proposedPenaltyTakersContainer = document.createElement("div")
+        proposedPenaltyTakersContainer.classList.add("proposed-penalty-takers-container")
         
-        if (taker.composure) {
-            const composureSpan = document.createElement("span");
-            composureSpan.classList.add('composure')
-            composureSpan.textContent = " ○"
-            switch (taker.composure) {
-                case -2:
-                    composureSpan.classList.add('doubleNegative');
-                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
-                    break;
-                case -1:
-                    composureSpan.classList.add('negative');
-                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
-                    break;
-                case 1:
-                    composureSpan.classList.add('positive');
-                    composureSpan.title = "This player has good composure, consider using him as penalty taker";
-                    break;
-                case 2:
-                    composureSpan.classList.add('doublePositive');
-                    composureSpan.title = "This player has excellent composure, use him as penalty taker";
-                    break;
-                default:
-                    console.warn("Value is unexpected");
+        const leftPanel = document.createElement("div")
+        leftPanel.classList.add("proposed-penalty-takers-panel")
+        
+        const rightPanel = document.createElement("div")
+        rightPanel.classList.add("proposed-penalty-takers-panel")
+        
+        proposedPenaltyTakersContainer.appendChild(leftPanel)
+        proposedPenaltyTakersContainer.appendChild(rightPanel)
+        
+        targetHeader.parentNode.after(proposedPenaltyTakersContainer)
+        
+        const proposedPenaltyTakers = document.createElement("ol");
+        proposedPenaltyTakers.id = 'proposed-penalty-takers'
+        console.debug('Will iterate takers.recommended: ', takers.recommended)
+        for (const taker of takers.recommended) {
+            console.debug('creating takerSpan')
+            var takerSpan = document.createElement('li')
+            takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+            takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            console.debug('appending takerSpan to proposedPenaltyTakers')
+            proposedPenaltyTakers.appendChild(takerSpan)
+            
+            if (taker.composure) {
+                const composureSpan = document.createElement("span");
+                composureSpan.classList.add('composure')
+                composureSpan.textContent = " ○"
+                switch (taker.composure) {
+                    case -2:
+                        composureSpan.classList.add('doubleNegative');
+                        composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
+                        break;
+                    case -1:
+                        composureSpan.classList.add('negative');
+                        composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
+                        break;
+                    case 1:
+                        composureSpan.classList.add('positive');
+                        composureSpan.title = "This player has good composure, consider using him as penalty taker";
+                        break;
+                    case 2:
+                        composureSpan.classList.add('doublePositive');
+                        composureSpan.title = "This player has excellent composure, use him as penalty taker";
+                        break;
+                    default:
+                        console.warn("Value is unexpected");
+                }
+                takerSpan.appendChild(composureSpan)
             }
-            takerSpan.appendChild(composureSpan)
         }
+        
+        const proposedPenaltyTakersHeader = document.createElement("h6");
+        proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
+        proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
+        const questionMarkSpan = document.createElement("span")
+        questionMarkSpan.textContent = "\uf29c"
+        questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+        proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
+        
+        leftPanel.appendChild(proposedPenaltyTakersHeader)
+        leftPanel.appendChild(proposedPenaltyTakers)
+        
+        // Add the other penalty takers to the right panel
+        const otherPenaltyTakers = document.createElement("ol");
+        otherPenaltyTakers.id = 'proposed-penalty-takers'
+        console.debug('Will iterate takers.other: ', takers.other)
+        for (const taker of takers.other) {
+            console.debug('creating takerSpan')
+            var takerSpan = document.createElement('li')
+            takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+            takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            console.debug('appending takerSpan to otherPenaltyTakers')
+            otherPenaltyTakers.appendChild(takerSpan)
+        }
+        const otherPenaltyTakersHeader = document.createElement("h6");
+        otherPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
+        otherPenaltyTakersHeader.textContent = "Other penalty takers "
+        const questionMarkSpanOther = document.createElement("span")
+        questionMarkSpanOther.textContent = "\uf29c"
+        questionMarkSpanOther.title = "These are other players with the penalty kick skill above the composure treshold, who didn't make it to the recommended list for some reason - likely other players having positive composure which this extension really favours. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+        otherPenaltyTakersHeader.appendChild(questionMarkSpanOther)
+        
+        rightPanel.appendChild(otherPenaltyTakersHeader)
+        rightPanel.appendChild(otherPenaltyTakers)
+    } else {
+        const proposedPenaltyTakers = document.createElement("ol");
+        proposedPenaltyTakers.id = 'proposed-penalty-takers'
+        console.debug('Will iterate takers.recommended: ', takers.recommended)
+        for (const taker of takers.recommended) {
+            console.debug('creating takerSpan')
+            var takerSpan = document.createElement('li')
+            takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+            takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            console.debug('appending takerSpan to proposedPenaltyTakers')
+            proposedPenaltyTakers.appendChild(takerSpan)
+            
+            if (taker.composure) {
+                const composureSpan = document.createElement("span");
+                composureSpan.classList.add('composure')
+                composureSpan.textContent = " ○"
+                switch (taker.composure) {
+                    case -2:
+                        composureSpan.classList.add('doubleNegative');
+                        composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
+                        break;
+                    case -1:
+                        composureSpan.classList.add('negative');
+                        composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
+                        break;
+                    case 1:
+                        composureSpan.classList.add('positive');
+                        composureSpan.title = "This player has good composure, consider using him as penalty taker";
+                        break;
+                    case 2:
+                        composureSpan.classList.add('doublePositive');
+                        composureSpan.title = "This player has excellent composure, use him as penalty taker";
+                        break;
+                    default:
+                        console.warn("Value is unexpected");
+                }
+                takerSpan.appendChild(composureSpan)
+            }
+        }
+        targetHeader.parentNode.after(proposedPenaltyTakers);
+        
+        const proposedPenaltyTakersHeader = document.createElement("h6");
+        proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
+        proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
+        const questionMarkSpan = document.createElement("span")
+        questionMarkSpan.textContent = "\uf29c"
+        questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+        proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
+        targetHeader.parentNode.after(proposedPenaltyTakersHeader);
     }
-    targetHeader.parentNode.after(proposedPenaltyTakers);
-    
-    const proposedPenaltyTakersHeader = document.createElement("h6");
-    proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
-    proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
-    const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = "\uf29c"
-    questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-    proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
-    targetHeader.parentNode.after(proposedPenaltyTakersHeader);
 }
 
 function addNoDataSymbol(container) {
@@ -170,9 +387,12 @@ async function processLineup() {
     
     var proposedPenaltyTakersArray = {
         recommended: [],
+        other: [],
         discouraged: []
     }
     var penaltyTakersWithoutComposure = []
+    var crossingPlayers = []
+    var anchors = []
     
     for (let i = 0; i < pLinks.length; i++) {
         const profile = profiles[i]
@@ -311,8 +531,35 @@ async function processLineup() {
         if (sportsmanship) {
             applySportsmanship(pLinks[i], sportsmanship)
         }
+        
+        // calculate the cross skill and use AE for anchors
+        if (skills.length == 8) { // goalkeepers have only 6 skills
+            const BC = skills[2].querySelector('span[class^="denom"]').textContent.trim();
+            const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
+            const cross = Math.floor(0.7 * PA + 0.3 * BC)
+            crossingPlayers.push({ name: name, cross: cross })
+            
+            const AE = skills[4].querySelector('span[class^="denom"]').textContent.trim();
+            anchors.push({ name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
+        }
     }
     
+    // Propose anchors
+    const withoutFouls = anchors.filter( player => player.sportsmanship >= 0 )
+    withoutFouls.sort((a, b) => {
+        const AEDiff = b.AE - a.AE
+        if (AEDiff !== 0) return AEDiff
+        return b.sportsmanship - a.sportsmanship
+    })
+    proposeAnchors(withoutFouls.slice(0, 3))
+    
+    // Propose cross takers
+    crossingPlayers.sort((a, b) => {
+        return b.cross - a.cross
+    })
+    proposeCrossTakers(crossingPlayers.slice(0, 3))
+    
+    // Propose penalty takers
     penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
     console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
     const recommendedWithComposure = proposedPenaltyTakersArray.recommended
@@ -331,6 +578,10 @@ async function processLineup() {
         
         console.debug('mergedArray sorted: ', mergedArray)
         proposedPenaltyTakersArray.recommended = mergedArray
+        
+        // add other for the players with high penalty kick skill but for some reason not recommended (e.g. no positive or negative composure etc.)
+        const other = penaltyTakersWithoutComposure.slice(5 - recommendedWithComposure.length, penaltyTakersWithoutComposure.length)
+        proposedPenaltyTakersArray.other = other
     }
     
     console.debug('passing to proposePenaltyTakers: ', proposedPenaltyTakersArray)
@@ -570,7 +821,7 @@ addCSS(`
         color: #FF4500;
     }
 
-    ol#proposed-penalty-takers {
+    ol#proposed-penalty-takers, ol#proposed-corner-takers, ol#proposed-anchors {
         font-size: .8rem;
         text-align: center;
 
@@ -579,12 +830,25 @@ addCSS(`
         margin-left: 0;  
     }
 
-    h6#proposed-penalty-takers-header {
+    h6#proposed-penalty-takers-header, h6#proposed-corner-takers-header, h6#proposed-anchors-header {
         text-align: center;
     }
 
-    h6#proposed-penalty-takers-header span {
+    h6#proposed-penalty-takers-header span, h6#proposed-corner-takers-header span, h6#proposed-anchors-header span {
         cursor: help;
         font: 14px/1 FontAwesome;
+    }
+
+    div.proposed-penalty-takers-container {
+        display: flex;
+    }
+
+    div.proposed-penalty-takers-panel {
+        flex: 1;                 /* Equal width */
+//        border: 1px solid #333;  
+        display: flex;
+        flex-direction: column;  /* 👈 stack children vertically */
+        justify-content: flex-start; /* 👈 Align children to top */
+        align-items: center;
     }
 `)

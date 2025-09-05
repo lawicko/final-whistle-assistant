@@ -44,7 +44,7 @@ Calendar module adds **Y** and **S** letters to the match marker on the fixtures
 ## Lineup module
 Lineup module displays additional information in a form of markdown on the lineup->set pieces screen. It is designed to give you a quick overview of which players are suited for special roles, like captain or penalty taker. When in doubt, hover over the symbol and a tooltip will be displayed give you additional information.
 
-![Lineup - Set pieces](images/lineup01.jpg)
+![Lineup - Set pieces](images/lineup01.png)
 
 There are several symbols available:
  - 📂 - is used to indicate that there is no information available for this player - just visit the player page and the extension will save the info it needs, then reload the lineup screen
@@ -62,15 +62,23 @@ Some fine tuning options are available for the lineup module in the extension op
  - Composure treshold can be used to fine tune which players will display the composure symbol - the composure treshold defines the penalty kick value above which the symbol will be shown. For instance, you would assume that your defensive midfielder with awful scoring should not show the composure symbol, however if he has awesome passing he may be considered for taking a penalty in which case the composure symbol next to his name would still be useful. As of version **2.0.0** composure treshold is also used for recommending the penalty takers - essentially the extension will only recommend the players with the penalty kick computed skill value higher than the composure treshold you set in options.
  - Arrogance treshold can be used to fine tune which players will display the arrogance symbol - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will appear next to his name. It's defined like this for two reasons: for your senior or youth teams you may want to set a different treshold because the skill difference is usually significant, and for the substitute players we don't know which of them are coming in as defenders, so linking it to DP skill allows for narrowing it down and showing the arrogance symbol only for the relevant subs.
  
-Form version **2.0.0** the recommended penalty takers are available. The extension calculates the penalty kick skill for the players in the lineup and recommends the best takers to you. It also takes into account composure personality as the players with positive composure have better chance of shooting on target. Players with negative composure are not recommended by the extension. Note that the extension has a very strong bias towards positive composure - it is possible that players with significantly lower penalty kick skill will be recommended instead of other players without composure trait, even though the other players penalty kick skill is much higher. Normally the extension should recommend 5 players:
+From version **2.0.0** the recommended penalty takers are available. The extension calculates the penalty kick skill for the players in the lineup and recommends the best takers to you. It also takes into account composure personality as the players with positive composure have better chance of shooting on target. Players with negative composure are not recommended by the extension. Note that the extension has a very strong bias towards positive composure - it is possible that players with significantly lower penalty kick skill will be recommended instead of other players without composure trait, even though the other players penalty kick skill is much higher.
+
+From version **2.1.0** the recommended penalty takers are split into 2 panels, the recommended takers are on the left, this is the exact recommendation you could see in version **2.0.0**. On the right panel you could see other players with the penalty kick skill higher than the composure treshold. This way you can make even better decisions and fill all the takers you need for those cup matches when penalty shootout is a possibility.
+
+Normally the extension should recommend 5 players:
  
-![Recommended penalty takers](images/lineup02.jpg)
+![Recommended penalty takers](images/lineup02.png)
  
 In the image you can see that the player with positive composure is prioritised over another player with identical penalty kick skill. Note that players with penalty kick skill below the composure treshold setting (you can adjust this in the extension options) will not be recommended. This may lead to a situation that you have less than 5 recommendations:
  
-![Recommended penalty takers youth](images/lineup03.jpg)
+![Recommended penalty takers youth](images/lineup03.png)
   
 If you feel like one of your players is missing in the recommended set, make sure you visit his page to make sure the extension saves his data, otherwise he is not taken into account during calculations.
+
+From version **2.1.0** the lineup module will also recommend anchors and corner takers. Anchors are chosen based on their aerial skill, with the players with negative sportsmanship filtered out (you don't want your most active defender to cause penalties). Corner takers are chosen based on their set pieces cross skill. Note that if your free kick choice is cross, you can safely use the same suggested players there because free kick cross uses the same set pieces cross skill as the corner kick.
+
+![Recommended anchors and corner kick takers](images/lineup04.png)
 
 ## Match module
 Match module gathers the data about injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Currently the quick matches and friendlies are ignored since, to my understanding, they don't contribute to injuries. **For the match module to work correctly you need to visit the match report and switch the lineups from starting to finishing**.
