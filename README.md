@@ -80,6 +80,10 @@ From version **2.1.0** the lineup module will also recommend anchors and corner 
 
 ![Recommended anchors and corner kick takers](images/lineup04.png)
 
+From version **2.2.0** you can change the composure treshold on the fly for extra convenience when switching between youth and senior players lineups - you no longer have to go to the options sceen to adjust it.
+
+![Recommended anchors and corner kick takers](images/lineup05.png)
+
 ## Match module
 Match module gathers the data about injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Currently the quick matches and friendlies are ignored since, to my understanding, they don't contribute to injuries. **For the match module to work correctly you need to visit the match report and switch the lineups from starting to finishing**.
 
