@@ -1,118 +1,236 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <meta charset="utf-8">
-            <link rel="stylesheet" href="options.css"/>
-    </head>
-    
-    <body>
-        
-        <fieldset>
-            <legend>Choose your modules:</legend>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="options.css" />
+</head>
+
+<body>
+
+    <fieldset>
+        <legend>Choose your modules:</legend>
+        <div>
+            <input type="checkbox" id="academy_buttons" name="academy buttons" checked />
+            <label for="academy_buttons">Academy Buttons</label>
+        </div>
+
+        <div>
+            <input type="checkbox" id="calendar" name="calendar" checked />
+            <label for="calendar">Calendar</label>
+        </div>
+        <div>
+            <input type="checkbox" id="lineup" name="lineup" checked />
+            <label for="lineup">Lineup</label>
+        </div>
+        <div>
+            <input type="checkbox" id="match" name="match" checked />
+            <label for="match">Match</label>
+        </div>
+        <div>
+            <input type="checkbox" id="player" name="player" checked />
+            <label for="player">Player</label>
+        </div>
+        <div>
+            <input type="checkbox" id="players" name="players" checked />
+            <label for="players">Players</label>
+        </div>
+
+        <div>
+            <input type="checkbox" id="row_highlight" name="row highlight" checked />
+            <label for="row_highlight">Row highlight</label>
+        </div>
+        <div>
+            <input type="checkbox" id="tags" name="tags" checked />
+            <label for="tags">Tags</label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Choose your tag colors:</legend>
+
+        <div>
+            <input type="color" id="color1" name="color 1" value="#e66465" />
+            <label for="color1">Color 1</label>
+        </div>
+
+        <div>
+            <input type="color" id="color2" name="color 2" value="#f6b73c" />
+            <label for="color2">Color 2</label>
+        </div>
+
+        <div>
+            <input type="color" id="color3" name="color 3" value="#f6b73c" />
+            <label for="color3">Color 3</label>
+        </div>
+
+        <div>
+            <input type="color" id="color4" name="color 4" value="#f6b73c" />
+            <label for="color4">Color 4</label>
+        </div>
+
+        <div>
+            <input type="color" id="color5" name="color 5" value="#f6b73c" />
+            <label for="color5">Color 5</label>
+        </div>
+
+        <div>
+            <input type="color" id="color6" name="color 6" value="#f6b73c" />
+            <label for="color6">Color 6</label>
+        </div>
+        <div>
+            <input type="color" id="color7" name="color 7" value="#f6b73c" />
+            <label for="color7">Color 7</label>
+        </div>
+        <div>
+            <input type="color" id="color8" name="color 8" value="#f6b73c" />
+            <label for="color8">Color 8</label>
+        </div>
+        <div>
+            <input type="color" id="color9" name="color 9" value="#f6b73c" />
+            <label for="color9">Color 9</label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Choose your lineup symbols colors:</legend>
+        <div class="color-grid">
             <div>
-                <input type="checkbox" id="academy_buttons" name="academy buttons" checked />
-                <label for="academy_buttons">Academy Buttons</label>
-            </div>
-            
-            <div>
-                <input type="checkbox" id="calendar" name="calendar" checked />
-                <label for="calendar">Calendar</label>
+                <input type="color" id="color-setting-leadership++" name="leadership++" value="#228B22" />
+                <label for="leadership++">Leadership++</label>
+                <span id="color-preview-leadership++" class="color-preview">✪</span>
             </div>
             <div>
-                <input type="checkbox" id="lineup" name="lineup" checked />
-                <label for="lineup">Lineup</label>
+                <input type="color" id="color-setting-leadership+" name="leadership+" value="#4CBB17" />
+                <label for="leadership+">Leadership+</label>
+                <span id="color-preview-leadership+" class="color-preview">✪</span>
             </div>
             <div>
-                <input type="checkbox" id="match" name="match" checked />
-                <label for="match">Match</label>
+                <input type="color" id="color-setting-leadership-" name="leadership-" value="#FFD700" />
+                <label for="leadership-">Leadership-</label>
+                <span id="color-preview-leadership-" class="color-preview">✪</span>
             </div>
             <div>
-                <input type="checkbox" id="player" name="player" checked />
-                <label for="player">Player</label>
+                <input type="color" id="color-setting-leadership--" name="leadership--" value="#FF4500" />
+                <label for="leadership--">Leadership--</label>
+                <span id="color-preview-leadership--" class="color-preview">✪</span>
+            </div>
+
+            <div>
+                <input type="color" id="color-setting-composure++" name="composure++" value="#228B22" />
+                <label for="composure++">Composure++</label>
+                <span id="color-preview-composure++" class="color-preview">○</span>
             </div>
             <div>
-                <input type="checkbox" id="players" name="players" checked />
-                <label for="players">Players</label>
-            </div>
-            
-            <div>
-                <input type="checkbox" id="row_highlight" name="row highlight" checked />
-                <label for="row_highlight">Row highlight</label>
+                <input type="color" id="color-setting-composure+" name="composure+" value="#4CBB17" />
+                <label for="composure+">Composure+</label>
+                <span id="color-preview-composure+" class="color-preview">○</span>
             </div>
             <div>
-                <input type="checkbox" id="tags" name="tags" checked />
-                <label for="tags">Tags</label>
-            </div>
-        </fieldset>
-        
-        <fieldset>
-            <legend>Choose your tag colors:</legend>
-            
-            <div>
-                <input type="color" id="color1" name="color 1" value="#e66465" />
-                <label for="color1">Color 1</label>
-            </div>
-            
-            <div>
-                <input type="color" id="color2" name="color 2" value="#f6b73c" />
-                <label for="color2">Color 2</label>
-            </div>
-            
-            <div>
-                <input type="color" id="color3" name="color 3" value="#f6b73c" />
-                <label for="color3">Color 3</label>
-            </div>
-            
-            <div>
-                <input type="color" id="color4" name="color 4" value="#f6b73c" />
-                <label for="color4">Color 4</label>
-            </div>
-            
-            <div>
-                <input type="color" id="color5" name="color 5" value="#f6b73c" />
-                <label for="color5">Color 5</label>
-            </div>
-            
-            <div>
-                <input type="color" id="color6" name="color 6" value="#f6b73c" />
-                <label for="color6">Color 6</label>
+                <input type="color" id="color-setting-composure-" name="composure-" value="#FFD700" />
+                <label for="composure-">Composure-</label>
+                <span id="color-preview-composure-" class="color-preview">○</span>
             </div>
             <div>
-                <input type="color" id="color7" name="color 7" value="#f6b73c" />
-                <label for="color7">Color 7</label>
+                <input type="color" id="color-setting-composure--" name="composure--" value="#FF4500" />
+                <label for="composure--">Composure--</label>
+                <span id="color-preview-composure--" class="color-preview">○</span>
+            </div>
+
+            <div>
+                <input type="color" id="color-setting-sportsmanship++" name="sportsmanship++" value="#228B22" />
+                <label for="sportsmanship++">Sportsmanship++</label>
+                <span id="color-preview-sportsmanship++" class="color-preview">⚖</span>
             </div>
             <div>
-                <input type="color" id="color8" name="color 8" value="#f6b73c" />
-                <label for="color8">Color 8</label>
+                <input type="color" id="color-setting-sportsmanship+" name="sportsmanship+" value="#4CBB17" />
+                <label for="sportsmanship+">Sportsmanship+</label>
+                <span id="color-preview-sportsmanship+" class="color-preview">⚖</span>
             </div>
             <div>
-                <input type="color" id="color9" name="color 9" value="#f6b73c" />
-                <label for="color9">Color 9</label>
+                <input type="color" id="color-setting-sportsmanship-" name="sportsmanship-" value="#FFD700" />
+                <label for="sportsmanship-">Sportsmanship-</label>
+                <span id="color-preview-sportsmanship-" class="color-preview">⚖</span>
             </div>
-        </fieldset>
-        
-        <fieldset>
-            <legend>Lineup markup tresholds:</legend>
             <div>
-                <input type="text" id="composure_treshold" name="composure treshold" value="50" />
-                <label for="composure_treshold">Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, markup will appear next to his name on the lineup->set pieces screen</label>
+                <input type="color" id="color-setting-sportsmanship--" name="sportsmanship--" value="#FF4500" />
+                <label for="sportsmanship--">Sportsmanship--</label>
+                <span id="color-preview-sportsmanship--" class="color-preview">⚖</span>
             </div>
-            
+
             <div>
-                <input type="text" id="arrogance_treshold" name="arrogance treshold" value="50"/>
-                <label for="arrogance_treshold">Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will appear next to his name on the lineup->set pieces screen</label>
+                <input type="color" id="color-setting-arrogance-" name="arrogance-" value="#FFD700" />
+                <label for="arrogance-">Arrogance-</label>
+                <span id="color-preview-arrogance-" class="color-preview">♛</span>
             </div>
-        </fieldset>
-        
-        <fieldset>
-            <legend>Player Data</legend>
-            <textarea id="playerData" rows="10" cols="50"></textarea>
-            <br>
-            <button id="saveBtn">Save</button>
-        </fieldset>
-        
-        <script src="options.js"></script>
-    </body>
-    
+            <div>
+                <input type="color" id="color-setting-arrogance--" name="arrogance--" value="#FF4500" />
+                <label for="arrogance--">Arrogance--</label>
+                <span id="color-preview-arrogance--" class="color-preview">♛</span>
+            </div>
+
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Lineup markup tresholds:</legend>
+        <div>
+            <input type="text" id="composure_treshold" name="composure treshold" value="50" />
+            <label for="composure_treshold">Composure treshold - if the player has composure personality trait and his
+                penalty kick skill is above this treshold, markup will appear next to his name on the lineup->set pieces
+                screen</label>
+        </div>
+
+        <div>
+            <input type="text" id="arrogance_treshold" name="arrogance treshold" value="50" />
+            <label for="arrogance_treshold">Arrogance treshold - if the player has negative arrogance personality trait
+                and is positioned in the defence, or is a substitute and his DP is above this treshold, markup will
+                appear next to his name on the lineup->set pieces screen</label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Player Data</legend>
+        <textarea id="playerData" rows="10" cols="50"></textarea>
+        <br>
+        <button id="saveBtn">Save</button>
+    </fieldset>
+
+    <style>
+        body {
+            font-family: system-ui;
+            color: white;
+            background: #40473e;
+        }
+
+        fieldset {
+            background: #2c4129;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* 2 columns */
+            gap: 10px 20px;
+            /* row gap and column gap */
+        }
+
+        .color-grid>div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-preview {
+            font-size: 1.5em;
+            margin-left: 10px;
+        }
+    </style>
+
+    <script src="options.js"></script>
+</body>
+
 </html>

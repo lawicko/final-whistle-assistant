@@ -808,67 +808,90 @@ browser.runtime.onMessage.addListener((request) => {
     }
 })
 
+async function applyCustomColorsLineupSymbols() {
+    try {
+        // Load colors from storage (with defaults)
+        const optionsStorage = browser.storage.sync;
+        const { colors = {} } = await optionsStorage.get("colors");
+
+        // Inject CSS rule so future elements are styled too
+        const style = document.createElement("style");
+        style.textContent = `
+        span.leadership.doublePositive {
+            color: ${colors["color-setting-sportsmanship++"]};
+        }
+        span.leadership.positive {
+            color: ${colors["color-setting-sportsmanship+"]};
+        }
+        span.leadership.negative {
+            color: ${colors["color-setting-sportsmanship-"]};
+        }
+        span.leadership.doubleNegative {
+            color: ${colors["color-setting-sportsmanship--"]};
+        }
+        
+        span.composure.doublePositive {
+            color: ${colors["color-setting-composure++"]};
+        }
+        span.composure.positive {
+            color: ${colors["color-setting-composure+"]};
+        }
+        span.composure.negative {
+            color: ${colors["color-setting-composure-"]};
+        }
+        span.composure.doubleNegative {
+            color: ${colors["color-setting-composure--"]};
+        }
+
+        span.arrogance.negative {
+            color: ${colors["color-setting-arrogance-"]};
+        }
+        span.arrogance.doubleNegative {
+            color: ${colors["color-setting-arrogance--"]};
+        }
+
+        span.sportsmanship.doublePositive {
+            color: ${colors["color-setting-sportsmanship++"]};
+        }
+        span.sportsmanship.positive {
+            color: ${colors["color-setting-sportsmanship+"]};
+        }
+        span.sportsmanship.negative {
+            color: ${colors["color-setting-sportsmanship-"]};
+        }
+        span.sportsmanship.doubleNegative {
+            color: ${colors["color-setting-sportsmanship--"]};
+        }
+    `;
+        document.head.appendChild(style);
+
+    } catch (err) {
+        console.error("Failed to apply custom colors for tags:", err);
+    }
+}
+
+// Run the function
+applyCustomColorsLineupSymbols();
+
 addCSS(`
     span.leadership {
         font-size: 1.4em;
         cursor: help;
-    }
-    span.leadership.doublePositive {
-        color: #228B22;
-    }
-    span.leadership.positive {
-        color: #4CBB17;
-    }
-    span.leadership.negative {
-        color: #FFD700;
-    }
-    span.leadership.doubleNegative {
-        color: #FF4500;
     }
 
     span.composure {
         font-size: 1.2em;
         cursor: help;
     }
-    span.composure.doublePositive {
-        color: #228B22;
-    }
-    span.composure.positive {
-        color: #4CBB17;
-    }
-    span.composure.negative {
-        color: #FFD700;
-    }
-    span.composure.doubleNegative {
-        color: #FF4500;
-    }
 
     span.arrogance {
         font-size: 1.2em;
         cursor: help;
     }
-    span.arrogance.negative {
-        color: #FFD700;
-    }
-    span.arrogance.doubleNegative {
-        color: #FF4500;
-    }
 
     span.sportsmanship {
         font-size: 1.4em;
         cursor: help;
-    }
-    span.sportsmanship.doublePositive {
-        color: #228B22;
-    }
-    span.sportsmanship.positive {
-        color: #4CBB17;
-    }
-    span.sportsmanship.negative {
-        color: #FFD700;
-    }
-    span.sportsmanship.doubleNegative {
-        color: #FF4500;
     }
 
     ol#proposed-penalty-takers, ol#proposed-corner-takers, ol#proposed-anchors {

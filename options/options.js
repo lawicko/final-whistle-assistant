@@ -23,10 +23,11 @@ function saveOptions() {
 
     // Collect all colors
     const colors = {};
-    for (let i = 1; i <= 9; i++) {
-        colors[`color${i}`] = document.getElementById(`color${i}`).value;
-    }
-    
+    const colorInputs = document.querySelectorAll('input[id^="color"]');
+    colorInputs.forEach(input => {
+        colors[input.id] = input.value
+    });
+
     // Collect tresholds
     const tresholds = {
         composure_treshold: document.getElementById('composure_treshold').value,
@@ -34,8 +35,8 @@ function saveOptions() {
     };
 
     // Save both to storage
-    optionsStorage.set({ modules, colors, tresholds}, () => {
-        console.log("Options saved", { modules, colors, tresholds});
+    optionsStorage.set({ modules, colors, tresholds }, () => {
+        console.log("Options saved", { modules, colors, tresholds });
     });
 }
 
@@ -55,7 +56,7 @@ async function restoreOptions() {
                 if (el) el.value = result.colors[key];
             });
         }
-        
+
         if (result.tresholds) {
             Object.keys(result.tresholds).forEach((key) => {
                 const el = document.getElementById(key);
@@ -63,7 +64,7 @@ async function restoreOptions() {
             });
         }
     });
-    
+
     // Handling the player data
     const textarea = document.getElementById("playerData");
     const saveBtn = document.getElementById("saveBtn");
@@ -85,6 +86,20 @@ async function restoreOptions() {
             alert("Invalid JSON, please fix it before saving.");
         }
     })
+
+    const inputs = document.querySelectorAll('input[id^="color-setting"]');
+    const previews = document.querySelectorAll('span[id^="color-preview"]');
+    console.info("inputs.length: ", inputs.length, "previews.length: ", previews.length)
+    for (let i = 0; i < inputs.length; i++) {
+        const input = inputs[i]
+        const preview = previews[i]
+
+        preview.style.color = input.value;
+
+        input.addEventListener("input", () => {
+            preview.style.color = input.value;
+        });
+    }
 }
 
 // Add listeners to inputs

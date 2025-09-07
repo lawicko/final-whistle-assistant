@@ -78,7 +78,7 @@ async function loadModules(tabId, url) {
         const modules = result.modules || {};
 
         await executeScript(tabId, "constants.js")
-        
+
         if (modules?.academy_buttons) {
             console.info(`Loading academy_buttons...`)
             await executeScript(tabId, "academy_buttons.js")
@@ -112,7 +112,7 @@ async function loadModules(tabId, url) {
             await executeScript(tabId, "tags.js")
         }
     }
-    
+
     await start()
     loadedMap.set(tabId, true)
 }
@@ -139,7 +139,21 @@ const defaultOptions = {
         color6: "#ff99cc",
         color7: "#ff9966",
         color8: "#ff8833",
-        color9: "#db6612"
+        color9: "#db6612",
+        "color-setting-arrogance-": "#FFD700",
+        "color-setting-arrogance--": "#FF4500",
+        "color-setting-composure+": "#4CBB17",
+        "color-setting-composure++": "#228B22",
+        "color-setting-composure-": "#FFD700",
+        "color-setting-composure--": "#FF4500",
+        "color-setting-leadership+": "#4CBB17",
+        "color-setting-leadership++": "#228B22",
+        "color-setting-leadership-": "#FFD700",
+        "color-setting-leadership--": "#FF4500",
+        "color-setting-sportsmanship+": "#4CBB17",
+        "color-setting-sportsmanship++": "#228B22",
+        "color-setting-sportsmanship-": "#FFD700",
+        "color-setting-sportsmanship--": "#FF4500"
     },
     tresholds: {
         composure_treshold: 50,
@@ -160,7 +174,7 @@ async function handleInstalled(details) {
     optionsStorage.set({ modules: modules }, () => {
         console.info("Modules saved", { modules });
     });
-    
+
     for (const key in defaultOptions.colors) {
         if (!(key in colors)) {
             console.info(`Found a missing key (${key}) in the colors loaded from storage, assigned the value from the default colors (${defaultOptions.colors[key]})`)
@@ -170,7 +184,7 @@ async function handleInstalled(details) {
     optionsStorage.set({ colors: colors }, () => {
         console.info("Colors saved", { colors });
     });
-    
+
     for (const key in defaultOptions.tresholds) {
         if (!(key in tresholds)) {
             console.info(`Found a missing key (${key}) in the tresholds loaded from storage, assigned the value from the default tresholds (${defaultOptions.tresholds[key]})`)

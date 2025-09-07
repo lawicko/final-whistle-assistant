@@ -3,19 +3,14 @@ const tagsModulePrefix = "tags"
 console.log(`${new Date().toLocaleString()} ${tagsModulePrefix}: tags.js script loaded...`)
 
 async function applyCustomColorsForTags() {
-  try {
-    // Load colors from storage (with defaults)
-    const optionsStorage = browser.storage.sync;
-    const { colors = {} } = await optionsStorage.get("colors");
+    try {
+        // Load colors from storage (with defaults)
+        const optionsStorage = browser.storage.sync;
+        const { colors = {} } = await optionsStorage.get("colors");
 
-    // Option 1: Inline styles for existing elements
-    // document.querySelectorAll("i.denom3").forEach(el => {
-    //   el.style.color = color;
-    // });
-
-    // Option 2: Inject CSS rule so future elements are styled too
-    const style = document.createElement("style");
-    style.textContent = `
+        // Inject CSS rule so future elements are styled too
+        const style = document.createElement("style");
+        style.textContent = `
         i.denom1 {
             color: ${colors.color1} !important;
         }
@@ -44,11 +39,11 @@ async function applyCustomColorsForTags() {
             color: ${colors.color9} !important;
         }
     `;
-    document.head.appendChild(style);
+        document.head.appendChild(style);
 
-  } catch (err) {
-    console.error("Failed to apply custom colors for tags:", err);
-  }
+    } catch (err) {
+        console.error("Failed to apply custom colors for tags:", err);
+    }
 }
 
 // Run the function
@@ -63,20 +58,20 @@ const tagsObservationCallback = (mutationList, observer) => {
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
         observer.disconnect()
-        
-        console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix}: Found the following table: `,tableNode)
-        
+
+        console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix}: Found the following table: `, tableNode)
+
         tableNode.querySelectorAll(`td > fw-player-hover > div.hovercard > sup`).forEach((el, idx) => {
             let supNode = el
             let currentClass = supNode.className
-            
+
             let tagNode = supNode.querySelector(`i`)
             let tagRemoved = supNode.removeChild(tagNode)
-            tagRemoved.className  += ` ${currentClass}`
+            tagRemoved.className += ` ${currentClass}`
             supNode.parentNode.insertBefore(tagRemoved, supNode)
             supNode.remove()
         })
-        
+
         observer.observe(alwaysPresentNode, calendarObservactionConfig)
     } else {
         console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix}: Could not find the table, or the table is empty, observing...`)
