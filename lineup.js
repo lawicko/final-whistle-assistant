@@ -1,6 +1,4 @@
-const lineupModulePrefix = "lineup"
-
-console.log(`${new Date().toLocaleString()} ${lineupModulePrefix}: lineup.js script loaded...`)
+console.log(`loading lineup.js...`)
 
 const optionsStorage = browser.storage.sync;
 
@@ -795,16 +793,24 @@ const lineupObservingCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const lineupObserver = new MutationObserver(lineupObservingCallback);
 
-browser.runtime.onMessage.addListener((request) => {
-    console.log(`${new Date().toLocaleString()} ${lineupModulePrefix} Message from the background script:`);
-    console.log(request.url);
-    if (request.url.includes("lineup")) {
-        // Start observing the target node for configured mutations
-        lineupObserver.observe(alwaysPresentNode, lineupObservingConfig);
-        console.debug(`${new Date().toLocaleString()} ${lineupModulePrefix} Started the div.wrapper observation`)
-    } else {
-        lineupObserver.disconnect()
-        console.debug(`${new Date().toLocaleString()} ${lineupModulePrefix} Skipped (or disconnected) the div.wrapper observation`)
+browser.runtime.onMessage.addListener((message) => {
+    console.debug(`runtime.onMessage with message:`, message);
+
+    if (!message) {
+        console.warn('runtime.onMessage called, but the message is undefined')
+        return
+    }
+
+    const url = message.url
+    if (url) {
+        if (message.url.includes("lineup")) {
+            // Start observing the target node for configured mutations
+            lineupObserver.observe(alwaysPresentNode, lineupObservingConfig);
+            console.debug(`Started the div.wrapper observation`)
+        } else {
+            lineupObserver.disconnect()
+            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
+        }
     }
 })
 

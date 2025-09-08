@@ -1,8 +1,5 @@
 (function() {
-    
-    const academyButtonsModulePrefix = "academy_buttons"
-    
-    console.log(`${new Date().toLocaleString()} ${academyButtonsModulePrefix}: academy_buttons.js script loaded...`)
+    console.log(`loading academy_buttons.js...`)
     
     addCSS("div > button.btn-danger { margin-left: 50px !important; }")
 })();

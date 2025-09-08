@@ -194,6 +194,78 @@ async function handleInstalled(details) {
     optionsStorage.set({ tresholds: tresholds }, () => {
         console.info("Tresholds saved", { tresholds });
     });
+
+    // context menus
+    const parentMenuID = "parentMenu"
+    const colorPlayerRowMenuID = "colorPlayerRowMenuID"
+    const colorPlayerRowMenuAction = "colorPlayerRowMenuAction"
+    const subMenu2ID = "subMenu2"
+    const subMenu2Action = "subMenu2Action"
+
+    const playerRowColorRaw = {
+        "playerRowColorForward": "playerRowColorForwardAction",
+        "playerRowColorMidfieldLeft": "playerRowColorMidfieldLeftAction",
+        "playerRowColorMidfieldRight": "playerRowColorMidfieldRightAction",
+        "playerRowColorMidfieldCenter": "playerRowColorMidfieldCenterAction",
+        "playerRowColorDefenceLeft": "playerRowColorDefenceLeftAction",
+        "playerRowColorDefenceRight": "playerRowColorDefenceRightAction",
+        "playerRowColorDefenceCenter": "playerRowColorDefenceCenterAction",
+        "clearAllColors": "playerRowColorClearAction"
+    }
+
+    browser.contextMenus.create({
+        id: parentMenuID,
+        title: "Final Whistle Assistant",
+        contexts: ["all"] // can also be ["page", "selection", "link", "image", etc.]
+    });
+
+    // Create submenu items
+    browser.contextMenus.create({
+        id: colorPlayerRowMenuID,
+        parentId: parentMenuID,
+        title: "Color player row",
+        contexts: ["all"],
+        enabled: false
+    });
+
+    for (const key of Object.keys(playerRowColorRaw)) {
+        var titleSuffix = key.substring("playerRowColor".length); // everything after "playerRowColor"
+        if (titleSuffix) {
+            // Insert a space before each capital letter except the first
+            var formattedTitle = titleSuffix.replace(/(?!^)([A-Z])/g, " $1");
+        } else {
+            var formattedTitle = key.replace(/(?!^)([A-Z])/g, " $1");
+            formattedTitle = formattedTitle.charAt(0).toUpperCase() + formattedTitle.slice(1);
+        }
+        console.info("Adding menu item: ", key)
+        browser.contextMenus.create({
+            id: key,
+            parentId: colorPlayerRowMenuID,
+            title: formattedTitle,
+            contexts: ["all"]
+        });
+    }
+
+    // browser.contextMenus.create({
+    //     id: subMenu2ID,
+    //     parentId: parentMenuID,
+    //     title: "Second action",
+    //     contexts: ["all"],
+    //     enabled: false
+    // });
+
+    // Handle clicks on the menu
+    browser.contextMenus.onClicked.addListener((info, tab) => {
+        browser.tabs.sendMessage(tab.id, { action: playerRowColorRaw[info.menuItemId] });
+    });
+
+    // Receive messages from content script
+    browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+        console.debug("received message: ", msg)
+        if (msg.type === "contextMenuConfig") {
+            browser.contextMenus.update("colorPlayerRowMenuID", { enabled: msg.enabled });
+        }
+    });
 }
 browser.runtime.onInstalled.addListener(handleInstalled);
 

@@ -1,6 +1,4 @@
-const playerModulePrefix = "player"
-
-console.log(`${new Date().toLocaleString()} ${playerModulePrefix}: player.js script loaded...`)
+console.log(`loading player.js...`)
 
 // Recreates the denomination used on the website, used for coloring the numbers
 function denomination(value) {
@@ -19,7 +17,7 @@ function denomination(value) {
 
 // Calculates and adds the cells with the midfield contribution values for each player
 function appendMidfieldContributionForPlayer(tableNode) {
-    console.log(`${playerModulePrefix}: appending the midfield contribution...`)
+    console.log(`appending the midfield contribution...`)
     
     let midfieldDominanceMax = 100 + 200
     let advancedMidfieldDominanceMax = (100 + 200) * 0.5
@@ -485,7 +483,7 @@ async function saveToStorage(clubData, playerData) {
 }
 
 function cleanUpNodeForPlayer(tableNode) {
-    console.debug(`${playerModulePrefix}: removing the old cells...`)
+    console.debug(`removing the old cells...`)
     tableNode.querySelectorAll(`tr.${pluginNodeClass}`).forEach(el => el.remove())
 }
 
@@ -523,8 +521,8 @@ const playerObservingCallback = (mutationList, observer) => {
     if (targetTable != undefined && targetTable.rows.length > 1) {
         observer.disconnect() // otherwise we end up in a loop
         
-        console.debug(`${playerModulePrefix}: Found the following table: `, targetTable)
-        console.debug(`${playerModulePrefix}: tableNode.rows.length: ${targetTable.rows.length}`)
+        console.debug(`Found the following table: `, targetTable)
+        console.debug(`tableNode.rows.length: ${targetTable.rows.length}`)
         //        mutationList.forEach(el => console.debug(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
         
         
@@ -532,23 +530,31 @@ const playerObservingCallback = (mutationList, observer) => {
         appendMidfieldContributionForPlayer(targetTable)
         observer.observe(alwaysPresentNode, playerObservingConfig);
     } else {
-        console.debug(`${new Date().toLocaleString()} ${playerModulePrefix}: Could not find the table, or the table is empty, observing...`)
+        console.debug(`Could not find the table, or the table is empty, observing...`)
     }
 };
 
 // Create an observer instance linked to the callback function
 const playerObserver = new MutationObserver(playerObservingCallback);
 
-browser.runtime.onMessage.addListener((request) => {
-    console.log(`${new Date().toLocaleString()} ${playerModulePrefix} Message from the background script:`);
-    console.log(request.url);
-    if (request.url.includes("player/")) {
-        // Start observing the target node for configured mutations
-        playerObserver.observe(alwaysPresentNode, playerObservingConfig);
-        console.debug(`${new Date().toLocaleString()} ${playerModulePrefix} Started the div.wrapper observation`)
-    } else {
-        playerObserver.disconnect()
-        console.debug(`${new Date().toLocaleString()} ${playerModulePrefix} Skipped (or disconnected) the div.wrapper observation`)
+browser.runtime.onMessage.addListener((message) => {
+    console.debug(`runtime.onMessage with message:`, message);
+
+    if (!message) {
+        console.warn('runtime.onMessage called, but the message is undefined')
+        return
+    }
+
+    const url = message.url
+    if (url) {
+        if (message.url.includes("player/")) {
+            // Start observing the target node for configured mutations
+            playerObserver.observe(alwaysPresentNode, playerObservingConfig);
+            console.debug(`Started the div.wrapper observation`)
+        } else {
+            playerObserver.disconnect()
+            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
+        }
     }
 })
 

@@ -1,6 +1,4 @@
-const matchModulePrefix = "match"
-
-console.log(`${matchModulePrefix}: match.js script loaded...`)
+console.log(`loading match.js...`)
 
 async function processMatch() {
     const dateElement = document.querySelector('div.col-md-2:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)')
@@ -185,15 +183,23 @@ const matchObservingCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const matchObserver = new MutationObserver(matchObservingCallback);
 
-browser.runtime.onMessage.addListener((request) => {
-    console.log(`${matchModulePrefix} Message from the background script:`);
-    console.log(request.url);
-    if (request.url.includes("match/")) {
-        // Start observing the target node for configured mutations
-        matchObserver.observe(alwaysPresentNode, matchObservingConfig);
-        console.debug(`${matchModulePrefix} Started the div.wrapper observation`)
-    } else {
-        matchObserver.disconnect()
-        console.debug(`${matchModulePrefix} Skipped (or disconnected) the div.wrapper observation`)
+browser.runtime.onMessage.addListener((message) => {
+    console.debug(`runtime.onMessage with message:`, message);
+
+    if (!message) {
+        console.warn('runtime.onMessage called, but the message is undefined')
+        return
+    }
+
+    const url = message.url
+    if (url) {
+        if (message.url.includes("match/")) {
+            // Start observing the target node for configured mutations
+            matchObserver.observe(alwaysPresentNode, matchObservingConfig);
+            console.debug(`Started the div.wrapper observation`)
+        } else {
+            matchObserver.disconnect()
+            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
+        }
     }
 })

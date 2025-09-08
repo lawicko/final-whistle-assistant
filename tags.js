@@ -1,6 +1,4 @@
-const tagsModulePrefix = "tags"
-
-console.log(`${new Date().toLocaleString()} ${tagsModulePrefix}: tags.js script loaded...`)
+console.log(`loading tags.js...`)
 
 async function applyCustomColorsForTags() {
     try {
@@ -59,7 +57,7 @@ const tagsObservationCallback = (mutationList, observer) => {
     if (tableNode != undefined && tableNode.rows.length > 1) {
         observer.disconnect()
 
-        console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix}: Found the following table: `, tableNode)
+        console.debug(`Found the following table: `, tableNode)
 
         tableNode.querySelectorAll(`td > fw-player-hover > div.hovercard > sup`).forEach((el, idx) => {
             let supNode = el
@@ -74,7 +72,7 @@ const tagsObservationCallback = (mutationList, observer) => {
 
         observer.observe(alwaysPresentNode, calendarObservactionConfig)
     } else {
-        console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix}: Could not find the table, or the table is empty, observing...`)
+        console.debug(`Could not find the table, or the table is empty, observing...`)
     }
 };
 
@@ -83,15 +81,23 @@ const tagsObserver = new MutationObserver(tagsObservationCallback);
 
 addCSS(".fa-tag::before { text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; }")
 
-browser.runtime.onMessage.addListener((request) => {
-    console.log(`${new Date().toLocaleString()} ${tagsModulePrefix} Message from the background script:`);
-    console.log(request.url);
-    if (request.url.endsWith("players") || request.url.endsWith("training") || request.url.endsWith("training#Reports") || request.url.endsWith("training#Drills")) {
-        // Start observing the target node for configured mutations
-        tagsObserver.observe(alwaysPresentNode, tagsObservactionConfig);
-        console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix} Started the div.wrapper observation`)
-    } else {
-        tagsObserver.disconnect()
-        console.debug(`${new Date().toLocaleString()} ${tagsModulePrefix} Skipped (or disconnected) the div.wrapper observation`)
+browser.runtime.onMessage.addListener((message) => {
+    console.debug(`runtime.onMessage with message:`, message);
+
+    if (!message) {
+        console.warn('runtime.onMessage called, but the message is undefined')
+        return
+    }
+
+    const url = message.url
+    if (url) {
+        if (message.url.endsWith("players") || message.url.endsWith("training") || message.url.endsWith("training#Reports") || message.url.endsWith("training#Drills")) {
+            // Start observing the target node for configured mutations
+            tagsObserver.observe(alwaysPresentNode, tagsObservactionConfig);
+            console.debug(`Started the div.wrapper observation`)
+        } else {
+            tagsObserver.disconnect()
+            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
+        }
     }
 })
