@@ -69,8 +69,9 @@ browser.runtime.onMessage.addListener((message) => {
     const suffix = "Action";
 
     if (message.action && message.action.startsWith(prefix) && message.action.endsWith(suffix)) {
+        console.debug("message.action: ", message.action)
         const position = message.action.slice(prefix.length, -suffix.length)
-        const tr = document.querySelector("tr:hover");
+        const tr = clickedRow
         if (tr) {
             if (position !== "Clear") {
                 tr.classList.add(pluginNodeClass + "_playerBackground" + position)
@@ -94,6 +95,11 @@ browser.runtime.onMessage.addListener((message) => {
         console.debug(`Skipped (or disconnected) the div.wrapper observation`)
     }
 })
+
+var clickedRow = undefined
+document.addEventListener("contextmenu", (event) => {
+    clickedRow = event.target.closest("tr"); // get the closest <tr> ancestor
+});
 
 document.addEventListener("mouseover", (e) => {
     var enabled = false
