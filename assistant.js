@@ -198,9 +198,8 @@ async function handleInstalled(details) {
     // context menus
     const parentMenuID = "parentMenu"
     const colorPlayerRowMenuID = "colorPlayerRowMenuID"
-    const colorPlayerRowMenuAction = "colorPlayerRowMenuAction"
-    const subMenu2ID = "subMenu2"
-    const subMenu2Action = "subMenu2Action"
+    const clearAllRowHighlightsMenuID = "clearAllRowHighlightsMenuID"
+    const clearAllRowHighlightsMenuAction = "clearAllRowHighlightsMenuAction"
 
     const playerRowColorRaw = {
         "playerRowColorForward": "playerRowColorForwardAction",
@@ -228,6 +227,14 @@ async function handleInstalled(details) {
         enabled: false
     });
 
+    browser.contextMenus.create({
+        id: clearAllRowHighlightsMenuID,
+        parentId: parentMenuID,
+        title: "Clear All Row Highlights",
+        contexts: ["all"],
+        enabled: true
+    });
+
     for (const key of Object.keys(playerRowColorRaw)) {
         var titleSuffix = key.substring("playerRowColor".length); // everything after "playerRowColor"
         if (titleSuffix) {
@@ -246,17 +253,14 @@ async function handleInstalled(details) {
         });
     }
 
-    // browser.contextMenus.create({
-    //     id: subMenu2ID,
-    //     parentId: parentMenuID,
-    //     title: "Second action",
-    //     contexts: ["all"],
-    //     enabled: false
-    // });
-
     // Handle clicks on the menu
     browser.contextMenus.onClicked.addListener((info, tab) => {
-        browser.tabs.sendMessage(tab.id, { action: playerRowColorRaw[info.menuItemId] });
+        if (info.menuItemId === clearAllRowHighlightsMenuID) {
+            console.info("contextMenus.onClicked clearAllRowHighlightsMenuID")
+            browser.tabs.sendMessage(tab.id, { action: clearAllRowHighlightsMenuAction });
+        } else {
+            browser.tabs.sendMessage(tab.id, { action: playerRowColorRaw[info.menuItemId] });
+        }
     });
 
     // Receive messages from content script

@@ -61,7 +61,7 @@ function createHeaders() {
 
 // Calculates and adds the cells with the midfield contribution values for each player
 function appendMidfieldContributionForPlayers() {
-    console.log(`appending the midfield contribution...`)
+    console.debug(`appending the midfield contribution...`)
     let rows = document.querySelectorAll("table > tr");
     let longShotMax = (100 + Math.min(2 * 100, 100)) / 2
     let midfieldDominanceMax = 100 + 200
@@ -152,7 +152,7 @@ function appendMidfieldContributionForPlayers() {
 }
 
 function cleanUpNodeForPlayers(tableNode) {
-    console.log(`removing the old cells...`)
+    console.debug(`removing the old cells...`)
     tableNode.querySelectorAll(`td.${pluginNodeClass}`).forEach(el => el.remove());
     tableNode.querySelectorAll(`th.${pluginNodeClass}`).forEach(el => el.remove());
 }

@@ -10,9 +10,32 @@ function toggleClass(el, className) {
     }
 }
 
-function setOnClickForTableRows(tableNode) {
+async function processTableRows(tableNode) {
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
     for (let i = 1; i < tableNode.rows.length; i++) {
-        tableNode.rows[i].onclick = function () { toggleClass(this, pluginRowHighlightClass) }
+        tr = tableNode.rows[i]
+        // Set onclick for the basic row highlight
+        tr.onclick = function () { toggleClass(this, pluginRowHighlightClass) }
+
+        // Select the first <a> inside a <td> whose href contains "/player/"
+        const playerLink = tr.querySelector('td a[href*="/player/"]');
+        // Match the number after /player/
+        const match = playerLink.href.match(/\/player\/(\d+)/);
+        const playerID = match ? match[1] : null;
+        if (!playerID) {
+            console.error("Tried to extract player ID from href ", playerLink.href, " but there are no matches")
+        }
+        const classForPlayerID = rowHighlightData[playerID]
+        if (classForPlayerID) {
+            tr.classList.add(classForPlayerID)
+        } else {
+            const classPrefix = pluginNodeClass + "_playerBackground"
+            Array.from(tr.classList).forEach(cls => {
+                if (cls.startsWith(classPrefix)) {
+                    tr.classList.remove(cls);
+                }
+            });
+        }
     }
 }
 
@@ -26,13 +49,13 @@ const rowsObservingCallback = (mutationList, observer) => {
 
         console.debug(`Found the following table: `, tableNode)
 
-        setOnClickForTableRows(tableNode)
+        processTableRows(tableNode)
 
         const c = (mutationList, observer) => {
             console.debug(`table has changed`)
             observer.disconnect()
 
-            setOnClickForTableRows(tableNode)
+            processTableRows(tableNode)
 
             observer.observe(tableNode, { childList: true, subtree: true, characterData: true })
         }
@@ -46,6 +69,22 @@ const rowsObservingCallback = (mutationList, observer) => {
 
 // Create an observer instance linked to the callback function
 const rowsObserver = new MutationObserver(rowsObservingCallback);
+
+async function storeRowHighlightClass(rowHighlightClass, playerID) {
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    rowHighlightData[playerID] = rowHighlightClass
+    await storage.set({ "row-highlight-data": rowHighlightData });
+}
+
+async function clearRowHighlight(playerID) {
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    delete rowHighlightData[playerID]
+    await storage.set({ "row-highlight-data": rowHighlightData });
+}
+
+async function clearAllRowHighlights() {
+    await storage.remove("row-highlight-data")
+}
 
 browser.runtime.onMessage.addListener((message) => {
     console.debug(`runtime.onMessage with message:`, message);
@@ -68,20 +107,43 @@ browser.runtime.onMessage.addListener((message) => {
     const prefix = "playerRowColor";
     const suffix = "Action";
 
+    // highlighting and clearing specific rows
     if (message.action && message.action.startsWith(prefix) && message.action.endsWith(suffix)) {
         console.debug("message.action: ", message.action)
         const position = message.action.slice(prefix.length, -suffix.length)
         const tr = clickedRow
         if (tr) {
-            if (position !== "Clear") {
-                tr.classList.add(pluginNodeClass + "_playerBackground" + position)
-            } else {
-                tr.classList.forEach(cls => {
-                    if (cls.includes("_playerBackground")) {
-                        tr.classList.remove(cls);
-                    }
-                });
+            tr.classList.forEach(cls => {
+                if (cls.includes("_playerBackground")) {
+                    tr.classList.remove(cls);
+                }
+            });
+
+            // Select the first <a> inside a <td> whose href contains "/player/"
+            const playerLink = tr.querySelector('td a[href*="/player/"]');
+            // Match the number after /player/
+            const match = playerLink.href.match(/\/player\/(\d+)/);
+            const playerID = match ? match[1] : null;
+            if (!playerID) {
+                console.error("Tried to extract player ID from href ", playerLink.href, " but there are no matches")
             }
+            clearRowHighlight(playerID)
+            if (position !== "Clear") {
+                const highlightClass = pluginNodeClass + "_playerBackground" + position
+                tr.classList.add(highlightClass)
+                storeRowHighlightClass(highlightClass, playerID)
+            }
+        }
+        return
+    }
+
+    // clearing all rows
+    if (message.action && message.action === "clearAllRowHighlightsMenuAction") {
+        console.debug("clearing all rows")
+        clearAllRowHighlights()
+        let tableNode = document.querySelector("table.table")
+        if (tableNode != undefined && tableNode.rows.length > 1) {
+            processTableRows(tableNode)
         }
         return
     }
@@ -103,26 +165,21 @@ document.addEventListener("contextmenu", (event) => {
 
 document.addEventListener("mouseover", (e) => {
     var enabled = false
-    var enabledForOwnPlayers = false
-    var enabledForOtherPlayers = false
 
     const row = e.target.closest("table.table tr")
     if (row) {
         console.debug(`it's a row`)
-        enabledForOwnPlayers = row.querySelector("td fw-player-hover") !== null;
-        console.debug(`enabledForOwnPlayers: `, enabledForOwnPlayers)
 
-        otherPlayerLink = row.querySelector("td > a");
-        console.debug(`otherPlayerLink: `, otherPlayerLink)
-        if (otherPlayerLink && otherPlayerLink.href.includes("player/")) {
-            enabledForOtherPlayers = true
+        // Select the first <a> inside a <td> whose href contains "/player/"
+        const playerLink = row.querySelector('td a[href*="/player/"]');
+        console.debug(`playerLink: `, playerLink)
+        if (playerLink) {
+            enabled = true
         }
-        console.debug(`enabledForOtherPlayers: `, enabledForOtherPlayers)
     } else {
         console.debug(`it's NOT a row`)
     }
 
-    enabled = enabledForOwnPlayers || enabledForOtherPlayers
     console.debug(`Sending enabled: `, enabled)
     browser.runtime.sendMessage({ type: "contextMenuConfig", enabled });
 });
