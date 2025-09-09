@@ -1,32 +1,30 @@
 console.log(`loading lineup.js...`)
 
-const optionsStorage = browser.storage.sync;
-
 function getPlayerLinks(selector) {
     // Get the container
     const container = document.querySelector(selector);
-    
+
     if (!container) {
         throw new Error(`Container "${selector}" not found!`);
     } else {
         console.log(`Found container for selector: ${selector}`)
     }
-    
+
     // Get all <a> descendants
     const links = container.querySelectorAll('fw-player-card fw-player-hover div.hovercard a');
-    
+
     const filteredLinks = Array.from(links).filter(a =>
-      a.hasAttribute("href") &&
-      a.getAttribute("href").trim() !== "" &&
-      !a.getAttribute("href").startsWith("javascript:")
+        a.hasAttribute("href") &&
+        a.getAttribute("href").trim() !== "" &&
+        !a.getAttribute("href").startsWith("javascript:")
     );
-    
+
     return filteredLinks
 }
 
 function getHrefList(selector) {
     const playerLinks = getPlayerLinks(selector)
-    
+
     return playerLinks.map(a => a.href);
 }
 
@@ -38,7 +36,7 @@ function hasActiveSetPieces() {
         console.log(`Found link element: ${link.href}`)
         console.log(`Link text content: ${link.textContent.trim()}`)
     }
-    
+
     return link && link.textContent.trim() === "Set Pieces";
 }
 
@@ -55,13 +53,13 @@ function lastPathComponent(url) {
 
 async function loadValuesForComponents(components) {
     const playerData = await storage.get('player-data')
-    
+
     const result = playerData['player-data']
-    
+
     return components.map(key => {
         const raw = result[key];
         if (!raw) return null; // missing key
-        
+
         return raw
     });
 }
@@ -71,18 +69,18 @@ function proposeAnchors(anchors) {
     if (document.querySelector('#proposed-anchors')) {
         return
     }
-    
+
     // Find all h5 elements
     const headers = document.querySelectorAll("h5");
-    
+
     // Find the one with the text "Penalty Takers"
-    const targetHeader = Array.from(headers).find( h => h.textContent.trim() === "Player Selection" );
-    
+    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection");
+
     if (!targetHeader) {
         console.info("No Player Selection header, will try to find it when the page changes. ")
         return
     }
-    
+
     const proposedAnchors = document.createElement("ol");
     proposedAnchors.id = 'proposed-anchors'
     console.debug('Will iterate anchors: ', anchors)
@@ -93,7 +91,7 @@ function proposeAnchors(anchors) {
         takerSpan.textContent = `${anchor.name} (${anchor.AE})`
         console.debug('appending takerSpan to proposedAnchors')
         proposedAnchors.appendChild(takerSpan)
-        
+
         if (anchor.sportsmanship > 0) {
             const sportsmanshipSpan = document.createElement("span");
             sportsmanshipSpan.classList.add('sportsmanship')
@@ -113,22 +111,22 @@ function proposeAnchors(anchors) {
             takerSpan.appendChild(sportsmanshipSpan)
         }
     }
-    
+
     console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
     const siblingWithAnchor = Array.from(targetHeader.parentNode.parentNode.children)
-    .find(sibling =>
-          sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Anchor"
-          );
-    
+        .find(sibling =>
+            sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Anchor"
+        );
+
     if (siblingWithAnchor) {
         console.debug("Found sibling:", siblingWithAnchor);
     } else {
         console.warn("No matching sibling found, can't insert the recommended anchors");
         return
     }
-    
+
     targetHeader.parentNode.parentNode.insertBefore(proposedAnchors, siblingWithAnchor)
-    
+
     const proposedAnchorsHeader = document.createElement("h6");
     proposedAnchorsHeader.id = 'proposed-anchors-header'
     proposedAnchorsHeader.textContent = "Recommended anchors "
@@ -136,7 +134,7 @@ function proposeAnchors(anchors) {
     questionMarkSpan.textContent = "\uf29c"
     questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedAnchorsHeader.appendChild(questionMarkSpan)
-    
+
     targetHeader.parentNode.parentNode.insertBefore(proposedAnchorsHeader, proposedAnchors)
 }
 
@@ -146,18 +144,18 @@ function proposeCrossTakers(takers) {
     if (document.querySelector('#proposed-corner-takers')) {
         return
     }
-    
+
     // Find all h5 elements
     const headers = document.querySelectorAll("h5");
-    
+
     // Find the one with the text "Penalty Takers"
-    const targetHeader = Array.from(headers).find( h => h.textContent.trim() === "Player Selection" );
-    
+    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection");
+
     if (!targetHeader) {
         console.info("No Player Selection header, will try to find it when the page changes. ")
         return
     }
-    
+
     const proposedCrossTakers = document.createElement("ol");
     proposedCrossTakers.id = 'proposed-corner-takers'
     console.debug('Will iterate takers: ', takers)
@@ -169,13 +167,13 @@ function proposeCrossTakers(takers) {
         console.debug('appending takerSpan to proposedCrossTakers')
         proposedCrossTakers.appendChild(takerSpan)
     }
-    
+
     console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
     const siblingWithCornerKick = Array.from(targetHeader.parentNode.parentNode.children)
-    .find(sibling =>
-          sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Corner Kick"
-          );
-    
+        .find(sibling =>
+            sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Corner Kick"
+        );
+
     if (siblingWithCornerKick) {
         console.debug("Found sibling:", siblingWithCornerKick);
     } else {
@@ -183,7 +181,7 @@ function proposeCrossTakers(takers) {
         return
     }
     targetHeader.parentNode.parentNode.insertBefore(proposedCrossTakers, siblingWithCornerKick)
-    
+
     const proposedCornerTakersHeader = document.createElement("h6");
     proposedCornerTakersHeader.id = 'proposed-corner-takers-header'
     proposedCornerTakersHeader.textContent = "Recommended corner takers "
@@ -199,33 +197,33 @@ function proposePenaltyTakers(takers) {
     if (document.querySelector('.proposed-penalty-takers-container') || document.querySelector('#proposed-penalty-takers')) {
         return
     }
-        
+
     // Find all h5 elements
     const headers = document.querySelectorAll("h5");
-    
+
     // Find the one with the text "Penalty Takers"
-    const targetHeader = Array.from(headers).find( h => h.textContent.trim() === "Penalty Takers" );
-    
+    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Penalty Takers");
+
     if (!targetHeader) {
         console.info("No Penalty Takers header, will try to find it when the page changes. ")
         return
     }
-    
+
     if (takers.other.length > 0) {
         const proposedPenaltyTakersContainer = document.createElement("div")
         proposedPenaltyTakersContainer.classList.add("proposed-penalty-takers-container")
-        
+
         const leftPanel = document.createElement("div")
         leftPanel.classList.add("proposed-penalty-takers-panel")
-        
+
         const rightPanel = document.createElement("div")
         rightPanel.classList.add("proposed-penalty-takers-panel")
-        
+
         proposedPenaltyTakersContainer.appendChild(leftPanel)
         proposedPenaltyTakersContainer.appendChild(rightPanel)
-        
+
         targetHeader.parentNode.after(proposedPenaltyTakersContainer)
-        
+
         const proposedPenaltyTakers = document.createElement("ol");
         proposedPenaltyTakers.id = 'proposed-penalty-takers'
         console.debug('Will iterate takers.recommended: ', takers.recommended)
@@ -236,7 +234,7 @@ function proposePenaltyTakers(takers) {
             takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
             console.debug('appending takerSpan to proposedPenaltyTakers')
             proposedPenaltyTakers.appendChild(takerSpan)
-            
+
             if (taker.composure) {
                 const composureSpan = document.createElement("span");
                 composureSpan.classList.add('composure')
@@ -264,7 +262,7 @@ function proposePenaltyTakers(takers) {
                 takerSpan.appendChild(composureSpan)
             }
         }
-        
+
         const proposedPenaltyTakersHeader = document.createElement("h6");
         proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
         proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
@@ -272,11 +270,11 @@ function proposePenaltyTakers(takers) {
         questionMarkSpan.textContent = "\uf29c"
         questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
         proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
-        
+
         leftPanel.appendChild(proposedPenaltyTakersHeader)
         leftPanel.appendChild(proposedPenaltyTakers)
         insertComposureTresholdInput(proposedPenaltyTakersHeader)
-        
+
         // Add the other penalty takers to the right panel
         const otherPenaltyTakers = document.createElement("ol");
         otherPenaltyTakers.id = 'proposed-penalty-takers'
@@ -296,7 +294,7 @@ function proposePenaltyTakers(takers) {
         questionMarkSpanOther.textContent = "\uf29c "
         questionMarkSpanOther.title = "These are other players with the penalty kick skill above the composure treshold, who didn't make it to the recommended list for some reason - likely other players having positive composure which this extension really favours. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
         otherPenaltyTakersHeader.appendChild(questionMarkSpanOther)
-        
+
         rightPanel.appendChild(otherPenaltyTakersHeader)
         rightPanel.appendChild(otherPenaltyTakers)
     } else {
@@ -310,7 +308,7 @@ function proposePenaltyTakers(takers) {
             takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
             console.debug('appending takerSpan to proposedPenaltyTakers')
             proposedPenaltyTakers.appendChild(takerSpan)
-            
+
             if (taker.composure) {
                 const composureSpan = document.createElement("span");
                 composureSpan.classList.add('composure')
@@ -339,7 +337,7 @@ function proposePenaltyTakers(takers) {
             }
         }
         targetHeader.parentNode.after(proposedPenaltyTakers);
-        
+
         const proposedPenaltyTakersHeader = document.createElement("h6");
         proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
         proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
@@ -348,7 +346,7 @@ function proposePenaltyTakers(takers) {
         questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
         proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
         targetHeader.parentNode.after(proposedPenaltyTakersHeader);
-        
+
         insertComposureTresholdInput(proposedPenaltyTakersHeader)
     }
 }
@@ -362,21 +360,24 @@ async function insertComposureTresholdInput(parent) {
     input.setAttribute("step", "1");
     input.id = "composure-treshold";
     input.placeholder = "Composure treshold";
-    
+
     // Optional: load saved value from options storage
-    const { tresholds } = await optionsStorage.get("tresholds");
-    if (tresholds['composure_treshold']) {
-        input.value = tresholds['composure_treshold'];
-    }
-    
+    const { tresholds = {} } = await storage.get("tresholds");
+    // Destructure with defaults
+    const {
+        composure_treshold = 50
+    } = tresholds;
+
+    input.value = composure_treshold
+
     // Add a listener for changes
     input.addEventListener("change", async (e) => {
         const newValue = e.target.value;
         tresholds['composure_treshold'] = newValue
-        
-        await optionsStorage.set({ tresholds: tresholds });
+
+        await storage.set({ tresholds: tresholds });
         console.debug("Updated tresholds =", tresholds);
-        
+
         if (document.querySelector('.proposed-penalty-takers-container')) {
             document.querySelector('.proposed-penalty-takers-container').remove()
         } else {
@@ -388,9 +389,51 @@ async function insertComposureTresholdInput(parent) {
             }
         }
     });
-    
+
     // Inject into the page
-    parent.appendChild(input);
+    parent.appendChild(input)
+    const questionMarkSpan = document.createElement("span")
+    questionMarkSpan.textContent = " \uf29c "
+    questionMarkSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ○ symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
+    parent.appendChild(questionMarkSpan)
+}
+
+async function insertArroganceTresholdInput(parent) {
+    // Create the input element
+    const input = document.createElement("input");
+    input.type = "number";
+    input.setAttribute("min", "0");
+    input.setAttribute("max", "99");
+    input.setAttribute("step", "1");
+    input.id = "arrogance-treshold";
+    input.placeholder = "Arrogance treshold";
+
+    // Optional: load saved value from options storage
+    const { tresholds = {} } = await storage.get("tresholds");
+    // Destructure with defaults
+    const {
+        arrogance_treshold = 50
+    } = tresholds;
+
+    input.value = arrogance_treshold
+
+    // Add a listener for changes
+    input.addEventListener("change", async (e) => {
+        const newValue = e.target.value;
+        tresholds['arrogance_treshold'] = newValue
+
+        await storage.set({ tresholds: tresholds });
+        console.debug("Updated tresholds =", tresholds);
+
+        processLineup()
+    });
+
+    // Inject into the page
+    parent.appendChild(input)
+    const questionMarkSpan = document.createElement("span")
+    questionMarkSpan.textContent = " \uf29c "
+    questionMarkSpan.title = `Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, ♛ symbol will appear next to his name.`
+    parent.appendChild(questionMarkSpan)
 }
 
 function addNoDataSymbol(container) {
@@ -423,11 +466,11 @@ async function processLineup() {
     console.debug(lastParts)
     const profiles = await loadValuesForComponents(lastParts);
     console.debug('Profiles: ', profiles)
-    
+
     // Load tresholds from storage
-    const { tresholds = {} } = await optionsStorage.get("tresholds");
+    const { tresholds = {} } = await storage.get("tresholds");
     console.debug(`Loaded tresholds from storage: `, tresholds)
-    
+
     var proposedPenaltyTakersArray = {
         recommended: [],
         other: [],
@@ -436,13 +479,13 @@ async function processLineup() {
     var penaltyTakersWithoutComposure = []
     var crossingPlayers = []
     var anchors = []
-    
+
     for (let i = 0; i < pLinks.length; i++) {
         const profile = profiles[i]
-        
+
         // Select the first span child
         const firstSpan = Array.from(pLinks[i].children).find(
-          child => child.tagName === 'SPAN' && child.textContent.trim() !== ''
+            child => child.tagName === 'SPAN' && child.textContent.trim() !== ''
         );
 
         var name = ""
@@ -452,7 +495,7 @@ async function processLineup() {
         } else {
             console.warn('No non-empty span found - unable to determine the player name :(');
         }
-        
+
         const container = pLinks[i].parentNode.parentNode.parentNode
         if (profile === null) {
             console.debug(`No profile saved in storage for ${name}, skipping...`)
@@ -461,35 +504,35 @@ async function processLineup() {
         } else {
             removeNoDataSymbol(container)
         }
-        
+
         var personalities = profile['personalities']
-        
+
         if (!personalities) {
             console.debug(`No personalities in player profile for ${name}, skipping...`)
-            
+
             addNoDataSymbol(container)
-            
+
             continue
         } else {
             removeNoDataSymbol(container)
         }
-        
+
         // compatibility with 1.3.1 and older
         if (isString(personalities)) {
             console.info("Applying compatibility with <1.3.1 extension version, personalities are processed into objects")
             personalities = JSON.parse(personalities)
         }
-        
+
         console.debug(`Found profile for ${name}, applying personalities: `, personalities)
         const leadership = personalities['leadership']
         const composure = personalities['composure']
         const arrogance = personalities['arrogance']
         const sportsmanship = personalities['sportsmanship']
-        
+
         if (leadership) {
             applyLeadership(pLinks[i], profile['personalities']['leadership'])
         }
-        
+
         // For adding composure and recommended penalty takers
         // First check if on FW position
         // Get all siblings
@@ -500,7 +543,7 @@ async function processLineup() {
         // Also check midfielders because of the long shot option
         const isInMidfieldZone = siblings.some(sib => sib.querySelector('span.middle-zone') !== null);
         const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
-        
+
         // Alternatively check if the effective penalty kick skill is reasonable
         const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
         var reasonablePenaltyKick = false
@@ -526,13 +569,20 @@ async function processLineup() {
                 } else {
                     console.debug(`processing composure, penaltyKick = ${penaltyKick} below reasonable level, leaving reasonablePenaltyKick as false`);
                 }
-                
 
-                if (isInAttackZone  || isInMidfieldZone || (isSub && reasonablePenaltyKick)) {
-                  console.debug(`applying composure: ${composure} to ${name}`)
-                  applyComposure(pLinks[i], composure)
+
+                if (isInAttackZone || isInMidfieldZone || (isSub && reasonablePenaltyKick)) {
+                    console.debug(`applying composure: ${composure} to ${name}`)
+                    applyComposure(pLinks[i], composure)
                 } else {
-                  console.debug('Has composure in profile, but not in the attack or midfield zone or penaltyKick under reasonable level, skipping...');
+                    console.debug('Has composure in profile, but not in the attack or midfield zone or penaltyKick under reasonable level, removing symbol if necessary');
+                    const composureSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
+                        el => el.textContent.trim() === '○'
+                    );
+                    if (composureSpan) {
+                        console.debug(`removing composure from ${name}`)
+                        composureSpan.remove()
+                    }
                 }
             } else {
                 console.debug(`processing composure, but the player is not an outfielder, leaving reasonablePenaltyKick as false`);
@@ -541,7 +591,7 @@ async function processLineup() {
                 }
             }
         }
-        
+
         if (arrogance && arrogance < 0) { // only bother with this if the arrogance is negative, otherwise there is no impact on offsides
             console.log('Arrogance negative, proceeding...');
             // First check if on a defensive position
@@ -551,11 +601,12 @@ async function processLineup() {
             // Check if any sibling has a <span> with the class "defence-zone"
             const isInDefenceZone = siblings.some(sib => sib.querySelector('span.defence-zone') !== null);
             const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
-            
+
             // Alternatively check if the defensive skill is reasonable
             const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
             var reasonableDP = false
             const arrogance_treshold = tresholds['arrogance_treshold'] ?? 50
+            console.debug('arrogance_treshold: ', arrogance_treshold)
             if (skills.length == 8) { // goalkeepers have only 6 skills
                 const DP = skills[7].querySelector('span[class^="denom"]').textContent.trim();
                 if (DP > arrogance_treshold) {
@@ -567,46 +618,60 @@ async function processLineup() {
             }
 
             if (isInDefenceZone || (isSub && reasonableDP)) {
-              console.debug(`applying arrogance: ${arrogance} to ${name}`)
-              applyArrogance(pLinks[i], arrogance)
+                console.debug(`applying arrogance: ${arrogance} to ${name}`)
+                applyArrogance(pLinks[i], arrogance)
             } else {
-              console.log('Has arrogance in profile, but not in the defence zone or DP under reasonable level, skipping...');
+                console.debug('Has arrogance in profile, but not in the defence zone or DP under reasonable level, removing symbol if necessary');
+                const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
+                    el => el.textContent.trim() === '♛'
+                );
+                if (arroganceSpan) {
+                    console.debug(`removing arrogance from ${name}`)
+                    arroganceSpan.remove()
+                }
             }
         } else {
-            console.log('Arrogance positive or not in profile, skipping');
+            console.debug('Arrogance positive or not in profile, removing symbol if necessary');
+            const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
+                el => el.textContent.trim() === '♛'
+            );
+            if (arroganceSpan) {
+                console.debug(`removing arrogance from ${name}`)
+                arroganceSpan.remove()
+            }
         }
-        
+
         if (sportsmanship) {
             applySportsmanship(pLinks[i], sportsmanship)
         }
-        
+
         // calculate the cross skill and use AE for anchors
         if (skills.length == 8) { // goalkeepers have only 6 skills
             const BC = skills[2].querySelector('span[class^="denom"]').textContent.trim();
             const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
             const cross = Math.floor(0.7 * PA + 0.3 * BC)
             crossingPlayers.push({ name: name, cross: cross })
-            
+
             const AE = skills[4].querySelector('span[class^="denom"]').textContent.trim();
             anchors.push({ name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
     }
-    
+
     // Propose anchors
-    const withoutFouls = anchors.filter( player => player.sportsmanship >= 0 )
+    const withoutFouls = anchors.filter(player => player.sportsmanship >= 0)
     withoutFouls.sort((a, b) => {
         const AEDiff = b.AE - a.AE
         if (AEDiff !== 0) return AEDiff
         return b.sportsmanship - a.sportsmanship
     })
     proposeAnchors(withoutFouls.slice(0, 3))
-    
+
     // Propose cross takers
     crossingPlayers.sort((a, b) => {
         return b.cross - a.cross
     })
     proposeCrossTakers(crossingPlayers.slice(0, 3))
-    
+
     // Propose penalty takers
     penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
     console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
@@ -617,32 +682,32 @@ async function processLineup() {
     if (recommendedWithComposure.length < proposedCount) {
         var mergedArray = recommendedWithComposure.concat(penaltyTakersWithoutComposure.slice(0, 5 - recommendedWithComposure.length));
         console.debug('mergedArray: ', mergedArray)
-        
+
         mergedArray.sort((a, b) => {
             const pkDiff = b.penaltyKick - a.penaltyKick;
             if (pkDiff !== 0) return pkDiff;          // sort by penaltyKick first
             return b.composure - a.composure;         // tie-breaker by composure
         });
-        
+
         console.debug('mergedArray sorted: ', mergedArray)
         proposedPenaltyTakersArray.recommended = mergedArray
-        
+
         // add other for the players with high penalty kick skill but for some reason not recommended (e.g. no positive or negative composure etc.)
         const other = penaltyTakersWithoutComposure.slice(5 - recommendedWithComposure.length, penaltyTakersWithoutComposure.length)
         proposedPenaltyTakersArray.other = other
     }
-    
+
     console.debug('passing to proposePenaltyTakers: ', proposedPenaltyTakersArray)
     proposePenaltyTakers(proposedPenaltyTakersArray)
 }
 
 function applySportsmanship(element, sportsmanship) {
     const hasSportsmanshipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-      child => child.textContent.trim() === "⚖\uFE0E"
+        child => child.textContent.trim() === "⚖\uFE0E"
     );
     if (!hasSportsmanshipSymbol) {
         console.debug(`Applying sportsmanship: ${sportsmanship}`)
-        
+
         const sportsmanshipSpan = document.createElement("span");
         sportsmanshipSpan.classList.add('sportsmanship')
         sportsmanshipSpan.textContent = " ⚖\uFE0E"
@@ -666,18 +731,18 @@ function applySportsmanship(element, sportsmanship) {
             default:
                 console.warn("Value of sportsmanship is unexpected: ", sportsmanship);
         }
-        
+
         element.parentNode.parentNode.parentNode.appendChild(sportsmanshipSpan)
     }
 }
 
 function applyArrogance(element, arrogance) {
     const hasArroganceSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-      child => child.textContent.trim() === "♛"
+        child => child.textContent.trim() === "♛"
     );
     if (!hasArroganceSymbol) {
         console.debug(`Applying arrogance: ${arrogance}`)
-        
+
         const arroganceSpan = document.createElement("span");
         arroganceSpan.classList.add('arrogance')
         arroganceSpan.textContent = " ♛"
@@ -699,18 +764,18 @@ function applyArrogance(element, arrogance) {
             default:
                 console.warn("Value of arrogance is unexpected: ", arrogance);
         }
-        
+
         element.parentNode.parentNode.parentNode.appendChild(arroganceSpan)
     }
 }
 
 function applyComposure(element, composure) {
     const hasComposureSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-      child => child.textContent.trim() === "○"
+        child => child.textContent.trim() === "○"
     );
     if (!hasComposureSymbol) {
         console.debug(`Applying composure: ${composure}`)
-        
+
         const composureSpan = document.createElement("span");
         composureSpan.classList.add('composure')
         composureSpan.textContent = " ○"
@@ -734,18 +799,18 @@ function applyComposure(element, composure) {
             default:
                 console.warn("Value of composure is unexpected: ", composure);
         }
-        
+
         element.parentNode.parentNode.parentNode.appendChild(composureSpan)
     }
 }
 
 function applyLeadership(element, leadership) {
     const hasLeadershipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-      child => child.textContent.trim() === "✪"
+        child => child.textContent.trim() === "✪"
     );
     if (!hasLeadershipSymbol) {
         console.debug(`Applying Leadership: ${leadership}`)
-        
+
         const leadershipSpan = document.createElement("span");
         leadershipSpan.classList.add('leadership')
         leadershipSpan.textContent = " ✪"
@@ -769,7 +834,7 @@ function applyLeadership(element, leadership) {
             default:
                 console.warn("Value of leadership is unexpected: ", leadership);
         }
-        
+
         element.parentNode.parentNode.parentNode.appendChild(leadershipSpan)
     }
 }
@@ -781,6 +846,11 @@ const lineupObservingConfig = { attributes: false, childList: true, subtree: tru
 const lineupObservingCallback = (mutationList, observer) => {
     if (hasActiveSetPieces()) {
         try {
+            const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
+            if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
+                insertArroganceTresholdInput(h5Element)
+            }
+
             processLineup()
         } catch (err) {
             console.error(err.message);
@@ -930,12 +1000,17 @@ addCSS(`
         align-items: center;
     }
 
-    input#composure-treshold {
+    input#composure-treshold, input#arrogance-treshold {
         width: 160px;         /* make it wider */
         height: 26px;         /* control the height */
         padding: 4px 4px;     /* inner spacing */
         border-radius: 8px;   /* rounded corners */
         font-size: 13px;      /* adjust font size */
         box-sizing: border-box;
+    }
+    
+    h5[touranchor="lineup.tour"] span {
+        font: 14px/1 FontAwesome;
+        cursor: help;
     }
 `)

@@ -124,6 +124,7 @@ document.getElementById("importBtn").addEventListener("click", importStorage);
 
 // Save settings when changed
 function saveOptions() {
+    console.info("Saving options to storage")
     // Collect all checkboxes
     const modules = {
         academy_buttons: document.getElementById('academy_buttons').checked,
@@ -143,15 +144,9 @@ function saveOptions() {
         colors[input.id] = input.value
     });
 
-    // Collect tresholds
-    const tresholds = {
-        composure_treshold: document.getElementById('composure_treshold').value,
-        arrogance_treshold: document.getElementById('arrogance_treshold').value
-    };
-
     // Save both to storage
-    optionsStorage.set({ modules, colors, tresholds }, () => {
-        console.log("Options saved", { modules, colors, tresholds });
+    optionsStorage.set({ modules, colors }, () => {
+        console.log("Options saved", { modules, colors });
     });
 }
 

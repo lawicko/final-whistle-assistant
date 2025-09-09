@@ -74,7 +74,7 @@ async function loadModules(tabId, url) {
     loadedMap.set(tabId, false)
 
     async function start() {
-        const result = await optionsStorage.get(["modules", "colors", "tresholds"]);
+        const result = await optionsStorage.get(["modules", "colors"]);
         const modules = result.modules || {};
 
         await executeScript(tabId, "constants.js")
@@ -163,7 +163,7 @@ const defaultOptions = {
 
 async function handleInstalled(details) {
     console.log(`handleInstalled reason: ${details.reason}`);
-    const { modules = {}, colors = {}, tresholds = {} } = await optionsStorage.get(["modules", "colors", "tresholds"]);
+    const { modules = {}, colors = {}, tresholds = {} } = await optionsStorage.get(["modules", "colors"]);
     for (const key in defaultOptions.modules) {
         if (!(key in modules)) {
             console.info(`Found a missing key (${key}) in the modules loaded from storage, assigned the value from the default modules (${defaultOptions.modules[key]})`)
@@ -183,16 +183,6 @@ async function handleInstalled(details) {
     }
     optionsStorage.set({ colors: colors }, () => {
         console.info("Colors saved", { colors });
-    });
-
-    for (const key in defaultOptions.tresholds) {
-        if (!(key in tresholds)) {
-            console.info(`Found a missing key (${key}) in the tresholds loaded from storage, assigned the value from the default tresholds (${defaultOptions.tresholds[key]})`)
-            tresholds[key] = defaultOptions.tresholds[key];
-        }
-    }
-    optionsStorage.set({ tresholds: tresholds }, () => {
-        console.info("Tresholds saved", { tresholds });
     });
 
     // context menus
