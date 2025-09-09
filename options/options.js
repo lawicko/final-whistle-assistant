@@ -8,7 +8,7 @@ if (typeof browser == "undefined") {
 const optionsStorage = browser.storage.sync;
 
 function isChrome() {
-    return typeof chrome !== "undefined";
+    return navigator.userAgent.includes("Chrome") && !navigator.userAgent.includes("Firefox")
 }
 
 async function exportStorage() {
@@ -24,9 +24,15 @@ async function exportStorage() {
     }
 }
 
-async function showPasteDialog() {
+async function showPasteDialogNear(element) {
     const pasteDialog = document.getElementById("pasteDialog");
-    pasteDialog.showModal();
+    // Get element's position
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+    // Position the dialog near the element
+    pasteDialog.style.top = rect.bottom + 5 + "px"; // 5px below
+    pasteDialog.show();
 
     const confirmed = await new Promise(resolve => {
         pasteDialog.addEventListener("close", function handler() {
@@ -48,7 +54,7 @@ async function importStorage() {
         let text;
         if (isChrome()) {
             // Always show paste dialog on Chrome
-            text = await showPasteDialog();
+            text = await showPasteDialogNear(document.getElementById("importBtn"));
             if (text === null || text === "") {
                 setStatus("importStatus", "❌ No text detected in the text area.");
                 return;
@@ -59,7 +65,7 @@ async function importStorage() {
                 text = await navigator.clipboard.readText();
             } catch {
                 // Fallback to paste dialog if clipboard fails
-                text = await showPasteDialog();
+                text = await showPasteDialogNear(document.getElementById("importBtn"));
                 if (text === null || text === "") {
                     setStatus("importStatus", "❌ No text detected in the text area.");
                     return;
@@ -72,7 +78,14 @@ async function importStorage() {
         document.getElementById("importPreview").textContent = preview + "...";
 
         const dialog = document.getElementById("importDialog");
-        dialog.showModal();
+        // Get element's position
+        const element = document.getElementById("importBtn")
+        const rect = element.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+        // Position the dialog near the element
+        dialog.style.top = rect.bottom + 5 + "px"; // 5px below
+        dialog.show();
 
         // Wait for user response
         const confirmed = await new Promise(resolve => {

@@ -295,6 +295,11 @@
             font-size: 1rem;
             cursor: pointer;
         }
+
+        #importDialog {
+            position: absolute; /* instead of fixed */
+            z-index: 1000; /* make sure it’s above other content */
+        }
     </style>
 
     <script src="options.js"></script>
