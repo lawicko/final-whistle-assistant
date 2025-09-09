@@ -952,7 +952,7 @@ async function applyCustomColorsLineupSymbols() {
         document.head.appendChild(style);
 
     } catch (err) {
-        console.error("Failed to apply custom colors for tags:", err);
+        console.error("Failed to apply custom colors lineup symbols:", err);
     }
 }
 

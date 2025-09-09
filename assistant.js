@@ -153,7 +153,11 @@ const defaultOptions = {
         "color-setting-sportsmanship+": "#4CBB17",
         "color-setting-sportsmanship++": "#228B22",
         "color-setting-sportsmanship-": "#FFD700",
-        "color-setting-sportsmanship--": "#FF4500"
+        "color-setting-sportsmanship--": "#FF4500",
+        "color-setting-teamwork+": "#4CBB17",
+        "color-setting-teamwork++": "#228B22",
+        "color-setting-teamwork-": "#FFD700",
+        "color-setting-teamwork--": "#FF4500"
     },
     tresholds: {
         composure_treshold: 50,
@@ -163,7 +167,7 @@ const defaultOptions = {
 
 async function handleInstalled(details) {
     console.log(`handleInstalled reason: ${details.reason}`);
-    const { modules = {}, colors = {}, tresholds = {} } = await optionsStorage.get(["modules", "colors"]);
+    const { modules = {}, colors = {} } = await optionsStorage.get(["modules", "colors"]);
     for (const key in defaultOptions.modules) {
         if (!(key in modules)) {
             console.info(`Found a missing key (${key}) in the modules loaded from storage, assigned the value from the default modules (${defaultOptions.modules[key]})`)

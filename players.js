@@ -42,66 +42,303 @@ function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
 
 // Adds the headers to the players table
 function createHeaders() {
-    console.info(`appending headers...`)
+    console.debug(`appending headers...`)
     var firstRow = document.querySelector("table > tr:first-of-type");
 
-    const thLS = createHoverCardCell("th", "LS", "Long Shot");
-    firstRow.appendChild(thLS);
+    console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
-    const thMD = createHoverCardCell("th", "MD", "Midfield Dominance");
-    firstRow.appendChild(thMD);
+    if (!isShowingGoalkeepers()) {
+        const thLS = createHoverCardCell("th", "LS", "Long Shot");
+        firstRow.appendChild(thLS);
+
+        const thMD = createHoverCardCell("th", "MD", "Midfield Dominance");
+        firstRow.appendChild(thMD);
+
+        const thOA = createHoverCardCell("th", "OA", "Offensive Assistance");
+        firstRow.appendChild(thOA);
+    }
+
+    if (!isShowingAttackers()) {
+        const thDA = createHoverCardCell("th", "DA", "Defensive Assistance");
+        firstRow.appendChild(thDA);
+    }
 }
 
 // Calculates and adds the cells with the midfield contribution values for each player
-function appendMidfieldContributionForPlayers() {
-    console.info(`appending the midfield contribution...`)
-    let rows = document.querySelectorAll("table > tr");
-    let longShotMax = (100 + Math.min(2 * 100, 100)) / 2
-    let midfieldDominanceMax = 100 + 200
-    // let advancedMidfieldDominanceMax = (100 + 200) * 0.5
-    // let advancedMidfieldDominanceFlexibleMax = 100 + 200
-    let constitutionTreshold = 50
-    for (let i = 1; i < rows.length; i++) {
-        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
+function appendAdditionalInfo(storedPlayerData) {
+    console.debug(`appending the midfield contribution...`)
+    console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
-        // Because we are listening to the changes on the insides of the table, it is possible that some updates come in-between when the cells are not yet populated, so for this cases we don't need to do anything
-        if (valueNodes.length < 8) {
+    let rows = document.querySelectorAll("table > tr");
+    for (let i = 1; i < rows.length; i++) {
+        // Select the first <a> inside a <td> whose href contains "/player/"
+        const playerLink = rows[i].querySelector('td a[href*="/player/"]');
+        // Match the number after /player/
+        if (!playerLink) { // When the user hovers over the player name, the hover card shows up
             return
         }
+        const match = playerLink.href.match(/\/player\/(\d+)/);
+        const playerID = match ? match[1] : null;
+        if (!playerID) {
+            console.error("Tried to extract player ID from href ", playerLink.href, " but there are no matches")
+        }
+        // Select the first span child
+        const firstSpan = Array.from(playerLink.children).find(
+            child => child.tagName === 'SPAN' && child.textContent.trim() !== ''
+        );
+        var playerName = ""
+        if (firstSpan) {
+            playerName = firstSpan.textContent
+            console.debug('Processing player:', playerName);
+        } else {
+            console.warn('No non-empty span found - unable to determine the player name :(');
+        }
 
+        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
+
+        const playerData = storedPlayerData[playerID]
+        const container = playerLink.parentNode.parentNode.parentNode
+        if (playerData) {
+            console.debug(`Found stored player data for: ${playerName}`, playerData)
+        } else {
+            console.debug(`Player ${playerName} has no saved profile.`)
+            addNoDataSymbol(container)
+        }
+        var playerPersonalities = undefined
+        if (playerData && playerData["personalities"]) {
+            playerPersonalities = playerData["personalities"]
+        }
+        if (!playerPersonalities) {
+            console.debug(`No personalities in player profile for ${playerName}.`)
+            addNoDataSymbol(container)
+        } else {
+            removeNoDataSymbol(container)
+
+            var teamwork = playerPersonalities['teamwork']
+            if (teamwork) {
+                if (showTeamwork) {
+                    applyTeamwork(playerLink, teamwork)
+                } else {
+                    clearTeamwork(container)
+                }
+            }
+            const sportsmanship = playerPersonalities['sportsmanship']
+            if (sportsmanship) {
+                if (showSportsmanship) {
+                    applySportsmanship(playerLink, sportsmanship)
+                } else {
+                    clearSportsmanship(container)
+                }
+            }
+        }
         const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
+        if (valueNodes.length < 8) { // Goalkeepers
+            let RE = parseNumber(valueNodes[0]);
+            let GP = parseNumber(valueNodes[1]);
+            let IN = parseNumber(valueNodes[2]);
+            let CT = parseNumber(valueNodes[3]);
+            let OR = parseNumber(valueNodes[4]);
 
-        let SC = parseNumber(valueNodes[0]);
-        let OP = parseNumber(valueNodes[1]);
-        let BC = parseNumber(valueNodes[2]);
-        let PA = parseNumber(valueNodes[3]);
-        let CO = parseNumber(valueNodes[5]);
-        let TA = parseNumber(valueNodes[6]);
-        let DP = parseNumber(valueNodes[7]);
+            console.debug(`RE=${RE} GP=${GP} IN=${IN} CT=${CT} OR=${OR}`)
+            var defensiveAssistanceNoModifiers = OR
+            var defensiveAssistance = defensiveAssistanceNoModifiers
+            var defensiveAssistanceMax = 100
 
-        // console.debug(`SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
+            if (teamwork) {
+                switch (teamwork) {
+                    case -2:
+                        var twp = -0.25
+                        var teamworkDescription = `--`
+                        break;
+                    case -1:
+                        var twp = -0.15
+                        var teamworkDescription = `-`
+                        break;
+                    case 1:
+                        var twp = 0.15
+                        var teamworkDescription = `+`
+                        break;
+                    case 2:
+                        var twp = 0.25
+                        var teamworkDescription = `++`
+                        break;
+                    default:
+                        console.warn("Value of teamwork is unexpected: ", teamwork);
+                        var twp = 0
+                }
+                defensiveAssistance = Math.floor(defensiveAssistanceNoModifiers + defensiveAssistanceNoModifiers * twp)
+            }
+            let defensiveAssistanceDenomination = defensiveAssistance / defensiveAssistanceMax
+            let defensiveAssistanceDenominationNormalized = denomination(defensiveAssistanceDenomination * 100)
 
-        let longShot = (SC + Math.min(2 * SC, PA)) / 2
-        let longShotDenomination = longShot / longShotMax
-        let longShotDenominationNormalized = denomination(longShotDenomination * 100)
+            const defensiveAssistanceModifierDifference = defensiveAssistance - defensiveAssistanceNoModifiers
+            var defensiveAssistanceModifierDetails = ``
+            if (defensiveAssistanceModifierDifference !== 0) {
+                const sign = defensiveAssistanceModifierDifference > 0 ? '+' : '-'
+                defensiveAssistanceModifierDetails = ` (${defensiveAssistanceNoModifiers} ${sign} ${Math.abs(defensiveAssistanceModifierDifference)} from Teamwork${teamworkDescription} personality)`
+            }
+            const tdDA = createHoverCardCell(
+                "td",
+                defensiveAssistance,
+                `formula: OR\n${defensiveAssistance}${defensiveAssistanceModifierDetails}`,
+                `denom${defensiveAssistanceDenominationNormalized}`);
+            rows[i].appendChild(tdDA);
+        } else { // Outfielders
+            let SC = parseNumber(valueNodes[0]);
+            let OP = parseNumber(valueNodes[1]);
+            let BC = parseNumber(valueNodes[2]);
+            let PA = parseNumber(valueNodes[3]);
+            let CO = parseNumber(valueNodes[5]);
+            let TA = parseNumber(valueNodes[6]);
+            let DP = parseNumber(valueNodes[7]);
 
-        let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
-        let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
-        let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
+            console.debug(`SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
 
-        const tdLS = createHoverCardCell(
-            "td",
-            Math.trunc(longShot),
-            `formula: (SC + min(2 * SC, PA)) / 2\n(${SC} + min(2 * ${SC}, ${PA})) / 2\n(${SC} + ${Math.min(2 * SC, PA)}) / 2\n${SC + Math.min(2 * SC, PA)} / 2 = ${(SC + Math.min(2 * SC, PA)) / 2}`,
-            `denom${longShotDenominationNormalized}`);
-        rows[i].appendChild(tdLS);
+            let longShot = (SC + Math.min(2 * SC, PA)) / 2
+            let longShotMax = (100 + Math.min(2 * 100, 100)) / 2
+            let longShotDenomination = longShot / longShotMax
+            let longShotDenominationNormalized = denomination(longShotDenomination * 100)
 
-        const tdMD = createHoverCardCell(
-            "td",
-            midfieldDominanceContribution,
-            `formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})\n${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})\n${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`,
-            `denom${midfieldDominanceDenominationNormalized}`);
-        rows[i].appendChild(tdMD);
+            let constitutionTreshold = 50
+            let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
+            let midfieldDominanceMax = 100 + 200
+            let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
+            let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
+
+            var offensiveAssistanceNoModifiers = OP + BC
+            var offensiveAssistance = offensiveAssistanceNoModifiers
+            var offensiveAssistanceMax = 100 + 100
+            var defensiveAssistanceNoModifiers = TA + DP
+            var defensiveAssistance = defensiveAssistanceNoModifiers
+            var defensiveAssistanceMax = 100 + 100
+            if (teamwork) {
+                switch (teamwork) {
+                    case -2:
+                        var twp = -0.25
+                        var teamworkDescription = `--`
+                        break;
+                    case -1:
+                        var twp = -0.15
+                        var teamworkDescription = `-`
+                        break;
+                    case 1:
+                        var twp = 0.15
+                        var teamworkDescription = `+`
+                        break;
+                    case 2:
+                        var twp = 0.25
+                        var teamworkDescription = `++`
+                        break;
+                    default:
+                        console.warn("Value of teamwork is unexpected: ", teamwork);
+                        var twp = 0
+                }
+                offensiveAssistance = Math.floor(offensiveAssistanceNoModifiers + offensiveAssistanceNoModifiers * twp)
+                defensiveAssistance = Math.floor(defensiveAssistanceNoModifiers + defensiveAssistanceNoModifiers * twp)
+            }
+            let offensiveAssistanceDenomination = offensiveAssistance / offensiveAssistanceMax
+            let offensiveAssistanceDenominationNormalized = denomination(offensiveAssistanceDenomination * 100)
+
+            let defensiveAssistanceDenomination = defensiveAssistance / defensiveAssistanceMax
+            let defensiveAssistanceDenominationNormalized = denomination(defensiveAssistanceDenomination * 100)
+
+            if (!isShowingGoalkeepers()) {
+                const tdLS = createHoverCardCell(
+                    "td",
+                    Math.trunc(longShot),
+                    `formula: (SC + min(2 * SC, PA)) / 2\n(${SC} + min(2 * ${SC}, ${PA})) / 2\n(${SC} + ${Math.min(2 * SC, PA)}) / 2\n${SC + Math.min(2 * SC, PA)} / 2 = ${(SC + Math.min(2 * SC, PA)) / 2}`,
+                    `denom${longShotDenominationNormalized}`);
+                rows[i].appendChild(tdLS);
+
+                const tdMD = createHoverCardCell(
+                    "td",
+                    midfieldDominanceContribution,
+                    `formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})\n${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})\n${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`,
+                    `denom${midfieldDominanceDenominationNormalized}`);
+                rows[i].appendChild(tdMD);
+
+                const offensiveAssistanceModifierDifference = offensiveAssistance - offensiveAssistanceNoModifiers
+                var offensiveAssistanceModifierDetails = ``
+                if (offensiveAssistanceModifierDifference !== 0) {
+                    const sign = offensiveAssistanceModifierDifference > 0 ? '+' : '-'
+                    offensiveAssistanceModifierDetails = ` (${offensiveAssistanceNoModifiers} ${sign} ${Math.abs(offensiveAssistanceModifierDifference)} from Teamwork${teamworkDescription} personality)`
+                }
+                const tdOA = createHoverCardCell(
+                    "td",
+                    offensiveAssistance,
+                    `formula: OP + BC\n${OP} + ${BC} = ${offensiveAssistance}${offensiveAssistanceModifierDetails}`,
+                    `denom${offensiveAssistanceDenominationNormalized}`);
+                rows[i].appendChild(tdOA);
+            }
+
+            if (!isShowingAttackers()) {
+                const defensiveAssistanceModifierDifference = defensiveAssistance - defensiveAssistanceNoModifiers
+                var defensiveAssistanceModifierDetails = ``
+                if (defensiveAssistanceModifierDifference !== 0) {
+                    const sign = defensiveAssistanceModifierDifference > 0 ? '+' : '-'
+                    defensiveAssistanceModifierDetails = ` (${defensiveAssistanceNoModifiers} ${sign} ${Math.abs(defensiveAssistanceModifierDifference)} from Teamwork${teamworkDescription} personality)`
+                }
+                const tdDA = createHoverCardCell(
+                    "td",
+                    defensiveAssistance,
+                    `formula: TA + DP\n${TA} + ${DP} = ${defensiveAssistance}${defensiveAssistanceModifierDetails}`,
+                    `denom${defensiveAssistanceDenominationNormalized}`);
+                rows[i].appendChild(tdDA);
+            }
+        }
+    }
+}
+
+function clearTeamwork(element) {
+    const spans = element.querySelectorAll("span");
+    spans.forEach(span => {
+        if (span.textContent.trim() === "⬡") {
+            span.remove();
+        }
+    });
+}
+
+function clearSportsmanship(element) {
+    const spans = element.querySelectorAll("span");
+    spans.forEach(span => {
+        if (span.textContent.trim() === "⚖︎") {
+            span.remove();
+        }
+    });
+}
+
+function applyTeamwork(element, teamwork) {
+    const hasTeamworkSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
+        child => child.textContent.trim() === "⬡"
+    );
+    if (!hasTeamworkSymbol) {
+        console.debug(`Applying Teamwork: ${teamwork}`)
+
+        const teamworkSpan = document.createElement("span");
+        teamworkSpan.classList.add('teamwork')
+        teamworkSpan.textContent = " ⬡"
+        switch (teamwork) {
+            case -2:
+                teamworkSpan.classList.add('doubleNegative');
+                teamworkSpan.title = "This player is a terrible team player, he will not assist his team mates as much as his skills would indicate (assistance decreased by 25%)";
+                break;
+            case -1:
+                teamworkSpan.classList.add('negative');
+                teamworkSpan.title = "This player is not a team player, he will not assist his team mates as much as his skills would indicate (assistance decreased by 15%)";
+                break;
+            case 1:
+                teamworkSpan.classList.add('positive');
+                teamworkSpan.title = "This player is a team player, he will assist his team mates more than his skills would indicate (assistance increased by 15%)";
+                break;
+            case 2:
+                teamworkSpan.classList.add('doublePositive');
+                teamworkSpan.title = "This player is a fantastic team player, he will assist his team mates much more than his skills would indicate (assistance increased by 25%)";
+                break;
+            default:
+                console.warn("Value of teamwork is unexpected: ", teamwork);
+        }
+
+        element.parentNode.parentNode.parentNode.appendChild(teamworkSpan)
     }
 }
 
@@ -111,9 +348,89 @@ function cleanUpNodeForPlayers(tableNode) {
     tableNode.querySelectorAll(`th.${pluginNodeClass}`).forEach(el => el.remove());
 }
 
+function isShowingAttackers() {
+    let attackerFilter = document.querySelector("div.lineup-filter > span.attack-zone > span")
+    return (attackerFilter && attackerFilter.textContent.trim() != "-")
+}
+
+function isShowingMidfielders() {
+    let midfielderFilter = document.querySelector("div.lineup-filter > span.middle-zone > span")
+    return (midfielderFilter && midfielderFilter.textContent.trim() != "-")
+}
+
+function isShowingDefenders() {
+    let defenderFilter = document.querySelector("div.lineup-filter > span.defence-zone > span")
+    return (defenderFilter && defenderFilter.textContent.trim() != "-")
+}
+
 function isShowingGoalkeepers() {
     let goalkeeperFilter = document.querySelector("div.lineup-filter > span.goalkeeper > span")
-    return (goalkeeperFilter != "undefined" && goalkeeperFilter.innerHTML != "-")
+    return (goalkeeperFilter && goalkeeperFilter.textContent.trim() != "-")
+}
+
+// Boolean variables to track checkbox state
+let showTeamwork = true;
+let showSportsmanship = true;
+
+function addPersonalityCheckboxes(checkboxesDataFromStorage) {
+    const cardHeader = document.querySelector("fw-players div.card-header > div.row");
+    if (!cardHeader) return;
+
+    // Avoid adding duplicates
+    if (document.getElementById("teamworkCheckbox")) return;
+
+    const checkboxesData = [
+        { id: "teamworkCheckbox", label: "Teamwork", variable: "showTeamwork" },
+        { id: "sportsmanshipCheckbox", label: "Sportsmanship", variable: "showSportsmanship" }
+    ];
+    rightItems = document.createElement("div")
+    rightItems.classList.add("right-items")
+
+    checkboxesData.forEach(item => {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = item.id;
+
+        const suffix = "Checkbox";
+        const checkboxKey = item.id.slice(0, -suffix.length);
+        checkbox.checked = !!checkboxesDataFromStorage[checkboxKey]
+        if (item.variable === "showTeamwork") showTeamwork = checkbox.checked;
+        if (item.variable === "showSportsmanship") showSportsmanship = checkbox.checked;
+
+        const label = document.createElement("label");
+        label.textContent = item.label;
+        label.htmlFor = item.id;
+
+        // Update the corresponding boolean variable on change
+        checkbox.addEventListener("change", async () => {
+            if (item.variable === "showTeamwork") showTeamwork = checkbox.checked;
+            if (item.variable === "showSportsmanship") showSportsmanship = checkbox.checked;
+
+            console.log(`${item.label}:`, checkbox.checked);
+            const {
+                checkboxes: cd = {},
+                "player-data": storedPlayerData = {}
+            } = await storage.get(["player-data", "checkboxes"]);
+            if (showTeamwork) {
+                cd["teamwork"] = "true"
+            } else {
+                delete cd["teamwork"]
+            }
+            if (showSportsmanship) {
+                cd["sportsmanship"] = "true"
+            } else {
+                delete cd["sportsmanship"]
+            }
+            await storage.set({ checkboxes: cd })
+            appendAdditionalInfo(storedPlayerData)
+        });
+
+
+        rightItems.appendChild(checkbox);
+        rightItems.appendChild(label);
+        rightItems.appendChild(document.createTextNode(" ")); // spacing
+    });
+    cardHeader.appendChild(rightItems)
 }
 
 // Options for the observer (which mutations to observe)
@@ -129,15 +446,17 @@ const playersObservingCallback = (mutationList, observer) => {
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
         //        mutationList.forEach(el => console.debug(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
 
+        storage.get(["player-data", "checkboxes"]).then(result => {
+            const checkboxesData = result["checkboxes"] || {};
+            const storedPlayerData = result["player-data"] || {};
 
-        cleanUpNodeForPlayers(tableNode)
+            cleanUpNodeForPlayers(tableNode)
 
-        if (!isShowingGoalkeepers()) {
+            addPersonalityCheckboxes(checkboxesData)
             createHeaders()
-            appendMidfieldContributionForPlayers()
-        } else {
-        }
-        observer.observe(alwaysPresentNode, playersObservingConfig);
+            appendAdditionalInfo(storedPlayerData)
+            observer.observe(alwaysPresentNode, playersObservingConfig);
+        });
     } else {
         console.debug(`Could not find the table, or the table is empty, observing...`)
     }
@@ -167,11 +486,64 @@ browser.runtime.onMessage.addListener((message) => {
     }
 })
 
+
+async function applyCustomColorsSquadSymbols() {
+    try {
+        // Load colors from storage (with defaults)
+        const optionsStorage = browser.storage.sync;
+        const { colors = {} } = await optionsStorage.get("colors");
+
+        // Inject CSS rule so future elements are styled too
+        const style = document.createElement("style");
+        style.textContent = `
+        span.teamwork.doublePositive {
+            color: ${colors["color-setting-teamwork++"]};
+        }
+        span.teamwork.positive {
+            color: ${colors["color-setting-teamwork+"]};
+        }
+        span.teamwork.negative {
+            color: ${colors["color-setting-teamwork-"]};
+        }
+        span.teamwork.doubleNegative {
+            color: ${colors["color-setting-teamwork--"]};
+        }
+    `;
+        document.head.appendChild(style);
+
+    } catch (err) {
+        console.error("Failed to apply custom colors squad symbols:", err);
+    }
+}
+
+// Run the function
+applyCustomColorsSquadSymbols();
+
 addCSS(`
     .${pluginNodeClass}[data-tooltip]::after {
         right: 0%;   /* push it left of the parent */
         left: auto;    /* reset the left so it doesn’t conflict */
         top: auto;
         bottom: 100%;
+    }
+    span.teamwork {
+        font-size: 1.4em;
+        cursor: help;
+    }
+    fw-players div.card-header > div.row > input, fw-players div.card-header > div.row > label {
+        margin-left: auto;    /* push to the right */
+        flex: 0 0 auto;       /* don't grow or shrink */
+        width: auto;          /* natural width */
+        min-width: 0;         /* allow shrinking below default min-width */
+    }
+    .right-items {
+        display: inline-flex;  /* shrink to content */
+        gap: 0.5rem;
+
+        margin-left: auto;    /* push to the right */
+        flex: 0 0 auto;       /* don't grow or shrink */
+        width: auto;          /* natural width */
+        min-width: 0;         /* allow shrinking below default min-width */
+        align-self: center; /* optional: vertically center in the container */
     }
 `)
