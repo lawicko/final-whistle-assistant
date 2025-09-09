@@ -2,32 +2,30 @@
     "manifest_version": 3,
     "name": "Final Whistle Assistant",
     "version": "2.4.0",
-    
     "description": "Displays additional information when browsing FinalWhistle website.",
-    
     "icons": {
         "48": "icons/fw-logo-48.png",
         "96": "icons/fw-logo-96.png"
     },
-    
     "background": {
-        "scripts": ["assistant.js"],
+        "scripts": [
+            "assistant.js"
+        ],
         "service_worker": "assistant.js",
         "type": "module"
     },
-    
     "host_permissions": [
         "*://*.finalwhistle.org/*"
     ],
-    
     "permissions": [
+        "clipboardRead",
+        "clipboardWrite",
         "contextMenus",
         "scripting",
         "storage",
         "tabs"
     ],
-    
     "options_ui": {
-      "page": "options/options.html"
+        "page": "options/options.html"
     }
 }

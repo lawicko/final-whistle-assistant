@@ -22,7 +22,18 @@ async function exportStorage() {
 
 async function importStorage() {
     try {
-        const text = await navigator.clipboard.readText();
+        let text;
+        try {
+            // Try clipboard API first
+            text = await navigator.clipboard.readText();
+        } catch (err) {
+            console.warn("Clipboard read failed, asking user to paste manually.", err);
+            text = prompt("Paste the JSON you want to import:");
+            if (!text) {
+                setStatus("importStatus", "❌ Import cancelled by user.");
+                return;
+            }
+        }
 
         // Show preview (first 50 characters)
         const preview = text.slice(0, 50).replace(/\s+/g, " ");
