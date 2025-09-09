@@ -15,58 +15,51 @@ function denomination(value) {
     return den
 }
 
+/**
+ * Creates a <td> or <th> element with a hover-card.
+ *
+ * @param {"td" | "th"} tag - The type of cell to create ("td" or "th").
+ * @param {string} mainLabel - The main text to display (e.g. "LS").
+ * @param {string[] | string} hoverContent - Either a single string or an array of strings for the hover card.
+ * @param {string} [extraClass=""] - Optional extra class for the <td>/<th>.
+ * @returns {HTMLTableCellElement} The constructed table cell element.
+ */
+function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
+    const cell = document.createElement(tag);
+    cell.classList.add(pluginNodeClass)
+    cell.setAttribute("data-tooltip", hoverContent);
+
+    // span with text
+    const span = document.createElement("span");
+    if (extraClass) {
+        span.classList.add(extraClass);
+    }
+    span.textContent = mainLabel;
+    cell.appendChild(span);
+
+    return cell;
+}
+
 // Adds the headers to the players table
 function createHeaders() {
+    console.info(`appending headers...`)
     var firstRow = document.querySelector("table > tr:first-of-type");
 
-    var thLS = document.createElement('th');
-    thLS.className = pluginNodeClass
-    thLS.innerHTML =
-        `<div class="plugin-has-hover-card">LS
-                            <div class="plugin-hover-card hovercard-detail">
-                                <span>Long Shot</span>
-                            </div>
-                          </div>`;
+    const thLS = createHoverCardCell("th", "LS", "Long Shot");
     firstRow.appendChild(thLS);
 
-    var thMD = document.createElement('th');
-    thMD.className = pluginNodeClass
-    thMD.innerHTML =
-        `<div class="plugin-has-hover-card">MD
-                            <div class="plugin-hover-card hovercard-detail">
-                                <span>Midfield Dominance</span>
-                            </div>
-                          </div>`;
+    const thMD = createHoverCardCell("th", "MD", "Midfield Dominance");
     firstRow.appendChild(thMD);
-
-    var thAMD = document.createElement('th');
-    thAMD.className = pluginNodeClass
-    thAMD.innerHTML =
-        `<div class="plugin-has-hover-card">AMD
-                            <div class="plugin-hover-card hovercard-detail">
-                                <span>Advanced Midfield Dominance</span>
-                            </div>
-                          </div>`;
-    firstRow.appendChild(thAMD);
-
-    // var thAMDFlex = document.createElement('th');
-    // thAMDFlex.className = pluginNodeClass
-    // thAMDFlex.innerHTML = `<div class="plugin-has-hover-card">AMDF
-    //                         <div class="plugin-hover-card hovercard-detail">
-    //                         <span>Advanced Midfield Dominance Flexible</span>
-    //                         </div>
-    //                       </div>`;
-    // firstRow.appendChild(thAMDFlex);
 }
 
 // Calculates and adds the cells with the midfield contribution values for each player
 function appendMidfieldContributionForPlayers() {
-    console.debug(`appending the midfield contribution...`)
+    console.info(`appending the midfield contribution...`)
     let rows = document.querySelectorAll("table > tr");
     let longShotMax = (100 + Math.min(2 * 100, 100)) / 2
     let midfieldDominanceMax = 100 + 200
-    let advancedMidfieldDominanceMax = (100 + 200) * 0.5
-    let advancedMidfieldDominanceFlexibleMax = 100 + 200
+    // let advancedMidfieldDominanceMax = (100 + 200) * 0.5
+    // let advancedMidfieldDominanceFlexibleMax = 100 + 200
     let constitutionTreshold = 50
     for (let i = 1; i < rows.length; i++) {
         let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
@@ -76,15 +69,17 @@ function appendMidfieldContributionForPlayers() {
             return
         }
 
-        let SC = Number(valueNodes[0].innerHTML.replace(/\D/g, ''));
-        let OP = Number(valueNodes[1].innerHTML.replace(/\D/g, ''));
-        let BC = Number(valueNodes[2].innerHTML.replace(/\D/g, ''));
-        let PA = Number(valueNodes[3].innerHTML.replace(/\D/g, ''));
-        let CO = Number(valueNodes[5].innerHTML.replace(/\D/g, ''));
-        let TA = Number(valueNodes[6].innerHTML.replace(/\D/g, ''));
-        let DP = Number(valueNodes[7].innerHTML.replace(/\D/g, ''));
+        const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
 
-        //        console.debug(`SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
+        let SC = parseNumber(valueNodes[0]);
+        let OP = parseNumber(valueNodes[1]);
+        let BC = parseNumber(valueNodes[2]);
+        let PA = parseNumber(valueNodes[3]);
+        let CO = parseNumber(valueNodes[5]);
+        let TA = parseNumber(valueNodes[6]);
+        let DP = parseNumber(valueNodes[7]);
+
+        // console.debug(`SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
 
         let longShot = (SC + Math.min(2 * SC, PA)) / 2
         let longShotDenomination = longShot / longShotMax
@@ -94,60 +89,19 @@ function appendMidfieldContributionForPlayers() {
         let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
         let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
 
-        let advancedMidfieldDominanceContribution = midfieldDominanceContribution * 0.5
-        let advancedMidfieldDominanceDenomination = advancedMidfieldDominanceContribution / advancedMidfieldDominanceMax
-        let advancedMidfieldDominanceDenominationNormalized = denomination(advancedMidfieldDominanceDenomination * 100)
-
-        // let advancedMidfieldDominanceInFlexibleContribution = PA + Math.min(OP + BC, TA + DP) 
-        // let advancedMidfieldDominanceInFlexibleDenomination = advancedMidfieldDominanceInFlexibleContribution / advancedMidfieldDominanceFlexibleMax
-        // let advancedMidfieldDominanceInFlexibleDenominationNormalized = denomination(advancedMidfieldDominanceInFlexibleDenomination * 100)
-
-        //console.debug("denomination for row ", i, " = ", midfieldDominanceDenomination, " normalized: ", midfieldDominanceDenominationNormalized, " advanced: ", advancedMidfieldDominanceDenomination, " normalized: ", advancedMidfieldDominanceDenominationNormalized, " advanced in flexible: ", advancedMidfieldDominanceInFlexibleDenomination, " normalized: ", advancedMidfieldDominanceInFlexibleDenominationNormalized);
-
-        var tdLS = document.createElement("td");
-        tdLS.className = pluginNodeClass
-        tdLS.innerHTML =
-            `<div class="plugin-has-hover-card denom${longShotDenominationNormalized}">${Math.trunc(longShot)}
-                            <div class="plugin-hover-card hovercard-detail">
-                                <span>formula: (SC + min(2 * SC, PA)) / 2</span>
-                                <span>(${SC} + min(2 * ${SC}, ${PA})) / 2</span>
-                                <span>(${SC} + ${Math.min(2 * SC, PA)}) / 2</span>
-                                <span>${SC + Math.min(2 * SC, PA)} / 2 = ${(SC + Math.min(2 * SC, PA)) / 2}</span>
-                            </div>
-                          </div>`
+        const tdLS = createHoverCardCell(
+            "td",
+            Math.trunc(longShot),
+            `formula: (SC + min(2 * SC, PA)) / 2\n(${SC} + min(2 * ${SC}, ${PA})) / 2\n(${SC} + ${Math.min(2 * SC, PA)}) / 2\n${SC + Math.min(2 * SC, PA)} / 2 = ${(SC + Math.min(2 * SC, PA)) / 2}`,
+            `denom${longShotDenominationNormalized}`);
         rows[i].appendChild(tdLS);
 
-        var tdMD = document.createElement("td");
-        tdMD.className = pluginNodeClass
-        tdMD.innerHTML =
-            `<div class="plugin-has-hover-card denom${midfieldDominanceDenominationNormalized}">${midfieldDominanceContribution}
-                                                <div class="plugin-hover-card hovercard-detail">
-                                                    <span>formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})</span>
-                                                    <span>${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})</span>
-                                                    <span>${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}</span>
-                                                    <span>${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}</span>
-                                                </div>
-                                            </div>`
+        const tdMD = createHoverCardCell(
+            "td",
+            midfieldDominanceContribution,
+            `formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})\n${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})\n${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`,
+            `denom${midfieldDominanceDenominationNormalized}`);
         rows[i].appendChild(tdMD);
-
-        var tdAMD = document.createElement("td");
-        tdAMD.className = pluginNodeClass
-        let arrowOff = advancedMidfieldDominanceContribution > midfieldDominanceContribution ? "⇑" : ""
-        tdAMD.innerHTML =
-            `<div class="plugin-has-hover-card denom${advancedMidfieldDominanceDenominationNormalized}">${Math.trunc(advancedMidfieldDominanceContribution)}
-                                                <div class="plugin-hover-card hovercard-detail">
-                                                    <span>formula: MD * 0.5</span>
-                                                    <span>${midfieldDominanceContribution} * 0.5</span>
-                                                </div>
-                                            </div>`
-        '<span class="denom' + advancedMidfieldDominanceDenominationNormalized + '">' + Math.trunc(advancedMidfieldDominanceContribution) + arrowOff + '</span>';
-        rows[i].appendChild(tdAMD);
-
-        // var tdAMDF = document.createElement("td");
-        // tdAMDF.className = pluginNodeClass
-        // let arrowOffflex = advancedMidfieldDominanceInFlexibleContribution > midfieldDominanceContribution ? "⇑" : ""
-        // tdAMDF.innerHTML = '<span class="denom' + advancedMidfieldDominanceInFlexibleDenominationNormalized + '">' + Math.trunc(advancedMidfieldDominanceInFlexibleContribution) + arrowOffflex + '</span>';
-        // rows[i].appendChild(tdAMDF);
     }
 }
 
@@ -214,41 +168,10 @@ browser.runtime.onMessage.addListener((message) => {
 })
 
 addCSS(`
-    .plugin-has-hover-card {
-        position: relative;
-    }
-    .plugin-has-hover-card .plugin-hover-card.hovercard-detail {
-        display: flex;
-        opacity: 0;
-        visibility: hidden;
-        width: auto;
-        height: auto;
-        margin: auto;
-        padding: 8px;
-        flex-direction: column;
-
-        position: absolute;
-        left:0;
-        transform:translateX(-104%);
-        top: -9px;
-    }
-    .plugin-has-hover-card:hover .plugin-hover-card.hovercard-detail {
-        display: flex;
-        opacity: 1;
-        visibility: visible;
-        width: auto;
-        height: auto;
-        margin: auto;
-        padding: 8px;
-        flex-direction: column;
-
-        position: absolute;
-        left:0;
-        transform:translateX(-104%);
-        top: -9px;
-    }
-
-    .plugin-hover-card.hovercard-detail span {
-        white-space: pre-line;
+    .${pluginNodeClass}[data-tooltip]::after {
+        right: 0%;   /* push it left of the parent */
+        left: auto;    /* reset the left so it doesn’t conflict */
+        top: auto;
+        bottom: 100%;
     }
 `)
