@@ -86,11 +86,13 @@ function proposeAnchors(anchors) {
     console.debug('Will iterate anchors: ', anchors)
     for (const anchor of anchors) {
         console.debug('creating takerSpan')
-        var takerSpan = document.createElement('li')
-        takerSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
-        takerSpan.textContent = `${anchor.name} (${anchor.AE})`
+        var anchorListItem = document.createElement('li')
+        var playerNameSpan = document.createElement('span')
+        playerNameSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
+        playerNameSpan.textContent = `${anchor.name} (${anchor.AE})`
+        anchorListItem.appendChild(playerNameSpan)
         console.debug('appending takerSpan to proposedAnchors')
-        proposedAnchors.appendChild(takerSpan)
+        proposedAnchors.appendChild(anchorListItem)
 
         if (anchor.sportsmanship > 0) {
             const sportsmanshipSpan = document.createElement("span");
@@ -108,7 +110,7 @@ function proposeAnchors(anchors) {
                 default:
                     console.warn("Value of anchor.sportsmanship is unexpected: ", anchor.sportsmanship);
             }
-            takerSpan.appendChild(sportsmanshipSpan)
+            anchorListItem.appendChild(sportsmanshipSpan)
         }
     }
 
@@ -161,11 +163,13 @@ function proposeCrossTakers(takers) {
     console.debug('Will iterate takers: ', takers)
     for (const taker of takers) {
         console.debug('creating takerSpan')
-        var takerSpan = document.createElement('li')
+        var takerLi = document.createElement('li')
+        var takerSpan = document.createElement('span')
         takerSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
         takerSpan.textContent = `${taker.name} (${taker.cross})`
+        takerLi.appendChild(takerSpan)
         console.debug('appending takerSpan to proposedCrossTakers')
-        proposedCrossTakers.appendChild(takerSpan)
+        proposedCrossTakers.appendChild(takerLi)
     }
 
     console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
@@ -229,11 +233,13 @@ function proposePenaltyTakers(takers) {
         console.debug('Will iterate takers.recommended: ', takers.recommended)
         for (const taker of takers.recommended) {
             console.debug('creating takerSpan')
-            var takerSpan = document.createElement('li')
-            takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-            takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            var takerLi = document.createElement('li')
+            var takerNameSpan = document.createElement('span')
+            takerNameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+            takerNameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            takerLi.appendChild(takerNameSpan)
             console.debug('appending takerSpan to proposedPenaltyTakers')
-            proposedPenaltyTakers.appendChild(takerSpan)
+            proposedPenaltyTakers.appendChild(takerLi)
 
             if (taker.composure) {
                 const composureSpan = document.createElement("span");
@@ -259,7 +265,7 @@ function proposePenaltyTakers(takers) {
                     default:
                         console.warn("Value of taker.composure is unexpected: ", taker.composure);
                 }
-                takerSpan.appendChild(composureSpan)
+                takerLi.appendChild(composureSpan)
             }
         }
 
@@ -281,11 +287,13 @@ function proposePenaltyTakers(takers) {
         console.debug('Will iterate takers.other: ', takers.other)
         for (const taker of takers.other) {
             console.debug('creating takerSpan')
-            var takerSpan = document.createElement('li')
-            takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-            takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            var takerLi = document.createElement('li')
+            var takerNameSpan = document.createElement('span')
+            takerNameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+            takerNameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            takerLi.appendChild(takerNameSpan)
             console.debug('appending takerSpan to otherPenaltyTakers')
-            otherPenaltyTakers.appendChild(takerSpan)
+            otherPenaltyTakers.appendChild(takerLi)
         }
         const otherPenaltyTakersHeader = document.createElement("h6");
         otherPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
@@ -303,11 +311,13 @@ function proposePenaltyTakers(takers) {
         console.debug('Will iterate takers.recommended: ', takers.recommended)
         for (const taker of takers.recommended) {
             console.debug('creating takerSpan')
-            var takerSpan = document.createElement('li')
-            takerSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-            takerSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            var takerLi = document.createElement('li')
+            var takerNameSpan = document.createElement('span')
+            takerNameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+            takerNameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+            takerLi.appendChild(takerNameSpan)
             console.debug('appending takerSpan to proposedPenaltyTakers')
-            proposedPenaltyTakers.appendChild(takerSpan)
+            proposedPenaltyTakers.appendChild(takerLi)
 
             if (taker.composure) {
                 const composureSpan = document.createElement("span");
@@ -333,7 +343,7 @@ function proposePenaltyTakers(takers) {
                     default:
                         console.warn("Value of taker.composure is unexpected: ", taker.composure);
                 }
-                takerSpan.appendChild(composureSpan)
+                takerLi.appendChild(composureSpan)
             }
         }
         targetHeader.parentNode.after(proposedPenaltyTakers);

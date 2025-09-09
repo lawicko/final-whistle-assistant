@@ -199,7 +199,6 @@ async function restoreOptions() {
 
     const inputs = document.querySelectorAll('input[id^="color-setting"]');
     const previews = document.querySelectorAll('span[id^="color-preview"]');
-    console.info("inputs.length: ", inputs.length, "previews.length: ", previews.length)
     for (let i = 0; i < inputs.length; i++) {
         const input = inputs[i]
         const preview = previews[i]
