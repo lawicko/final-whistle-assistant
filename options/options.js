@@ -7,6 +7,58 @@ if (typeof browser == "undefined") {
 // (sync lets settings follow user across devices)
 const optionsStorage = browser.storage.sync;
 
+async function exportStorage() {
+    try {
+        const data = await optionsStorage.get();
+        const json = JSON.stringify(data, null, 2);
+        await navigator.clipboard.writeText(json);
+
+        setStatus("exportStatus", "✅ Exported storage to clipboard.");
+    } catch (err) {
+        console.error("Export failed:", err);
+        setStatus("exportStatus", "❌ Export failed: " + err.message);
+    }
+}
+
+async function importStorage() {
+    try {
+        const text = await navigator.clipboard.readText();
+
+        // Show preview (first 50 characters)
+        const preview = text.slice(0, 50).replace(/\s+/g, " ");
+        const proceed = confirm(
+            `⚠️ WARNING: This will overwrite your current storage.\n\n` +
+            `Preview of clipboard contents:\n${preview}...\n\n` +
+            `Do you want to continue?`
+        );
+
+        if (!proceed) {
+            setStatus("importStatus", "❌ Import cancelled by user.");
+            return;
+        }
+
+        const parsed = JSON.parse(text);
+        if (typeof parsed !== "object" || parsed === null) {
+            throw new Error("Clipboard does not contain valid JSON.");
+        }
+
+        await optionsStorage.set(parsed);
+        await restoreOptions()
+        setStatus("importStatus", "✅ Imported storage from clipboard.");
+    } catch (err) {
+        console.error("Import failed:", err);
+        setStatus("importStatus", "❌ Import failed: " + err.message);
+    }
+}
+
+function setStatus(id, msg) {
+    document.getElementById(id).textContent = msg;
+}
+
+document.getElementById("exportBtn").addEventListener("click", exportStorage);
+document.getElementById("importBtn").addEventListener("click", importStorage);
+
+
 // Save settings when changed
 function saveOptions() {
     // Collect all checkboxes

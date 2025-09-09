@@ -8,7 +8,22 @@
 </head>
 
 <body>
+    <fieldset>
+        <legend>Import / Export Storage</legend>
+        <div class="container">
+            <!-- Export column -->
+            <div class="box">
+                <button id="exportBtn">⬆️ Export to Clipboard</button>
+                <p id="exportStatus" class="status"></p>
+            </div>
 
+            <!-- Import column -->
+            <div class="box">
+                <button id="importBtn">⬇️ Import from Clipboard</button>
+                <p id="importStatus" class="status"></p>
+            </div>
+        </div>
+    </fieldset>
     <fieldset>
         <legend>Choose your modules:</legend>
         <div>
@@ -202,6 +217,7 @@
             font-family: system-ui;
             color: white;
             background: #40473e;
+            padding: 1rem;
         }
 
         fieldset {
@@ -227,6 +243,34 @@
         .color-preview {
             font-size: 1.5em;
             margin-left: 10px;
+        }
+
+        /* Import/Export section */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .box {
+            /* Center children horizontally */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status {
+            margin-top: 0.5rem;
+            /* font-size: 0.9rem;
+            color: #444; */
+        }
+
+        button {
+            display: block;
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
         }
     </style>
 
