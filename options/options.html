@@ -21,6 +21,29 @@
             <div class="box">
                 <button id="importBtn">⬇️ Import from Clipboard</button>
                 <p id="importStatus" class="status"></p>
+                <!-- Custom confirm dialog -->
+                <dialog id="importDialog">
+                    <form method="dialog">
+                        <h3>⚠️ Confirm Import</h3>
+                        <p>This will overwrite your current storage.</p>
+                        <pre id="importPreview"></pre>
+                        <menu>
+                            <button value="cancel">Cancel</button>
+                            <button id="confirmImportBtn" value="ok">Continue</button>
+                        </menu>
+                    </form>
+                </dialog>
+                <!-- Manual paste dialog (for fallback if clipboard read fails) -->
+                <dialog id="pasteDialog">
+                    <form method="dialog">
+                        <h3>Paste JSON to Import</h3>
+                        <textarea id="pasteArea" rows="10" cols="50" placeholder="Paste your JSON here"></textarea>
+                        <menu>
+                            <button value="cancel">Cancel</button>
+                            <button id="confirmPasteBtn" value="ok">Import</button>
+                        </menu>
+                    </form>
+                </dialog>
             </div>
         </div>
     </fieldset>

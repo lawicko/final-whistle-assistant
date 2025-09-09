@@ -7,6 +7,10 @@ if (typeof browser == "undefined") {
 // (sync lets settings follow user across devices)
 const optionsStorage = browser.storage.sync;
 
+function isChrome() {
+    return typeof chrome !== "undefined";
+}
+
 async function exportStorage() {
     try {
         const data = await optionsStorage.get();
@@ -20,30 +24,65 @@ async function exportStorage() {
     }
 }
 
+async function showPasteDialog() {
+    const pasteDialog = document.getElementById("pasteDialog");
+    pasteDialog.showModal();
+
+    const confirmed = await new Promise(resolve => {
+        pasteDialog.addEventListener("close", function handler() {
+            pasteDialog.removeEventListener("close", handler);
+            resolve(pasteDialog.returnValue === "ok");
+        });
+    });
+
+    if (!confirmed) {
+        setStatus("importStatus", "❌ Import cancelled by user.");
+        return null;
+    }
+
+    return document.getElementById("pasteArea").value;
+}
+
 async function importStorage() {
     try {
         let text;
-        try {
-            // Try clipboard API first
-            text = await navigator.clipboard.readText();
-        } catch (err) {
-            console.warn("Clipboard read failed, asking user to paste manually.", err);
-            text = prompt("Paste the JSON you want to import:");
-            if (!text) {
-                setStatus("importStatus", "❌ Import cancelled by user.");
+        if (isChrome()) {
+            // Always show paste dialog on Chrome
+            text = await showPasteDialog();
+            if (text === null || text === "") {
+                setStatus("importStatus", "❌ No text detected in the text area.");
                 return;
+            }
+        } else {
+            try {
+                // Try reading from clipboard on non-Chrome
+                text = await navigator.clipboard.readText();
+            } catch {
+                // Fallback to paste dialog if clipboard fails
+                text = await showPasteDialog();
+                if (text === null || text === "") {
+                    setStatus("importStatus", "❌ No text detected in the text area.");
+                    return;
+                }
             }
         }
 
-        // Show preview (first 50 characters)
+        // Show first 50 characters in the dialog
         const preview = text.slice(0, 50).replace(/\s+/g, " ");
-        const proceed = confirm(
-            `⚠️ WARNING: This will overwrite your current storage.\n\n` +
-            `Preview of clipboard contents:\n${preview}...\n\n` +
-            `Do you want to continue?`
-        );
+        document.getElementById("importPreview").textContent = preview + "...";
 
-        if (!proceed) {
+        const dialog = document.getElementById("importDialog");
+        dialog.showModal();
+
+        // Wait for user response
+        const confirmed = await new Promise(resolve => {
+            dialog.addEventListener("close", function handler() {
+                dialog.removeEventListener("close", handler);
+                resolve(dialog.returnValue === "ok");
+            });
+        });
+
+        if (!confirmed) {
             setStatus("importStatus", "❌ Import cancelled by user.");
             return;
         }
