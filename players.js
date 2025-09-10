@@ -333,8 +333,8 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
     if (document.getElementById("teamworkCheckbox")) return;
 
     const checkboxesData = [
-        { id: "teamworkCheckbox", label: "Teamwork", variable: "showTeamwork" },
-        { id: "sportsmanshipCheckbox", label: "Sportsmanship", variable: "showSportsmanship" }
+        { id: "teamworkCheckbox", label: "⬡ Teamwork", variable: "showTeamwork" },
+        { id: "sportsmanshipCheckbox", label: "⚖︎ Sportsmanship", variable: "showSportsmanship" }
     ];
     rightItems = document.createElement("div")
     rightItems.classList.add("right-items")
@@ -501,5 +501,6 @@ addCSS(`
     }
     input[type="checkbox"] {
         accent-color: #3d453d;
+        margin-left: 6px;
     }
 `)
