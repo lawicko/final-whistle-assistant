@@ -204,43 +204,8 @@ function appendAdditionalInfo(storedPlayerData) {
             let midfieldDominanceMax = 100 + 200
             let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
             let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
-
-            var offensiveAssistanceNoModifiers = OP + BC
-            var offensiveAssistance = offensiveAssistanceNoModifiers
-            var offensiveAssistanceMax = 100 + 100
-            var defensiveAssistanceNoModifiers = TA + DP
-            var defensiveAssistance = defensiveAssistanceNoModifiers
-            var defensiveAssistanceMax = 100 + 100
-            if (teamwork) {
-                switch (teamwork) {
-                    case -2:
-                        var twp = -0.25
-                        var teamworkDescription = `--`
-                        break;
-                    case -1:
-                        var twp = -0.15
-                        var teamworkDescription = `-`
-                        break;
-                    case 1:
-                        var twp = 0.15
-                        var teamworkDescription = `+`
-                        break;
-                    case 2:
-                        var twp = 0.25
-                        var teamworkDescription = `++`
-                        break;
-                    default:
-                        console.warn("Value of teamwork is unexpected: ", teamwork);
-                        var twp = 0
-                }
-                offensiveAssistance = Math.floor(offensiveAssistanceNoModifiers + offensiveAssistanceNoModifiers * twp)
-                defensiveAssistance = Math.floor(defensiveAssistanceNoModifiers + defensiveAssistanceNoModifiers * twp)
-            }
-            let offensiveAssistanceDenomination = offensiveAssistance / offensiveAssistanceMax
-            let offensiveAssistanceDenominationNormalized = denomination(offensiveAssistanceDenomination * 100)
-
-            let defensiveAssistanceDenomination = defensiveAssistance / defensiveAssistanceMax
-            let defensiveAssistanceDenominationNormalized = denomination(defensiveAssistanceDenomination * 100)
+            
+            const assistanceCalculations = calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: teamwork });
 
             if (!isShowingGoalkeepers()) {
                 const tdLS = createHoverCardCell(
@@ -257,32 +222,20 @@ function appendAdditionalInfo(storedPlayerData) {
                     `denom${midfieldDominanceDenominationNormalized}`);
                 rows[i].appendChild(tdMD);
 
-                const offensiveAssistanceModifierDifference = offensiveAssistance - offensiveAssistanceNoModifiers
-                var offensiveAssistanceModifierDetails = ``
-                if (offensiveAssistanceModifierDifference !== 0) {
-                    const sign = offensiveAssistanceModifierDifference > 0 ? '+' : '-'
-                    offensiveAssistanceModifierDetails = ` (${offensiveAssistanceNoModifiers} ${sign} ${Math.abs(offensiveAssistanceModifierDifference)} from Teamwork${teamworkDescription} personality)`
-                }
                 const tdOA = createHoverCardCell(
                     "td",
-                    offensiveAssistance,
-                    `formula: OP + BC\n${OP} + ${BC} = ${offensiveAssistance}${offensiveAssistanceModifierDetails}`,
-                    `denom${offensiveAssistanceDenominationNormalized}`);
+                    assistanceCalculations.offensiveAssistance,
+                    `formula: OP + BC\n${OP} + ${BC} = ${assistanceCalculations.offensiveAssistance}${assistanceCalculations.offensiveAssistanceModifierDetails}`,
+                    `denom${assistanceCalculations.offensiveAssistanceDenominationNormalized}`);
                 rows[i].appendChild(tdOA);
             }
 
             if (!isShowingAttackers()) {
-                const defensiveAssistanceModifierDifference = defensiveAssistance - defensiveAssistanceNoModifiers
-                var defensiveAssistanceModifierDetails = ``
-                if (defensiveAssistanceModifierDifference !== 0) {
-                    const sign = defensiveAssistanceModifierDifference > 0 ? '+' : '-'
-                    defensiveAssistanceModifierDetails = ` (${defensiveAssistanceNoModifiers} ${sign} ${Math.abs(defensiveAssistanceModifierDifference)} from Teamwork${teamworkDescription} personality)`
-                }
                 const tdDA = createHoverCardCell(
                     "td",
-                    defensiveAssistance,
-                    `formula: TA + DP\n${TA} + ${DP} = ${defensiveAssistance}${defensiveAssistanceModifierDetails}`,
-                    `denom${defensiveAssistanceDenominationNormalized}`);
+                    assistanceCalculations.defensiveAssistance,
+                    `formula: TA + DP\n${TA} + ${DP} = ${assistanceCalculations.defensiveAssistance}${assistanceCalculations.defensiveAssistanceModifierDetails}`,
+                    `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
                 rows[i].appendChild(tdDA);
             }
         }
