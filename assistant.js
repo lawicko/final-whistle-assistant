@@ -199,12 +199,16 @@ async function handleInstalled(details) {
 
     const playerRowColorRaw = {
         "playerRowColorFW": "playerRowColorFWAction",
+        "playerRowColorLW": "playerRowColorLWAction",
         "playerRowColorLM": "playerRowColorLMAction",
+        "playerRowColorRW": "playerRowColorRWAction",
         "playerRowColorRM": "playerRowColorRMAction",
         "playerRowColorOM": "playerRowColorOMAction",
         "playerRowColorCM": "playerRowColorCMAction",
         "playerRowColorDM": "playerRowColorDMAction",
+        "playerRowColorLWB": "playerRowColorLWBAction",
         "playerRowColorLB": "playerRowColorLBAction",
+        "playerRowColorRWB": "playerRowColorRWBAction",
         "playerRowColorRB": "playerRowColorRBAction",
         "playerRowColorCB": "playerRowColorCBAction",
         "clearRowColors": "playerRowColorClearAction"

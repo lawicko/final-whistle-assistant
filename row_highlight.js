@@ -96,12 +96,16 @@ browser.runtime.onMessage.addListener((message) => {
 
     // const playerRowColorRaw = {
     //     "playerRowColorFW": "playerRowColorFWAction",
+    //     "playerRowColorLW": "playerRowColorLWAction",
     //     "playerRowColorLM": "playerRowColorLMAction",
+    //     "playerRowColorRW": "playerRowColorRWAction",
     //     "playerRowColorRM": "playerRowColorRMAction",
     //     "playerRowColorOM": "playerRowColorOMAction",
-    //     "playerRowColorDM": "playerRowColorDMAction",
     //     "playerRowColorCM": "playerRowColorCMAction",
+    //     "playerRowColorDM": "playerRowColorDMAction",
+    //     "playerRowColorLWB": "playerRowColorLWBAction",
     //     "playerRowColorLB": "playerRowColorLBAction",
+    //     "playerRowColorRWB": "playerRowColorRWBAction",
     //     "playerRowColorRB": "playerRowColorRBAction",
     //     "playerRowColorCB": "playerRowColorCBAction",
     //     "clearRowColors": "playerRowColorClearAction"
@@ -189,94 +193,120 @@ document.addEventListener("mouseover", (e) => {
 
 addCSS(`
     .FinalWhistlePlugin_playerBackgroundFW {
-        background-color: rgb(110 60 54 / 1.0);
+        background-image: 
+            linear-gradient(
+                to top,
+                rgb(110 60 54 / 1.0),
+                transparent,
+                rgb(110 60 54 / 1.0)
+            );
     }
-    .FinalWhistlePlugin_playerBackgroundCM {
-        background-color: rgb(125 100 48 / 0.4);
-
-        // background-image: 
-        //     repeating-linear-gradient(
-        //         45deg,
-        //         transparent,
-        //         transparent 5px,
-        //         rgb(125 100 48 / 0.4) 5px,
-        //         rgb(125 100 48 / 0.4) 10px
-        //     ),
-        //     repeating-linear-gradient(
-        //         -45deg,
-        //         transparent,
-        //         transparent 5px,
-        //         rgb(125 100 48 / 0.4) 5px,
-        //         rgb(125 100 48 / 0.4) 10px
-        //     );
-
-        // background-image:
-        //     repeating-linear-gradient(
-        //         0deg,
-        //         transparent 0 5px,
-        //         rgb(100 100 100 / 0.2) 5px 10px
-        //     ),
-        //     repeating-linear-gradient(
-        //         90deg,
-        //         transparent 0 5px,
-        //         rgb(100 100 100 / 0.2) 5px 10px
-        //     );
-    }
-    .FinalWhistlePlugin_playerBackgroundCB {
-        background-color: rgb(62 111 115 / 0.3);
+    .FinalWhistlePlugin_playerBackgroundLW {
+        background-image: 
+            repeating-linear-gradient(
+                45deg,
+                rgb(125 100 48 / 0.4) 0px,
+                rgb(110 60 54 / 1.0) 10px,
+                rgb(125 100 48 / 0.4) 20px
+            );
     }
     .FinalWhistlePlugin_playerBackgroundLM {
-        background-image: repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 5px,
-            rgb(125 100 48 / 0.4) 5px,
-            rgb(125 100 48 / 0.4) 10px
-        );
+        background-image: 
+            repeating-linear-gradient(
+                45deg,
+                rgb(125 100 48 / 0.4) 0px,
+                transparent 10px,
+                rgb(125 100 48 / 0.4) 20px
+            );
+    }
+    .FinalWhistlePlugin_playerBackgroundRW {
+        background-image: 
+            repeating-linear-gradient(
+                -45deg,
+                rgb(125 100 48 / 0.4) 0px,
+                rgb(110 60 54 / 1.0) 10px,
+                rgb(125 100 48 / 0.4) 20px
+            );
     }
     .FinalWhistlePlugin_playerBackgroundRM {
-        background-image: repeating-linear-gradient(
-            -45deg,
-            transparent,
-            transparent 5px,
-            rgb(125 100 48 / 0.4) 5px,
-            rgb(125 100 48 / 0.4) 10px
-        );
+        background-image: 
+            repeating-linear-gradient(
+                -45deg,
+                rgb(125 100 48 / 0.4) 0px,
+                transparent 10px,
+                rgb(125 100 48 / 0.4) 20px
+            );
     }
     .FinalWhistlePlugin_playerBackgroundOM {
-        background-image: repeating-linear-gradient(
-            90deg, /* vertical stripes */
-            transparent,
-            transparent 5px,
-            rgb(125 100 48 / 0.4) 5px,
-            rgb(125 100 48 / 0.4) 10px
-        );
+        background-image: 
+            repeating-linear-gradient(
+                to bottom,
+                rgb(110 60 54 / 1.0),
+                transparent,
+                rgb(125 100 48 / 0.4)
+            );
+    }
+    .FinalWhistlePlugin_playerBackgroundCM {
+        background-image: 
+            linear-gradient(
+                to top,
+                rgb(125 100 48 / 0.4),
+                transparent,
+                rgb(125 100 48 / 0.4)
+            );
     }
     .FinalWhistlePlugin_playerBackgroundDM {
-        background-image: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 5px,
-            rgb(125 100 48 / 0.4) 5px,
-            rgb(125 100 48 / 0.4) 10px
-        );
+        background-image: 
+            linear-gradient(
+                to bottom,
+                rgb(125 100 48 / 0.4),
+                transparent,
+                rgb(62 111 115 / 0.3)
+            );
+    }
+    .FinalWhistlePlugin_playerBackgroundLWB {
+        background-image: 
+            repeating-linear-gradient(
+                45deg,
+                rgb(62 111 115 / 0.3) 0px,
+                rgb(125 100 48 / 0.4) 10px,
+                rgb(62 111 115 / 0.3) 20px
+            );
     }
     .FinalWhistlePlugin_playerBackgroundLB {
-        background-image: repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 5px,
-            rgb(62 111 115 / 0.3) 5px,
-            rgb(62 111 115 / 0.3) 10px
-        );
+        background-image: 
+            repeating-linear-gradient(
+                45deg,
+                rgb(62 111 115 / 0.3) 0px,
+                transparent 10px,
+                rgb(62 111 115 / 0.3) 20px
+            );
+    }
+    .FinalWhistlePlugin_playerBackgroundRWB {
+        background-image: 
+            repeating-linear-gradient(
+                -45deg,
+                rgb(62 111 115 / 0.3) 0px,
+                rgb(125 100 48 / 0.4) 10px,
+                rgb(62 111 115 / 0.3) 20px
+            );
     }
     .FinalWhistlePlugin_playerBackgroundRB {
-        background-image: repeating-linear-gradient(
-            -45deg,
-            transparent,
-            transparent 5px,
-            rgb(62 111 115 / 0.3) 5px,
-            rgb(62 111 115 / 0.3) 10px
-        );
+        background-image:
+            repeating-linear-gradient(
+                -45deg,
+                rgb(62 111 115 / 0.3) 0px,
+                transparent 10px,
+                rgb(62 111 115 / 0.3) 20px
+            );
+    }
+    .FinalWhistlePlugin_playerBackgroundCB {
+        background-image: 
+            linear-gradient(
+                to top,
+                rgb(62 111 115 / 0.3),
+                transparent,
+                rgb(62 111 115 / 0.3)
+            );
     }
     `)
