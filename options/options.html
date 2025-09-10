@@ -27,9 +27,9 @@
                         <h3>⚠️ Confirm Import</h3>
                         <p>This will overwrite your current storage.</p>
                         <pre id="importPreview"></pre>
-                        <menu>
-                            <button value="cancel">Cancel</button>
-                            <button id="confirmImportBtn" value="ok">Continue</button>
+                        <menu class="dialog-buttons">
+                            <button value="cancel" class="cancel-btn">❌ Cancel</button>
+                            <button id="confirmImportBtn" value="ok" class="confirm-btn">🚀 Continue</button>
                         </menu>
                     </form>
                 </dialog>
@@ -38,9 +38,9 @@
                     <form method="dialog">
                         <h3>Paste JSON to Import</h3>
                         <textarea id="pasteArea" rows="10" cols="50" placeholder="Paste your JSON here"></textarea>
-                        <menu>
-                            <button value="cancel">Cancel</button>
-                            <button id="confirmPasteBtn" value="ok">Import</button>
+                        <menu class="dialog-buttons">
+                            <button value="cancel" class="cancel-btn">❌ Cancel</button>
+                            <button id="confirmPasteBtn" value="ok" class="confirm-btn">📥 Import</button>
                         </menu>
                     </form>
                 </dialog>
@@ -300,9 +300,58 @@
             cursor: pointer;
         }
 
+        #importPreview {
+            white-space: pre-wrap;       /* wrap lines if needed */
+            word-break: break-word;      /* break long words */
+            max-width: 100%;             /* prevent horizontal overflow */
+            max-height: 300px;           /* expand until this limit */
+            overflow-y: auto;            /* add scrollbar only when limit exceeded */
+            padding: 0.5rem;
+            border: 1px solid #ccc;      /* optional */
+            background: #f9f9f9;         /* optional */
+            box-sizing: border-box;      /* include padding in size calculation */
+        }
+
         #importDialog {
-            position: absolute; /* instead of fixed */
-            z-index: 1000; /* make sure it’s above other content */
+            position: absolute;
+            /* instead of fixed */
+            z-index: 1000;
+            /* make sure it’s above other content */
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            /* align to the right */
+            gap: 1rem;
+            /* spacing between buttons */
+            margin-top: 1rem;
+        }
+
+        .dialog-buttons button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .cancel-btn:hover {
+            background-color: #d0d0d0;
+        }
+
+        .confirm-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background-color: #43a047;
         }
     </style>
 

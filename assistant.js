@@ -189,6 +189,8 @@ async function handleInstalled(details) {
         console.info("Colors saved", { colors });
     });
 
+    browser.contextMenus.removeAll()
+
     // context menus
     const parentMenuID = "parentMenu"
     const colorPlayerRowMenuID = "colorPlayerRowMenuID"
@@ -196,14 +198,16 @@ async function handleInstalled(details) {
     const clearAllRowHighlightsMenuAction = "clearAllRowHighlightsMenuAction"
 
     const playerRowColorRaw = {
-        "playerRowColorForward": "playerRowColorForwardAction",
-        "playerRowColorMidfieldLeft": "playerRowColorMidfieldLeftAction",
-        "playerRowColorMidfieldRight": "playerRowColorMidfieldRightAction",
-        "playerRowColorMidfieldCenter": "playerRowColorMidfieldCenterAction",
-        "playerRowColorDefenceLeft": "playerRowColorDefenceLeftAction",
-        "playerRowColorDefenceRight": "playerRowColorDefenceRightAction",
-        "playerRowColorDefenceCenter": "playerRowColorDefenceCenterAction",
-        "clearAllColors": "playerRowColorClearAction"
+        "playerRowColorFW": "playerRowColorFWAction",
+        "playerRowColorLM": "playerRowColorLMAction",
+        "playerRowColorRM": "playerRowColorRMAction",
+        "playerRowColorOM": "playerRowColorOMAction",
+        "playerRowColorCM": "playerRowColorCMAction",
+        "playerRowColorDM": "playerRowColorDMAction",
+        "playerRowColorLB": "playerRowColorLBAction",
+        "playerRowColorRB": "playerRowColorRBAction",
+        "playerRowColorCB": "playerRowColorCBAction",
+        "clearRowColors": "playerRowColorClearAction"
     }
 
     browser.contextMenus.create({
@@ -233,7 +237,7 @@ async function handleInstalled(details) {
         var titleSuffix = key.substring("playerRowColor".length); // everything after "playerRowColor"
         if (titleSuffix) {
             // Insert a space before each capital letter except the first
-            var formattedTitle = titleSuffix.replace(/(?!^)([A-Z])/g, " $1");
+            var formattedTitle = titleSuffix
         } else {
             var formattedTitle = key.replace(/(?!^)([A-Z])/g, " $1");
             formattedTitle = formattedTitle.charAt(0).toUpperCase() + formattedTitle.slice(1);

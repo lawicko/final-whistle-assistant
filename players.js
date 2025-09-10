@@ -546,4 +546,7 @@ addCSS(`
         min-width: 0;         /* allow shrinking below default min-width */
         align-self: center; /* optional: vertically center in the container */
     }
+    input[type="checkbox"] {
+        accent-color: #3d453d;
+    }
 `)

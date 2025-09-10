@@ -73,9 +73,13 @@ async function importStorage() {
             }
         }
 
-        // Show first 50 characters in the dialog
-        const preview = text.slice(0, 50).replace(/\s+/g, " ");
-        document.getElementById("importPreview").textContent = preview + "...";
+        const importPreview = document.getElementById("importPreview")
+        try {
+            const parsed = JSON.parse(text);
+            importPreview.textContent = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+            importPreview.textContent = "❌ Invalid JSON!";
+        }
 
         const dialog = document.getElementById("importDialog");
         // Get element's position
