@@ -4,18 +4,30 @@ console.log(`loading calendar.js...`)
 const calendarObservactionConfig = { attributes: false, childList: true, subtree: true };
 
 // Callback function to execute when mutations are observed
-const calendarObservationCallback = (mutationList, observer) => {
+const calendarObservationCallback = async (mutationList, observer) => {
     let tableNode = document.querySelector("table.table")
-    if (tableNode != undefined && tableNode.rows.length > 1) {
+    if (tableNode != undefined && tableNode.tBodies[0] && tableNode.tBodies[0].rows.length > 1) {
         observer.disconnect()
-
         console.debug(`Found the following table: `, tableNode)
 
-        let targetNodesYouth = document.querySelectorAll("span.badge-youth");
-        targetNodesYouth.forEach((element) => element.innerHTML = "Y");
+        const { matchesInStorage = {} } = await storage.get("matches");
+        console.debug("matchesInStorage:", matchesInStorage)
 
-        let targetNodesSenior = document.querySelectorAll("span.badge-senior");
-        targetNodesSenior.forEach((element) => element.innerHTML = "S");
+        const tbody = tableNode.tBodies[0]; // first tbody
+        Array.from(tbody.rows).forEach(row => {
+            // Add Y and S to the badges on the left
+            let targetNodesYouth = document.querySelectorAll("span.badge-youth");
+            targetNodesYouth.forEach((element) => {
+                element.textContent = "Y";
+            });
+
+            let targetNodesSenior = document.querySelectorAll("span.badge-senior");
+            targetNodesSenior.forEach((element) => {
+                element.textContent = "S";
+            });
+
+            // Check if we are missing any matches for analysis
+        });
 
         observer.observe(alwaysPresentNode, calendarObservactionConfig)
     } else {
