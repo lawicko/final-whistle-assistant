@@ -102,12 +102,14 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Scoring'
     )
 
+    if (!SC_label_cell) return // Goalkeeper
+
     SC_cell = SC_label_cell.nextElementSibling
     let SC_span = SC_cell.querySelector("span")
     let SC = Number(SC_span.textContent.trim())
     if (Number.isNaN(SC)) {
         console.debug("Invalid number in SC_span:", SC_span.textContent, "<- assuming not our player.");
-        console.info("Not our player, skipping processing.")
+        console.info("Not our player, will not append computed skills")
         return
     }
 
@@ -544,7 +546,13 @@ async function showInjuries() {
 function getMyTeam() {
     // Check if there are inputs on the page, if yes this is our player
     const inputCheckbox = document.querySelector('input.form-check-input')
-    if (inputCheckbox) {
+    const controlButtons = Array.from(document.querySelectorAll("button"))
+        .filter(btn => {
+            const txt = btn.textContent.trim();
+            return txt === "Sell" || txt === "Fire";
+        });
+    console.debug("inputCheckbox:", inputCheckbox, "controlButtons:", controlButtons)
+    if (inputCheckbox && controlButtons.length >= 2) {
         const link = document.querySelector('table span fw-club-hover a')
         const clubID = lastPathComponent(link.href)
         const clubName = link.querySelector('span.club-name').textContent
@@ -556,8 +564,11 @@ function getMyTeam() {
     }
 }
 
-function getPlayerData() {
-    // Get all tables on the page
+/**
+ * Returns the player personalities table if it's present on the page.
+ * @returns {Object} player personalities table node.
+ */
+function getPersonalitiesTable() {
     const tables = document.querySelectorAll("table");
 
     const personalityTable = Array.from(tables).find(table =>
@@ -566,13 +577,10 @@ function getPlayerData() {
         )
     );
 
-    if (personalityTable) {
-        console.info("✅ Found the table:", personalityTable);
-    } else {
-        console.info("No personalities table found, will try again when the page changes.");
-        return
-    }
+    return personalityTable
+}
 
+function getPersonalitiesData(personalityTable) {
     const result = {};
 
     // Loop over each row
@@ -595,6 +603,28 @@ function getPlayerData() {
 
         result[name] = value;
     });
+
+    return result
+}
+
+/**
+ * Returns the player hidden skills table if it's present on the page.
+ * @returns {Object} player hidden skills table node.
+ */
+function getHiddenSkillsTable() {
+    const tables = document.querySelectorAll("table");
+
+    const hiddenSkillsTable = Array.from(tables).find(table =>
+        Array.from(table.querySelectorAll("th")).some(
+            th => th.textContent.trim() === "Hidden"
+        )
+    );
+
+    return hiddenSkillsTable
+}
+
+function getPlayerData() {
+    const result = getPersonalitiesData(getPersonalitiesTable())
 
     console.debug('Result of reading the personalities', result)
 
@@ -626,6 +656,161 @@ async function saveToStorage(clubData, playerData) {
     console.info(`Saved to storage: personalities for playerID: ${playerData.playerID} and club data: `, clubData);
 }
 
+function getBidButton() {
+    return document.querySelector("button:has(> i.fa-gavel)")
+}
+
+function isPendingSale() {
+    const bidButton = getBidButton()
+    return bidButton && bidButton.textContent.trim().startsWith("Place bid")
+}
+/**
+ * Checks if the buying guide is displayed, if not it calls the assembleBuyingGuide() and attaches the result after the bid button.
+ */
+function showBuyingGuide() {
+    const bidButton = getBidButton()
+
+    const buyingGuideIdentifier = `${pluginNodeClass}-buying-guide`
+    if (document.getElementById(buyingGuideIdentifier)) return
+
+    const buyingGuide = assembleBuyingGuide(buyingGuideIdentifier)
+    bidButton.after(buyingGuide)
+}
+
+/**
+ * Assemble buying guide ready to be attached to DOM.
+ * @param {string} identifier - identifier to be used for the buying guide
+ * @returns {Object} buying guide node.
+ */
+function assembleBuyingGuide(identifier) {
+    // TODO: implement the buying guide
+
+    // const position = getPlayerPosition()
+
+    // const personalitiesData = getPersonalitiesData(getPersonalitiesTable())
+    const div = document.createElement("div")
+    div.id = identifier
+    // div.textContent = "buying guide"
+    return div
+}
+
+/**
+ * Gets the player position e.g. FW.
+ * @returns {string} player position.
+ */
+function getPlayerPosition() {
+    const badgeElement = document.querySelector(".badge-position")
+    if (!badgeElement) return
+    return badgeElement.textContent.trim()
+}
+
+const positionEmoji = {
+    // Forwards
+    FW: "🎯",
+
+    // Midfielders
+    LW: "⚙️",
+    LM: "⚙️",
+    RW: "⚙️",
+    RM: "⚙️",
+    OM: "⚙️",
+    CM: "⚙️",
+    DM: "⚙️",
+
+    // Defenders
+    LWB: "🛡️",
+    LB: "🛡️",
+    RWB: "🛡️",
+    RB: "🛡️",
+    CB: "🛡️",
+
+    // Goalkeeper
+    GK: "🧤",
+};
+
+/**
+ * Returns the emoji for a given position.
+ * Defaults to ⚽ if position is unknown.
+ * @param {string} position
+ * @returns {string}
+ */
+function getPositionEmoji(position) {
+    return positionEmoji[position] || "⚽";
+}
+
+/**
+ * Returns the player skills table if it's present on the page.
+ * @returns {Object} player skills table node.
+ */
+function getPlayerSkillsTable() {
+    return document.querySelector("table:has(i.fa-user-circle)")
+}
+
+/**
+ * Returns the player computed skills table if it's present on the page.
+ * @returns {Object} player computed skills table node.
+ */
+function getPlayerComputeSkillsTable() {
+    return document.querySelector("table:has(i.fa-calculator)")
+}
+
+/**
+ * Returns the player special talents table if it's present on the page.
+ * @returns {Object} player special talents table node.
+ */
+function getPlayerSpecialTalentsTable() {
+    // Get all <th> elements
+    const thElements = document.querySelectorAll("table > tr > th");
+
+    // Find the one whose textContent matches
+    const th = Array.from(thElements).find(el => el.textContent.trim() === "Special Talent");
+
+    // Get its parent <table>
+    const table = th ? th.closest("table") : null;
+
+    return table
+}
+
+/**
+ * Checks if the site is loaded.
+ * @returns {boolean} True if the site is loaded.
+ */
+function checkSiteLoaded() {
+    const playerPosition = getPlayerPosition()
+    if (!playerPosition) {
+        console.log("Could not find player position")
+        return false
+    } else {
+        console.info(`${getPositionEmoji(playerPosition)} Found player position`)
+    }
+
+    const playerSkillsTable = getPlayerSkillsTable()
+    if (!playerSkillsTable) {
+        console.log("Could not find player skills table")
+        return false
+    } else {
+        console.info(`🏋️ Found player skills table`)
+    }
+
+    if (getPersonalitiesTable()) {
+        console.info("🎭 Found personalities table")
+    }
+    if (getPlayerSpecialTalentsTable()) {
+        console.info("⚡ Found special talents table")
+    }
+    if (getHiddenSkillsTable()) {
+        console.info("🕵️ Found hidden skills table")
+    }
+    if (getPlayerComputeSkillsTable()) {
+        console.info("🧮 Found computed skills table")
+    }
+    if (getBidButton()) {
+        console.info("🏷️ Found bidding section")
+    }
+
+    return true
+}
+
 function cleanUpNodeForPlayer(tableNode) {
     console.debug(`removing the old cells...`)
     tableNode.querySelectorAll(`tr.${pluginNodeClass}`).forEach(el => el.remove())
@@ -636,20 +821,30 @@ const playerObservingConfig = { attributes: false, childList: true, subtree: tru
 
 // Callback function to execute when mutations are observed
 const playerObservingCallback = (mutationList, observer) => {
-    clubData = getMyTeam()
-    if (clubData) {
-        console.info("clubData: ", clubData)
-    }
-    playerData = getPlayerData()
-    if (playerData) {
-        console.info("playerData: ", playerData)
+    const siteLoaded = checkSiteLoaded()
+    if (siteLoaded) {
+        console.info("✅ Site fully loaded")
+    } else {
+        console.log("Site not ready, skipping update...")
+        return
     }
 
-    if (clubData && playerData) {
-        saveToStorage(clubData, playerData)
+    const clubData = getMyTeam()
+    if (clubData) {
+        console.log("clubData: ", clubData)
+        const playerData = getPlayerData()
+        if (playerData) {
+            console.log("playerData: ", playerData)
+            saveToStorage(clubData, playerData)
+        }
     }
 
     showInjuries()
+
+    // If the player is on sale, add buying summary
+    if (isPendingSale()) {
+        showBuyingGuide()
+    }
 
     let tableNodes = document.querySelectorAll("table.table")
 
