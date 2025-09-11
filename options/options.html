@@ -233,10 +233,27 @@
     </fieldset>
 
     <fieldset>
-        <legend>Player Data</legend>
-        <textarea id="playerData" rows="10" cols="50"></textarea>
+        <legend>Local Data</legend>
+        <textarea id="localData" rows="10" cols="50"></textarea>
         <br>
-        <button id="saveBtn">Save</button>
+        <button id="saveBtn">⬇️ Save</button>
+        <dialog id="confirmationDialog">
+            <form method="dialog">
+                <h3>Saved 👍</h3>
+                <menu class="dialog-buttons">
+                    <button class="confirm-btn">Ok</button>
+                </menu>
+            </form>
+        </dialog>
+        <dialog id="localDataSaveFailedDialog">
+            <form method="dialog">
+                <h3>Failed 👎</h3>
+                <pre id="localDataSaveFailedDialogDescription" class="errorDescription"></pre>
+                <menu class="dialog-buttons">
+                    <button class="confirm-btn">Ok</button>
+                </menu>
+            </form>
+        </dialog>
     </fieldset>
 
     <style>
@@ -255,10 +272,8 @@
 
         .color-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            /* 2 columns */
-            gap: 10px 20px;
-            /* row gap and column gap */
+            grid-template-columns: 1fr 1fr; /* 2 columns */
+            gap: 10px 20px; /* row gap and column gap */
         }
 
         .color-grid>div {
@@ -288,8 +303,6 @@
 
         .status {
             margin-top: 0.5rem;
-            /* font-size: 0.9rem;
-            color: #444; */
         }
 
         button {
@@ -300,31 +313,27 @@
             cursor: pointer;
         }
 
-        #importPreview {
-            white-space: pre-wrap;       /* wrap lines if needed */
-            word-break: break-word;      /* break long words */
-            max-width: 100%;             /* prevent horizontal overflow */
-            max-height: 300px;           /* expand until this limit */
-            overflow-y: auto;            /* add scrollbar only when limit exceeded */
+        #importPreview, .errorDescription {
+            white-space: pre-wrap; /* wrap lines if needed */
+            word-break: break-word; /* break long words */
+            max-width: 100%; /* prevent horizontal overflow */
+            max-height: 300px; /* expand until this limit */
+            overflow-y: auto; /* add scrollbar only when limit exceeded */
             padding: 0.5rem;
-            border: 1px solid #ccc;      /* optional */
-            background: #f9f9f9;         /* optional */
-            box-sizing: border-box;      /* include padding in size calculation */
+            border: 1px solid #ccc; /* optional */
+            background: #f9f9f9; /* optional */
+            box-sizing: border-box; /* include padding in size calculation */
         }
 
-        #importDialog {
-            position: absolute;
-            /* instead of fixed */
-            z-index: 1000;
-            /* make sure it’s above other content */
+        #importDialog, #confirmationDialog {
+            position: absolute; /* instead of fixed */
+            z-index: 1000; /* make sure it’s above other content */
         }
 
         .dialog-buttons {
             display: flex;
-            justify-content: flex-end;
-            /* align to the right */
-            gap: 1rem;
-            /* spacing between buttons */
+            justify-content: flex-end; /* align to the right */
+            gap: 1rem; /* spacing between buttons */
             margin-top: 1rem;
         }
 

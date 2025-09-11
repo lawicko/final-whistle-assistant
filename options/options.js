@@ -24,6 +24,64 @@ async function exportStorage() {
     }
 }
 
+async function openDialogAbove(button, dialog, gap = 8) {
+    // create backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'dialog-backdrop';
+    document.body.appendChild(backdrop);
+
+    // show the dialog non-modally so we can position it
+    dialog.show();
+
+    // wait for layout so offsetWidth/Height are correct
+    await new Promise(req => requestAnimationFrame(req));
+
+    const rect = button.getBoundingClientRect();
+    let top = rect.top + window.scrollY - dialog.offsetHeight - gap;
+    let left = rect.left + window.scrollX + (rect.width - dialog.offsetWidth) / 2;
+
+    // If not enough space above, place below the button
+    if (top < window.scrollY + 4) {
+        top = rect.bottom + window.scrollY + gap;
+    }
+
+    // Keep dialog inside viewport horizontally
+    const maxLeft = window.scrollX + window.innerWidth - dialog.offsetWidth - 4;
+    left = Math.max(window.scrollX + 4, Math.min(left, maxLeft));
+
+    dialog.style.top = `${top}px`;
+    dialog.style.left = `${left}px`;
+
+    // close dialog and cleanup when user closes or clicks backdrop
+    function cleanup() {
+        if (dialog.open) dialog.close();
+        backdrop.remove();
+        window.removeEventListener('resize', reposition);
+        backdrop.removeEventListener('click', onBackdrop);
+        dialog.removeEventListener('close', onClose);
+    }
+
+    function onBackdrop() { cleanup(); }
+    function onClose() { cleanup(); }
+
+    backdrop.addEventListener('click', onBackdrop);
+    dialog.addEventListener('close', onClose);
+
+    // reposition on resize/scroll if you want it to follow
+    function reposition() {
+        const r = button.getBoundingClientRect();
+        let t = r.top + window.scrollY - dialog.offsetHeight - gap;
+        if (t < window.scrollY + 4) t = r.bottom + window.scrollY + gap;
+        let l = r.left + window.scrollX + (r.width - dialog.offsetWidth) / 2;
+        const maxL = window.scrollX + window.innerWidth - dialog.offsetWidth - 4;
+        l = Math.max(window.scrollX + 4, Math.min(l, maxL));
+        dialog.style.top = `${t}px`;
+        dialog.style.left = `${l}px`;
+    }
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, { passive: true });
+}
+
 async function showPasteDialogNear(element) {
     const pasteDialog = document.getElementById("pasteDialog");
     // Get element's position
@@ -179,25 +237,31 @@ async function restoreOptions() {
         }
     });
 
-    // Handling the player data
-    const textarea = document.getElementById("playerData");
+    // Handling the local data
+    const textarea = document.getElementById("localData");
     const saveBtn = document.getElementById("saveBtn");
 
-    // Load existing player-data from storage
-    const stored = await browser.storage.local.get("player-data");
+    // Load existing data from storage
+    const stored = await browser.storage.local.get();
     console.info("store: ", stored)
-    textarea.value = stored["player-data"]
-        ? JSON.stringify(stored["player-data"], null, 2)  // formatted JSON
+    textarea.value = stored
+        ? JSON.stringify(stored, null, 2)  // formatted JSON
         : "{}"; // default empty object
 
     // Save back to storage
     saveBtn.addEventListener("click", async () => {
         try {
             const parsed = JSON.parse(textarea.value); // make sure it's valid JSON
-            await browser.storage.local.set({ "player-data": parsed });
-            alert("Player data saved!");
+            await browser.storage.local.set(parsed);
+
+            const confirmationDialog = document.getElementById("confirmationDialog");
+            openDialogAbove(saveBtn, confirmationDialog)
         } catch (e) {
-            alert("Invalid JSON, please fix it before saving.");
+            const failedDialog = document.getElementById("localDataSaveFailedDialog");
+            const descriptionLabel = failedDialog.querySelector("#localDataSaveFailedDialogDescription");
+            descriptionLabel.textContent = formatError(e)
+            openDialogAbove(saveBtn, failedDialog)
+            // alert("Invalid JSON, please fix it before saving.");
         }
     })
 
@@ -214,6 +278,21 @@ async function restoreOptions() {
         });
     }
 }
+
+function formatError(e, { includeStack = false } = {}) {
+    if (e instanceof Error) {
+        return includeStack ? `${e.message}\n${e.stack}` : e.message;
+    }
+    if (typeof e === "string") {
+        return e;
+    }
+    try {
+        return JSON.stringify(e);
+    } catch {
+        return String(e);
+    }
+}
+
 
 // Add listeners to inputs
 document.addEventListener("DOMContentLoaded", restoreOptions);
