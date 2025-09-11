@@ -40,17 +40,6 @@ function hasActiveSetPieces() {
     return link && link.textContent.trim() === "Set Pieces";
 }
 
-function lastPathComponent(url) {
-    try {
-        const u = new URL(url);         // parse the URL
-        const parts = u.pathname.split("/").filter(Boolean);
-        return parts.pop() || "";       // last component or "" if none
-    } catch (err) {
-        console.error("Invalid URL:", url, err);
-        return null;
-    }
-}
-
 async function loadValuesForComponents(components) {
     const playerData = await storage.get('player-data')
 

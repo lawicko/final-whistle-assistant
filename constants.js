@@ -20,6 +20,17 @@ function isString(value) {
     return typeof value === "string" || value instanceof String
 }
 
+function lastPathComponent(url) {
+    try {
+        const u = new URL(url);         // parse the URL
+        const parts = u.pathname.split("/").filter(Boolean);
+        return parts.pop() || "";       // last component or "" if none
+    } catch (err) {
+        console.error("Invalid URL:", url, err);
+        return null;
+    }
+}
+
 const addCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css
 
 console.log(`constants.js script loaded...`)
