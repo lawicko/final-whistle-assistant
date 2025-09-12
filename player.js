@@ -246,7 +246,11 @@ function appendComputedSkills(tableNode) {
     tableNode.appendChild(trMD)
 
     // Assistance calculations
-    const { personalities } = getPlayerData()
+    let personalities = {}
+    const personalitiesTable = getPersonalitiesTable()
+    if (personalitiesTable) {
+        personalities = getPersonalitiesData(personalitiesTable)
+    }
     console.debug("personalities:", personalities)
     const resultCurrents = calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: personalities["teamwork"] });
     const resultPotential = calculateAssistance({ OP: OP_POT, BC: BC_POT, TA: TA_POT, DP: DP_POT, teamwork: personalities["teamwork"] });
