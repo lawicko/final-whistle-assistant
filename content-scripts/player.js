@@ -447,10 +447,8 @@ function calculateAssistance({ OP, BC, TA, DP, teamwork = 0 }) {
 }
 
 
-// Calculates and adds the cells with the midfield contribution values for each player
+// Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
-    console.log(`appending the midfield contribution...`)
-
     let midfieldDominanceMax = 100 + 200
     let constitutionTreshold = 50
 
@@ -470,6 +468,8 @@ function appendComputedSkills(tableNode) {
         console.info("Not our player, will not append computed skills")
         return
     }
+
+    console.log(`appending the midfield dominance...`)
 
     SC_pot_cell = SC_cell.nextElementSibling
     let SC_pot_span = SC_pot_cell.querySelector("span")
@@ -1314,83 +1314,3 @@ browser.runtime.onMessage.addListener((message) => {
         }
     }
 })
-
-addCSS(`
-    [data-tooltip] {
-      position: relative; /* Needed for positioning the tooltip */
-      cursor: help;       /* Optional: indicates hover help */
-    }
-
-    /* The tooltip itself */
-    [data-tooltip]::after {
-        content: attr(data-tooltip); /* Pulls text from the attribute */
-        position: absolute;
-        top: 0%;
-        left: 100%;
-
-        background: rgb(77, 129, 62);
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease-in-out;
-        display: inline-block;
-        white-space: pre;        /* only break at \n */
-        width: max-content;      /* shrink to longest line */
-        max-width: none;         /* no implicit cap */
-        z-index: 999;
-    }
-
-    .header-tooltip[data-tooltip]::after {
-        left: 141%;
-    }
-
-    .value-tooltip[data-tooltip]::after {
-        left: 200%;
-    }
-
-    /* Show on hover */
-    [data-tooltip]:hover::after {
-      opacity: 1;
-    }
-
-    .details-row {
-        display: none; /* all hidden by default */
-    }
-
-    .summary-row {
-        cursor: pointer;
-        font-weight: bold;
-    }
-
-    .disclosure {
-        display: inline-block;
-        transition: transform 0.2s ease;
-        margin-right: 6px;
-    }
-
-    /* Rotates arrow when open */
-    .disclosure.open {
-        transform: rotate(90deg);
-    }
-
-    th.table-header-minutes span {
-        cursor: help;
-        font: 14px/1 FontAwesome;
-    }
-    
-    span#minutes-since-last-injury {
-        font-size: .9rem;
-    }
-    
-    ol#${pluginNodeClass}-buying-guide {
-        list-style-type: none; /* removes numbers */
-        padding-left: 0;       /* optional: remove indent */
-        margin-left: 0;        /* optional: align with parent */
-        font-size: .9rem;
-        margin-top: 0.5rem;
-    }
-`)

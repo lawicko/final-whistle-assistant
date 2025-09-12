@@ -1,0 +1,288 @@
+/* Lineup */
+span.leadership {
+    font-size: 1.4em;
+    cursor: help;
+}
+
+span.composure {
+    font-size: 1.2em;
+    cursor: help;
+}
+
+span.arrogance {
+    font-size: 1.2em;
+    cursor: help;
+}
+
+span.sportsmanship {
+    font-size: 1.4em;
+    cursor: help;
+}
+
+ol#proposed-penalty-takers, ol#proposed-corner-takers, ol#proposed-anchors {
+    font-size: .8rem;
+    text-align: center;
+
+    list-style-type: none; /* removes numbers */
+    padding-left: 0;       /* optional: remove indentation */
+    margin-left: 0;  
+}
+
+h6#proposed-penalty-takers-header, h6#proposed-corner-takers-header, h6#proposed-anchors-header {
+    text-align: center;
+}
+
+h6#proposed-penalty-takers-header span, h6#proposed-corner-takers-header span, h6#proposed-anchors-header span {
+    cursor: help;
+    font: 14px/1 FontAwesome;
+}
+
+div.proposed-penalty-takers-container {
+    display: flex;
+}
+
+div.proposed-penalty-takers-panel {
+    flex: 1;                 /* Equal width */
+    display: flex;
+    flex-direction: column;  /* 👈 stack children vertically */
+    justify-content: flex-start; /* 👈 Align children to top */
+    align-items: center;
+}
+
+input#composure-treshold, input#arrogance-treshold {
+    width: 160px;         /* make it wider */
+    height: 26px;         /* control the height */
+    padding: 4px 4px;     /* inner spacing */
+    border-radius: 8px;   /* rounded corners */
+    font-size: 13px;      /* adjust font size */
+    box-sizing: border-box;
+}
+
+h5[touranchor="lineup.tour"] span {
+    font: 14px/1 FontAwesome;
+    cursor: help;
+}
+
+/* Player */
+[data-tooltip] {
+  position: relative; /* Needed for positioning the tooltip */
+  cursor: help;       /* Optional: indicates hover help */
+}
+
+/* The tooltip itself */
+[data-tooltip]::after {
+    content: attr(data-tooltip); /* Pulls text from the attribute */
+    position: absolute;
+    top: 0%;
+    left: 100%;
+
+    background: rgb(77, 129, 62);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+    display: inline-block;
+    white-space: pre;        /* only break at \n */
+    width: max-content;      /* shrink to longest line */
+    max-width: none;         /* no implicit cap */
+    z-index: 999;
+}
+
+.header-tooltip[data-tooltip]::after {
+    left: 141%;
+}
+
+.value-tooltip[data-tooltip]::after {
+    left: 200%;
+}
+
+/* Show on hover */
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+.details-row {
+    display: none; /* all hidden by default */
+}
+
+.summary-row {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.disclosure {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    margin-right: 6px;
+}
+
+/* Rotates arrow when open */
+.disclosure.open {
+    transform: rotate(90deg);
+}
+
+th.table-header-minutes span {
+    cursor: help;
+    font: 14px/1 FontAwesome;
+}
+
+span#minutes-since-last-injury {
+    font-size: .9rem;
+}
+
+ol#FinalWhistlePlugin-buying-guide {
+    list-style-type: none; /* removes numbers */
+    padding-left: 0;       /* optional: remove indent */
+    margin-left: 0;        /* optional: align with parent */
+    font-size: .9rem;
+    margin-top: 0.5rem;
+}
+
+/* Players */
+.FinalWhistlePlugin[data-tooltip]::after {
+    right: 0%;   /* push it left of the parent */
+    left: auto;    /* reset the left so it doesn’t conflict */
+    top: auto;
+    bottom: 100%;
+}
+span.teamwork {
+    font-size: 1.4em;
+    cursor: help;
+}
+fw-players div.card-header > div.row > input, fw-players div.card-header > div.row > label {
+    margin-left: auto;    /* push to the right */
+    flex: 0 0 auto;       /* don't grow or shrink */
+    width: auto;          /* natural width */
+    min-width: 0;         /* allow shrinking below default min-width */
+}
+.row > .right-items {
+    display: inline-flex;  /* shrink to content */
+    gap: 0.5rem;
+
+    margin-left: auto;    /* push to the right */
+    flex: 0 0 auto;       /* don't grow or shrink */
+    width: auto;          /* natural width */
+    min-width: 0;         /* allow shrinking below default min-width */
+    align-self: center; /* optional: vertically center in the container */
+}
+input[type="checkbox"] {
+    accent-color: #3d453d;
+    margin-left: 6px;
+}
+
+/* Row highlight */
+.FinalWhistlePlugin_playerBackgroundFW {
+  background-image:
+    linear-gradient(to top,
+      rgb(110 60 54 / 1.0),
+      transparent,
+      rgb(110 60 54 / 1.0));
+}
+
+.FinalWhistlePlugin_playerBackgroundLW {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgb(125 100 48 / 0.4) 0px,
+      rgb(110 60 54 / 1.0) 10px,
+      rgb(125 100 48 / 0.4) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundLM {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgb(125 100 48 / 0.4) 0px,
+      transparent 10px,
+      rgb(125 100 48 / 0.4) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundRW {
+  background-image:
+    repeating-linear-gradient(-45deg,
+      rgb(125 100 48 / 0.4) 0px,
+      rgb(110 60 54 / 1.0) 10px,
+      rgb(125 100 48 / 0.4) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundRM {
+  background-image:
+    repeating-linear-gradient(-45deg,
+      rgb(125 100 48 / 0.4) 0px,
+      transparent 10px,
+      rgb(125 100 48 / 0.4) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundOM {
+  background-image:
+    repeating-linear-gradient(to bottom,
+      rgb(110 60 54 / 1.0),
+      transparent,
+      rgb(125 100 48 / 0.4));
+}
+
+.FinalWhistlePlugin_playerBackgroundCM {
+  background-image:
+    linear-gradient(to top,
+      rgb(125 100 48 / 0.4),
+      transparent,
+      rgb(125 100 48 / 0.4));
+}
+
+.FinalWhistlePlugin_playerBackgroundDM {
+  background-image:
+    linear-gradient(to bottom,
+      rgb(125 100 48 / 0.4),
+      transparent,
+      rgb(62 111 115 / 0.3));
+}
+
+.FinalWhistlePlugin_playerBackgroundLWB {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgb(62 111 115 / 0.3) 0px,
+      rgb(125 100 48 / 0.4) 10px,
+      rgb(62 111 115 / 0.3) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundLB {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgb(62 111 115 / 0.3) 0px,
+      transparent 10px,
+      rgb(62 111 115 / 0.3) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundRWB {
+  background-image:
+    repeating-linear-gradient(-45deg,
+      rgb(62 111 115 / 0.3) 0px,
+      rgb(125 100 48 / 0.4) 10px,
+      rgb(62 111 115 / 0.3) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundRB {
+  background-image:
+    repeating-linear-gradient(-45deg,
+      rgb(62 111 115 / 0.3) 0px,
+      transparent 10px,
+      rgb(62 111 115 / 0.3) 20px);
+}
+
+.FinalWhistlePlugin_playerBackgroundCB {
+  background-image:
+    linear-gradient(to top,
+      rgb(62 111 115 / 0.3),
+      transparent,
+      rgb(62 111 115 / 0.3));
+}
+
+/* Tags */
+i.fa-tag::before {
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+.badge i.fa-tag {
+  font: 14px/1 FontAwesome;
+}

@@ -64,9 +64,9 @@ function createHeaders() {
     }
 }
 
-// Calculates and adds the cells with the midfield contribution values for each player
+// Calculates and adds the cells with the midfield dominance values for each player
 function appendAdditionalInfo(storedPlayerData) {
-    console.debug(`appending the midfield contribution...`)
+    console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
     let rows = document.querySelectorAll("table > tr");
@@ -471,36 +471,3 @@ async function applyCustomColorsSquadSymbols() {
 
 // Run the function
 applyCustomColorsSquadSymbols();
-
-addCSS(`
-    .${pluginNodeClass}[data-tooltip]::after {
-        right: 0%;   /* push it left of the parent */
-        left: auto;    /* reset the left so it doesn’t conflict */
-        top: auto;
-        bottom: 100%;
-    }
-    span.teamwork {
-        font-size: 1.4em;
-        cursor: help;
-    }
-    fw-players div.card-header > div.row > input, fw-players div.card-header > div.row > label {
-        margin-left: auto;    /* push to the right */
-        flex: 0 0 auto;       /* don't grow or shrink */
-        width: auto;          /* natural width */
-        min-width: 0;         /* allow shrinking below default min-width */
-    }
-    .right-items {
-        display: inline-flex;  /* shrink to content */
-        gap: 0.5rem;
-
-        margin-left: auto;    /* push to the right */
-        flex: 0 0 auto;       /* don't grow or shrink */
-        width: auto;          /* natural width */
-        min-width: 0;         /* allow shrinking below default min-width */
-        align-self: center; /* optional: vertically center in the container */
-    }
-    input[type="checkbox"] {
-        accent-color: #3d453d;
-        margin-left: 6px;
-    }
-`)

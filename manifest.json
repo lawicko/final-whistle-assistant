@@ -13,15 +13,18 @@
                 "*://*.finalwhistle.org/*"
             ],
             "js": [
-                "constants.js",
-                "academy_buttons.js",
-                "calendar.js",
-                "lineup.js",
-                "match.js",
-                "player.js",
-                "players.js",
-                "row_highlight.js",
-                "tags.js"
+                "content-scripts/constants.js",
+                "content-scripts/academy_buttons.js",
+                "content-scripts/calendar.js",
+                "content-scripts/lineup.js",
+                "content-scripts/match.js",
+                "content-scripts/player.js",
+                "content-scripts/players.js",
+                "content-scripts/row_highlight.js",
+                "content-scripts/tags.js"
+            ],
+            "css": [
+                "content-scripts/styles.css"
             ]
         }
     ],

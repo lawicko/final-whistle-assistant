@@ -79,8 +79,6 @@ const tagsObservationCallback = (mutationList, observer) => {
 // Create an observer instance linked to the callback function
 const tagsObserver = new MutationObserver(tagsObservationCallback);
 
-addCSS(".fa-tag::before { text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; }")
-
 browser.runtime.onMessage.addListener((message) => {
     console.debug(`runtime.onMessage with message:`, message);
 
