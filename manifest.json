@@ -1,12 +1,30 @@
 {
     "manifest_version": 3,
     "name": "Final Whistle Assistant",
-    "version": "2.4.0",
+    "version": "3.0.0",
     "description": "Displays additional information when browsing FinalWhistle website.",
     "icons": {
         "48": "icons/fw-logo-48.png",
         "96": "icons/fw-logo-96.png"
     },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.finalwhistle.org/*"
+            ],
+            "js": [
+                "constants.js",
+                "academy_buttons.js",
+                "calendar.js",
+                "lineup.js",
+                "match.js",
+                "player.js",
+                "players.js",
+                "row_highlight.js",
+                "tags.js"
+            ]
+        }
+    ],
     "background": {
         "scripts": [
             "assistant.js"

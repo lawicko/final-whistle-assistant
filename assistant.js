@@ -5,39 +5,7 @@ if (typeof browser == "undefined") {
 
 const optionsStorage = browser.storage.sync
 
-const pattern1 = "*://*.finalwhistle.org/*";
-
-const filter = {
-    urls: [pattern1],
-};
-
-const loadedMap = new Map()
 const lastURLMap = new Map()
-
-async function executeScript(tabId, scriptName) {
-    try {
-        console.log(`executeScript ${scriptName}`);
-        let resultsArray = await browser.scripting.executeScript({
-            target: {
-                tabId: tabId,
-                allFrames: true,
-            },
-            files: [scriptName],
-        });
-        console.debug(`resultsArray has ${resultsArray.length} elements`)
-        for (let i = 0; i < resultsArray.length; i++) {
-            let result = resultsArray[i]
-            console.debug(`processing ${i} result`)
-            if (result.hasOwnProperty("error")) {
-                console.error(`script ${scriptName} execution failed with error: ${result.error}`)
-            } else {
-                console.info(`execution result for ${scriptName}: ${JSON.stringify(result)}`)
-            }
-        }
-    } catch (err) {
-        console.error(`failed to execute script ${scriptName}: ${err}`);
-    }
-}
 
 function handleUpdated(tabId, changeInfo, tabInfo) {
     console.debug(`handleUpdated called`)
@@ -53,68 +21,8 @@ function handleUpdated(tabId, changeInfo, tabInfo) {
 }
 
 async function handleURLChanged(tabId, url) {
-    if (loadedMap.get(tabId)) {
-        if (lastURLMap.get(tabId) == url) {
-            // This is the case when you reload the website, then the modules need to be loaded again
-            await loadModules(tabId, url)
-            browser.tabs.sendMessage(tabId, { url: url })
-        } else {
-            // This is the case when the url has changed because of the js or other natigation that is not a hard reload
-            browser.tabs.sendMessage(tabId, { url: url })
-        }
-    } else {
-        // Nothing was loaded before, so the modules need to be loaded
-        await loadModules(tabId, url)
-        browser.tabs.sendMessage(tabId, { url: url })
-    }
+    browser.tabs.sendMessage(tabId, { url: url })
     lastURLMap.set(tabId, url)
-}
-
-async function loadModules(tabId, url) {
-    loadedMap.set(tabId, false)
-
-    async function start() {
-        const result = await optionsStorage.get(["modules", "colors"]);
-        const modules = result.modules || {};
-
-        await executeScript(tabId, "constants.js")
-
-        if (modules?.academy_buttons) {
-            console.info(`Loading academy_buttons...`)
-            await executeScript(tabId, "academy_buttons.js")
-        }
-        if (modules?.calendar) {
-            console.info(`Loading calendar...`)
-            await executeScript(tabId, "calendar.js")
-        }
-        if (modules?.lineup) {
-            console.info(`Loading lineup...`)
-            await executeScript(tabId, "lineup.js")
-        }
-        if (modules?.match) {
-            console.info(`Loading match...`)
-            await executeScript(tabId, "match.js")
-        }
-        if (modules?.player) {
-            console.info(`Loading player...`)
-            await executeScript(tabId, "player.js")
-        }
-        if (modules?.players) {
-            console.info(`Loading players...`)
-            await executeScript(tabId, "players.js")
-        }
-        if (modules?.row_highlight) {
-            console.info(`Loading row_highlight...`)
-            await executeScript(tabId, "row_highlight.js")
-        }
-        if (modules?.tags) {
-            console.info(`Loading tags...`)
-            await executeScript(tabId, "tags.js")
-        }
-    }
-
-    await start()
-    loadedMap.set(tabId, true)
 }
 
 browser.tabs.onUpdated.addListener(handleUpdated);
