@@ -1,0 +1,27 @@
+{
+  "name": "final-whistle-assistant",
+  "version": "1.0.0",
+  "description": "I created this browser extension to address some of the problems that, in my opinion, the game interface has. The main idea was to make the midfield dominance easily visible on the squad page as well as on the player page. Midfield dominance being (as of time of writing - August 2025) the main factor in opportunity creation, I think it deserves much more attention than just a mention in the manual.",
+  "main": "assistant.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/lawicko/final-whistle-assistant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lawicko/final-whistle-assistant/issues"
+  },
+  "homepage": "https://github.com/lawicko/final-whistle-assistant#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "rollup": "^4.50.1"
+  }
+}

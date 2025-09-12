@@ -1,44 +1,43 @@
+import { optionsStorage, addCSS } from './utils.js';
+
 console.log(`loading tags.js...`)
 
 async function applyCustomColorsForTags() {
+    console.debug(`Applying custom colors for tags...`);
     try {
         // Load colors from storage (with defaults)
-        const optionsStorage = browser.storage.sync;
         const { colors = {} } = await optionsStorage.get("colors");
 
         // Inject CSS rule so future elements are styled too
-        const style = document.createElement("style");
-        style.textContent = `
-        i.denom1 {
-            color: ${colors.color1} !important;
-        }
-        i.denom2 {
-            color: ${colors.color2} !important;
-        }
-        i.denom3 {
-            color: ${colors.color3} !important;
-        }
-        i.denom4 {
-            color: ${colors.color4} !important;
-        }
-        i.denom5 {
-            color: ${colors.color5} !important;
-        }
-        i.denom6 {
-            color: ${colors.color6} !important;
-        }
-        i.denom7 {
-            color: ${colors.color7} !important;
-        }
-        i.denom8 {
-            color: ${colors.color8} !important;
-        }
-        i.denom9 {
-            color: ${colors.color9} !important;
-        }
-    `;
-        document.head.appendChild(style);
-
+        addCSS(`
+            i.denom1 {
+                color: ${colors.color1} !important;
+            }
+            i.denom2 {
+                color: ${colors.color2} !important;
+            }
+            i.denom3 {
+                color: ${colors.color3} !important;
+            }
+            i.denom4 {
+                color: ${colors.color4} !important;
+            }
+            i.denom5 {
+                color: ${colors.color5} !important;
+            }
+            i.denom6 {
+                color: ${colors.color6} !important;
+            }
+            i.denom7 {
+                color: ${colors.color7} !important;
+            }
+            i.denom8 {
+                color: ${colors.color8} !important;
+            }
+            i.denom9 {
+                color: ${colors.color9} !important;
+            }
+        `, "final-whistle-custom-tag-colors");
     } catch (err) {
         console.error("Failed to apply custom colors for tags:", err);
     }
@@ -47,55 +46,26 @@ async function applyCustomColorsForTags() {
 // Run the function
 applyCustomColorsForTags();
 
+export async function processTags() {
+    console.info(`Processing tags...`)
 
-// Options for the observer (which mutations to observe)
-const tagsObservactionConfig = { attributes: false, childList: true, subtree: true, characterData: false }
+    let tableNodes = document.querySelectorAll("table.table")
+    for (let tableNode of tableNodes) {
+        if (tableNode.rows.length > 1) {
+            console.debug(`Found the following table for processing tags: `, tableNode)
 
-// Callback function to execute when mutations are observed
-const tagsObservationCallback = (mutationList, observer) => {
-    let tableNode = document.querySelector("table.table")
-    if (tableNode != undefined && tableNode.rows.length > 1) {
-        observer.disconnect()
+            tableNode.querySelectorAll(`td > fw-player-hover > div.hovercard > sup`).forEach((el, idx) => {
+                let supNode = el
+                let currentClass = supNode.className
 
-        console.debug(`Found the following table: `, tableNode)
-
-        tableNode.querySelectorAll(`td > fw-player-hover > div.hovercard > sup`).forEach((el, idx) => {
-            let supNode = el
-            let currentClass = supNode.className
-
-            let tagNode = supNode.querySelector(`i`)
-            let tagRemoved = supNode.removeChild(tagNode)
-            tagRemoved.className += ` ${currentClass}`
-            supNode.parentNode.insertBefore(tagRemoved, supNode)
-            supNode.remove()
-        })
-
-        observer.observe(alwaysPresentNode, calendarObservactionConfig)
-    } else {
-        console.debug(`Could not find the table, or the table is empty, observing...`)
-    }
-};
-
-// Create an observer instance linked to the callback function
-const tagsObserver = new MutationObserver(tagsObservationCallback);
-
-browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
-
-    if (!message) {
-        console.warn('runtime.onMessage called, but the message is undefined')
-        return
-    }
-
-    const url = message.url
-    if (url) {
-        if (message.url.endsWith("players") || message.url.endsWith("training") || message.url.endsWith("training#Reports") || message.url.endsWith("training#Drills")) {
-            // Start observing the target node for configured mutations
-            tagsObserver.observe(alwaysPresentNode, tagsObservactionConfig);
-            console.debug(`Started the div.wrapper observation`)
+                let tagNode = supNode.querySelector(`i`)
+                let tagRemoved = supNode.removeChild(tagNode)
+                tagRemoved.className += ` ${currentClass}`
+                supNode.parentNode.insertBefore(tagRemoved, supNode)
+                supNode.remove()
+            })
         } else {
-            tagsObserver.disconnect()
-            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
+            console.debug(`Skipping a table with only one row (probably header): `, tableNode)
         }
-    }
-})
+    } 
+}

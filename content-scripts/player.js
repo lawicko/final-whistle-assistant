@@ -326,7 +326,7 @@ function stopperDescription(positionKey) {
         case PositionsKeys.LM:
         case PositionsKeys.RM:
         case PositionsKeys.CM:
-            return "👍 Stopper talent is especially useful for defenders, defensivly minded midfielders because it boosts their TA"
+            return "👍 Stopper talent is especially useful for defenders and defensively minded midfielders because it boosts their TA"
         default:
             return "🤔 Stopper talent is not particuraly useful for outfielders without defensive duties or goalkeepers"
     }

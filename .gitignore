@@ -1,0 +1,25 @@
+# Node.js dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor-specific
+.vscode/
+.idea/
+
+# Package manager locks (optional, depending on workflow)
+# If you want reproducible builds, keep package-lock.json or yarn.lock in git.
+# If not, ignore them:
+# package-lock.json
+# yarn.lock

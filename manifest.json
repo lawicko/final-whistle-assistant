@@ -12,17 +12,7 @@
             "matches": [
                 "*://*.finalwhistle.org/*"
             ],
-            "js": [
-                "content-scripts/constants.js",
-                "content-scripts/academy_buttons.js",
-                "content-scripts/calendar.js",
-                "content-scripts/lineup.js",
-                "content-scripts/match.js",
-                "content-scripts/player.js",
-                "content-scripts/players.js",
-                "content-scripts/row_highlight.js",
-                "content-scripts/tags.js"
-            ],
+            "js": ["dist/content-scripts.bundle.js"],
             "css": [
                 "content-scripts/styles.css"
             ]
