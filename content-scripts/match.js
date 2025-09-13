@@ -1,13 +1,15 @@
-console.log(`loading match.js...`)
+import { storage, lastPathComponent } from './utils.js';
 
-async function processMatch() {
+let debuggerSymbol = "================"
+
+export async function processMatch() {
     const dateElement = document.querySelector('div.col-md-2:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)')
     const homeTeamElement = document.querySelector('div.col-lg-6:nth-child(1) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
     const guestTeamElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
     if (dateElement && dateElement.textContent && homeTeamElement && homeTeamElement.textContent && guestTeamElement && guestTeamElement.textContent) {
-        console.info('=============================== Processing match from', dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', guestTeamElement.textContent.trim(), '===============================')
+        console.info(debuggerSymbol,'Processing match from', dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', guestTeamElement.textContent.trim(),debuggerSymbol)
     } else {
-        console.info(`=============================== Match processing finished, page not loaded yet ===============================`);
+        console.info(debuggerSymbol,`Match processing finished, page not loaded yet`,debuggerSymbol);
         return
     }
 
@@ -15,7 +17,7 @@ async function processMatch() {
     const competitionNameTextValue = competitionSymbol.parentNode.nextElementSibling.textContent
     const competitionName = competitionNameTextValue.replace(/^[A-Za-z]\s*/, "").trim();
     if (competitionName == "Friendly" || competitionName == "Quick match") {
-        console.info(`=============================== Match processing finished, skipping the ${competitionName} ===============================`);
+        console.info(debuggerSymbol,`Match processing finished, skipping the ${competitionName}`,debuggerSymbol);
         return
     }
 
@@ -39,7 +41,7 @@ async function processMatch() {
         return thisClubID === clubID && thisClubName === clubName
     })[0]
     if (!ownLineupContainer) { // not our match, skip
-        console.info(`=============================== Match processing finished, not our own match ===============================`);
+        console.info(debuggerSymbol`Match processing finished, not our own match`,debuggerSymbol);
         return
     }
     console.debug('ownLineupContainer: ', ownLineupContainer)
@@ -70,22 +72,23 @@ async function processMatch() {
     var loadedPlayerData = playerDataFromStorage['player-data'] || {};
     console.debug('initial loadedPlayerData = ', loadedPlayerData)
 
-    const foundInjuries = processInjuries(loadedPlayerData, ownPlayers, dateElement.textContent.trim())
+    const foundInjuries = await processInjuries(loadedPlayerData, ownPlayers, dateElement.textContent.trim())
     console.debug('after processInjuries loadedPlayerData = ', loadedPlayerData)
 
-    const foundPlayingPlayers = processMinutesPlayed(loadedPlayerData, ownPlayers, dateElement.textContent.trim())
+    const foundPlayingPlayers = await processMinutesPlayed(loadedPlayerData, ownPlayers, dateElement.textContent.trim())
     console.debug('after processMinutes loadedPlayerData = ', loadedPlayerData)
 
+    // TODO: In the future save any data we can find, even the starting lineups and tactics
     if (foundInjuries || foundPlayingPlayers) {
         const key = 'player-data';
         await storage.set({ [key]: loadedPlayerData })
-        console.info(`=============================== Match processing finished, saved player data to storage ===============================`);
+        console.info(debuggerSymbol,`Match processing finished, saved player data to storage`,debuggerSymbol);
     } else {
-        console.info(`=============================== Match processing finished, skipping the saving step as nothing interesting was found ===============================`);
+        console.info(debuggerSymbol,`Match processing finished, skipping the saving step as nothing interesting was found`,debuggerSymbol);
     }
 }
 
-function processInjuries(loadedPlayerData, players, date) {
+async function processInjuries(loadedPlayerData, players, date) {
     // Filter only those that contain an <i> with class 'bi-capsule' (light injury) or an <img> with src equal to assets/images/injury.png (serious injury)
     const injuried = Array.from(players).filter(container =>
         container.querySelector('i.bi-capsule') || container.querySelector('img[src="assets/images/injury.png"]')
@@ -104,14 +107,14 @@ function processInjuries(loadedPlayerData, players, date) {
         playerIDs.push(playerID)
     }
 
-    console.debug('before saveInjuriesToStorage: ', loadedPlayerData)
-    saveInjuriesToStorage(loadedPlayerData, playerIDs, date)
+    console.debug('before saveInjuriesToLoadedObject: ', loadedPlayerData)
+    await saveInjuriesToLoadedObject(loadedPlayerData, playerIDs, date)
     return true
 }
 
-function saveInjuriesToStorage(loadedPlayerData, playerIDs, date) {
-    console.debug('saveInjuriesToStorage for playerIDs: ', playerIDs, ' date: ', date)
-    console.debug('inside saveInjuriesToStorage: ', loadedPlayerData)
+async function saveInjuriesToLoadedObject(loadedPlayerData, playerIDs, date) {
+    console.debug('saveInjuriesToLoadedObject for playerIDs: ', playerIDs, ' date: ', date)
+    console.debug('inside saveInjuriesToLoadedObject: ', loadedPlayerData)
 
     for (const playerID of playerIDs) {
         var currentPlayerData = loadedPlayerData[playerID] || {};
@@ -133,11 +136,9 @@ function saveInjuriesToStorage(loadedPlayerData, playerIDs, date) {
         currentPlayerData['injuries'] = cleaned
         loadedPlayerData[playerID] = currentPlayerData
     }
-
-    loadedPlayerData
 }
 
-function processMinutesPlayed(loadedPlayerData, players, date) {
+async function processMinutesPlayed(loadedPlayerData, players, date) {
     // Filter only those who played, use rating element for that
     const playing = Array.from(players).filter(container => container.querySelector('div.rating-badge'))
 
@@ -167,11 +168,11 @@ function processMinutesPlayed(loadedPlayerData, players, date) {
         minutesPlayedDictionary[playerID] = { [date]: minutesPlayed }
     }
 
-    saveMinutesPlayedToStorage(loadedPlayerData, minutesPlayedDictionary)
+    await saveMinutesPlayedToLoadedObject(loadedPlayerData, minutesPlayedDictionary)
     return true
 }
 
-function saveMinutesPlayedToStorage(loadedPlayerData, minutesPlayed) {
+async function saveMinutesPlayedToLoadedObject(loadedPlayerData, minutesPlayed) {
     console.debug('saving minutesPlayed: ', minutesPlayed)
 
     for (const [key, value] of Object.entries(minutesPlayed)) {
@@ -188,37 +189,4 @@ function saveMinutesPlayedToStorage(loadedPlayerData, minutesPlayed) {
         currentPlayerData['minutes-played'] = loadedMinutesPlayed
         loadedPlayerData[key] = currentPlayerData
     }
-    loadedPlayerData
 }
-
-// Options for the observer (which mutations to observe)
-const matchObservingConfig = { attributes: false, childList: true, subtree: true, characterData: false };
-
-// Callback function to execute when mutations are observed
-const matchObservingCallback = (mutationList, observer) => {
-    processMatch()
-};
-
-// Create an observer instance linked to the callback function
-const matchObserver = new MutationObserver(matchObservingCallback);
-
-browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
-
-    if (!message) {
-        console.warn('runtime.onMessage called, but the message is undefined')
-        return
-    }
-
-    const url = message.url
-    if (url) {
-        if (message.url.includes("match/")) {
-            // Start observing the target node for configured mutations
-            matchObserver.observe(alwaysPresentNode, matchObservingConfig);
-            console.debug(`Started the div.wrapper observation`)
-        } else {
-            matchObserver.disconnect()
-            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
-        }
-    }
-})

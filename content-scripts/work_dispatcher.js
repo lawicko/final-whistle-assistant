@@ -2,6 +2,7 @@ import { alwaysPresentNode, debounceAsync, FeatureFlagsKeys, isFeatureEnabled } 
 import { processTags } from './tags.js';
 import { processAcademyButtons } from './academy_buttons.js';
 import { processMatchIndicators } from './calendar.js';
+import { processMatch } from './match.js';
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
@@ -58,6 +59,12 @@ const universalObserver = new MutationObserver(
             }
         }
 
+        if (currentMessage.url.includes("match/")) {
+            if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
+                debouncedProcessMatchData();
+            }
+        }
+
         if (
             currentMessage.url.endsWith("players") ||
             currentMessage.url.endsWith("training") ||
@@ -93,6 +100,10 @@ const debouncedProcessAcademyButtons = makeDebouncedWithReconnect(
 
 const debouncedProcessMatchIndicators = makeDebouncedWithReconnect(
     processMatchIndicators, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessMatchData = makeDebouncedWithReconnect(
+    processMatch, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTags = makeDebouncedWithReconnect(
