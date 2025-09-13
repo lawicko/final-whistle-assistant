@@ -1,5 +1,7 @@
-import { alwaysPresentNode } from './utils.js';
+import { alwaysPresentNode, debounceAsync, FeatureFlagsKeys, isFeatureEnabled } from './utils.js';
 import { processTags } from './tags.js';
+import { processAcademyButtons } from './academy_buttons.js';
+import { processMatchIndicators } from './calendar.js';
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
@@ -21,37 +23,78 @@ function createObserverCallback(targetNode, config, fn) {
 
         try {
             await fn(mutationList, observer);
-        } finally {
-            observer.observe(targetNode, config);
+        } catch (e) {
+            console.error("Observer callback error:", e);
         }
+        // ❌ No observer.observe here
     };
 }
 
-const tagsObserver = new MutationObserver(
+function makeDebouncedWithReconnect(fn, wait, targetNode, config, observer) {
+    return debounceAsync(async (...args) => {
+        try {
+            await fn(...args);
+        } catch (e) {
+            console.error("Error in debounced function:", e);
+        } finally {
+            observer.observe(targetNode, config); // ✅ reconnect here
+        }
+    }, wait);
+}
+
+const universalObserver = new MutationObserver(
     createObserverCallback(alwaysPresentNode, observationConfig, async () => {
-        await processTags();
+        if (!currentMessage) return;
+
+        if (currentMessage.url.endsWith("/academy")) {
+            if (await isFeatureEnabled(FeatureFlagsKeys.ACADEMY_BUTTONS)) {
+                debouncedProcessAcademyButtons();
+            }
+        }
+
+        if (currentMessage.url.endsWith("fixtures")) {
+            if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
+                debouncedProcessMatchIndicators();
+            }
+        }
+
+        if (
+            currentMessage.url.endsWith("players") ||
+            currentMessage.url.endsWith("training") ||
+            currentMessage.url.endsWith("training#Reports") ||
+            currentMessage.url.endsWith("training#Drills")
+        ) {
+            if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+                debouncedProcessTags();
+            }
+        }
     })
 );
 
+let currentMessage = null;
+
 browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
-
     if (!message) {
-        console.warn('runtime.onMessage called, but the message is undefined')
-        return
+        console.warn("runtime.onMessage called with undefined message");
+        return;
     }
+    console.debug("runtime.onMessage with message:", message);
 
-    const url = message.url
-    if (url) {
-        if (
-            message.url.endsWith("players") ||
-            message.url.endsWith("training") ||
-            message.url.endsWith("training#Reports") ||
-            message.url.endsWith("training#Drills")){
-            // A case for the tags processing
-            tagsObserver.observe(alwaysPresentNode, observationConfig);
-        } else {
-            tagsObserver.disconnect()
-        }
-    }
-})
+    currentMessage = message;
+});
+
+// Start observing once
+universalObserver.observe(alwaysPresentNode, observationConfig);
+
+// Debounced processors with auto-reconnect
+const debouncedProcessAcademyButtons = makeDebouncedWithReconnect(
+    processAcademyButtons, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessMatchIndicators = makeDebouncedWithReconnect(
+    processMatchIndicators, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessTags = makeDebouncedWithReconnect(
+    processTags, 500, alwaysPresentNode, observationConfig, universalObserver
+);

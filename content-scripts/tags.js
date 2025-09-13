@@ -1,6 +1,6 @@
 import { optionsStorage, addCSS } from './utils.js';
 
-console.log(`loading tags.js...`)
+console.debug(`loading tags.js...`)
 
 async function applyCustomColorsForTags() {
     console.debug(`Applying custom colors for tags...`);

@@ -42,3 +42,42 @@ export const addCSS = (css, id = "custom-style") => {
     style.textContent = css;
     document.head.appendChild(style);
 };
+
+/**
+ * Debounce an async function, ensuring it runs only once after the specified delay
+ * since the last call.
+ * @param {Function} fn - The async function to debounce
+ * @param {number} delay - The debounce delay in milliseconds
+ * @returns {Function} The debounced function
+ */
+export function debounceAsync(fn, delay = 100) {
+    let timeout;
+
+    return async (...args) => {
+        clearTimeout(timeout);
+
+        timeout = setTimeout(async () => {
+            try {
+                await fn(...args);
+            } catch (e) {
+                console.error("Debounced async error:", e);
+            }
+        }, delay);
+    };
+}
+
+export const FeatureFlagsKeys = {
+    ACADEMY_BUTTONS: "academy_buttons",
+    LETTERS_YOUTH_SENIOR: "calendar",
+    LINEUP: "lineup",
+    MATCH_DATA_GATHERING: "match",
+    PLAYER_PAGE_ENHANCEMENTS: "player",
+    PLAYERS_PAGE_ENHANCEMENTS: "players",
+    ROW_HIGHLIGHT: "row_highlight",
+    TAGS_ENHANCEMENTS: "tags"
+};
+
+export async function isFeatureEnabled(featureKey) {
+    const { modules = {} } = await optionsStorage.get(["modules"]);
+    return modules[featureKey] === true;
+}
