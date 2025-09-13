@@ -4,6 +4,7 @@ import { processAcademyButtons } from './academy_buttons.js';
 import { processMatchIndicators } from './calendar.js';
 import { processMatch } from './match.js';
 import { processPlayersPage } from './players.js';
+import { processLineupPage } from './lineup.js';
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
@@ -54,6 +55,10 @@ const universalObserver = new MutationObserver(
 
         if (currentMessage.url.endsWith("fixtures")) {
             await debouncedProcessFixturesPage();
+        }
+
+        if (currentMessage.url.includes("lineup")) {
+            await debouncedProcessLineupPage();
         }
 
         if (currentMessage.url.includes("match/")) {
@@ -127,6 +132,14 @@ const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
         }
         if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessLineupPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.LINEUP)) {
+            await processLineupPage();
         }
     }, 500, alwaysPresentNode, observationConfig, universalObserver
 );

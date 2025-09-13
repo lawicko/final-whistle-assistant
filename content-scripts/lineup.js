@@ -1,4 +1,9 @@
-console.log(`loading lineup.js...`)
+import {
+    applySportsmanship,
+    hasActiveSetPieces,
+    removeNoDataSymbol
+ } from "./ui_utils";
+import { storage, isString, lastPathComponent } from "./utils.js";
 
 function getPlayerLinks(selector) {
     // Get the container
@@ -7,7 +12,7 @@ function getPlayerLinks(selector) {
     if (!container) {
         throw new Error(`Container "${selector}" not found!`);
     } else {
-        console.log(`Found container for selector: ${selector}`)
+        console.debug(`Found container for selector: ${selector}`)
     }
 
     // Get all <a> descendants
@@ -26,18 +31,6 @@ function getHrefList(selector) {
     const playerLinks = getPlayerLinks(selector)
 
     return playerLinks.map(a => a.href);
-}
-
-function hasActiveSetPieces() {
-    const link = document.querySelector('ul.nav-tabs > li.nav-item > a.nav-link.active');
-    if (!link) {
-        console.log(`No link element`)
-    } else {
-        console.log(`Found link element: ${link.href}`)
-        console.log(`Link text content: ${link.textContent.trim()}`)
-    }
-
-    return link && link.textContent.trim() === "Set Pieces";
 }
 
 async function loadValuesForComponents(components) {
@@ -185,7 +178,7 @@ function proposeCrossTakers(takers) {
     targetHeader.parentNode.parentNode.insertBefore(proposedCornerTakersHeader, proposedCrossTakers)
 }
 
-function proposePenaltyTakers(takers) {
+async function proposePenaltyTakers(takers) {
     // Do we already have it?
     if (document.querySelector('.proposed-penalty-takers-container') || document.querySelector('#proposed-penalty-takers')) {
         return
@@ -268,7 +261,7 @@ function proposePenaltyTakers(takers) {
 
         leftPanel.appendChild(proposedPenaltyTakersHeader)
         leftPanel.appendChild(proposedPenaltyTakers)
-        insertComposureTresholdInput(proposedPenaltyTakersHeader)
+        await insertComposureTresholdInput(proposedPenaltyTakersHeader)
 
         // Add the other penalty takers to the right panel
         const otherPenaltyTakers = document.createElement("ol");
@@ -346,7 +339,7 @@ function proposePenaltyTakers(takers) {
         proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
         targetHeader.parentNode.after(proposedPenaltyTakersHeader);
 
-        insertComposureTresholdInput(proposedPenaltyTakersHeader)
+        await insertComposureTresholdInput(proposedPenaltyTakersHeader)
     }
 }
 
@@ -468,7 +461,7 @@ async function processLineup() {
         var name = ""
         if (firstSpan) {
             name = firstSpan.textContent
-            console.log('Processing player:', name);
+            console.debug('Processing player:', name);
         } else {
             console.warn('No non-empty span found - unable to determine the player name :(');
         }
@@ -530,7 +523,7 @@ async function processLineup() {
             const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
             const composure_treshold = tresholds['composure_treshold'] ?? 50
             if (!tresholds) {
-                console.warn("Tresholds could not be loaded from options storage! Using default composure_treshold of ", 50)
+                console.warn("Tresholds could not be loaded from storage! Using default composure_treshold of ", 50)
             }
             if (composure) {
                 console.debug(`${name} - comparing penaltyKick ${penaltyKick} with composure_treshold ${composure_treshold}`)
@@ -570,7 +563,7 @@ async function processLineup() {
         }
 
         if (arrogance && arrogance < 0) { // only bother with this if the arrogance is negative, otherwise there is no impact on offsides
-            console.log('Arrogance negative, proceeding...');
+            console.debug('Arrogance negative, proceeding...');
             // First check if on a defensive position
             // Get all siblings
             const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
@@ -675,7 +668,7 @@ async function processLineup() {
     }
 
     console.debug('passing to proposePenaltyTakers: ', proposedPenaltyTakersArray)
-    proposePenaltyTakers(proposedPenaltyTakersArray)
+    await proposePenaltyTakers(proposedPenaltyTakersArray)
 }
 
 function applyArrogance(element, arrogance) {
@@ -781,47 +774,17 @@ function applyLeadership(element, leadership) {
     }
 }
 
-// Options for the observer (which mutations to observe)
-const lineupObservingConfig = { attributes: false, childList: true, subtree: true, characterData: false };
-
-// Callback function to execute when mutations are observed
-const lineupObservingCallback = (mutationList, observer) => {
+export async function processLineupPage() {
     if (hasActiveSetPieces()) {
         try {
             const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
             if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
-                insertArroganceTresholdInput(h5Element)
+                await insertArroganceTresholdInput(h5Element)
             }
 
-            processLineup()
+            await processLineup()
         } catch (err) {
             console.error(err.message);
         }
-    } else {
-        console.log(`Set Pieces not active, skipping...`)
     }
-};
-
-// Create an observer instance linked to the callback function
-const lineupObserver = new MutationObserver(lineupObservingCallback);
-
-browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
-
-    if (!message) {
-        console.warn('runtime.onMessage called, but the message is undefined')
-        return
-    }
-
-    const url = message.url
-    if (url) {
-        if (message.url.includes("lineup")) {
-            // Start observing the target node for configured mutations
-            lineupObserver.observe(alwaysPresentNode, lineupObservingConfig);
-            console.debug(`Started the div.wrapper observation`)
-        } else {
-            lineupObserver.disconnect()
-            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
-        }
-    }
-})
+}

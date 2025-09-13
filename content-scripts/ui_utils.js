@@ -196,6 +196,18 @@ export function applySportsmanship(element, sportsmanship) {
     }
 }
 
+export function hasActiveSetPieces() {
+    const link = document.querySelector('ul.nav-tabs > li.nav-item > a.nav-link.active');
+    if (!link) {
+        console.debug(`hasActiveSetPieces: No link element`)
+    } else {
+        console.debug(`hasActiveSetPieces: Found link element: ${link.href}`)
+        console.debug(`hasActiveSetPieces: Link text content: ${link.textContent.trim()}`)
+    }
+
+    return link && link.textContent.trim() === "Set Pieces";
+}
+
 async function applyCustomColorsLineupSymbols() {
     try {
         // Load colors from storage (with defaults)
