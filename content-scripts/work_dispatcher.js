@@ -3,6 +3,7 @@ import { processTags } from './tags.js';
 import { processAcademyButtons } from './academy_buttons.js';
 import { processMatchIndicators } from './calendar.js';
 import { processMatch } from './match.js';
+import { processPlayersPage } from './players.js';
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
@@ -48,25 +49,22 @@ const universalObserver = new MutationObserver(
         if (!currentMessage) return;
 
         if (currentMessage.url.endsWith("/academy")) {
-            if (await isFeatureEnabled(FeatureFlagsKeys.ACADEMY_BUTTONS)) {
-                debouncedProcessAcademyButtons();
-            }
+            await debouncedProcessAcademyPage();
         }
 
         if (currentMessage.url.endsWith("fixtures")) {
-            if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
-                debouncedProcessMatchIndicators();
-            }
+            await debouncedProcessFixturesPage();
         }
 
         if (currentMessage.url.includes("match/")) {
-            if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
-                debouncedProcessMatchData();
-            }
+            await debouncedProcessMatchPage();
+        }
+
+        if (currentMessage.url.endsWith("players")) {
+            await debouncedProcessPlayersPage();
         }
 
         if (
-            currentMessage.url.endsWith("players") ||
             currentMessage.url.endsWith("training") ||
             currentMessage.url.endsWith("training#Reports") ||
             currentMessage.url.endsWith("training#Drills")
@@ -94,18 +92,41 @@ browser.runtime.onMessage.addListener((message) => {
 universalObserver.observe(alwaysPresentNode, observationConfig);
 
 // Debounced processors with auto-reconnect
-const debouncedProcessAcademyButtons = makeDebouncedWithReconnect(
-    processAcademyButtons, 500, alwaysPresentNode, observationConfig, universalObserver
+const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.ACADEMY_BUTTONS)) {
+            processAcademyButtons();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
-const debouncedProcessMatchIndicators = makeDebouncedWithReconnect(
-    processMatchIndicators, 500, alwaysPresentNode, observationConfig, universalObserver
+const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
+            await processMatchIndicators();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
-const debouncedProcessMatchData = makeDebouncedWithReconnect(
-    processMatch, 500, alwaysPresentNode, observationConfig, universalObserver
+const debouncedProcessMatchPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
+            await processMatch();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTags = makeDebouncedWithReconnect(
     processTags, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.PLAYERS_PAGE_ENHANCEMENTS)) {
+            await processPlayersPage();
+        }
+        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+            await processTags();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
 );

@@ -1,19 +1,16 @@
-console.log(`loading players.js...`)
+import {
+    storage,
+    pluginNodeClass
+} from './utils.js';
 
-// Recreates the denomination used on the website, used for coloring the numbers
-function denomination(value) {
-    let den = 0
-    if (value > 29) {
-        den = Math.trunc(value / 10)
-    } else {
-        if (value > 15) {
-            den = 2
-        } else {
-            den = 1
-        }
-    }
-    return den
-}
+import { 
+    addNoDataSymbol,
+    applySportsmanship,
+    calculateAssistance,
+    calculateDefensiveAssistanceGK,
+    denomination,
+    removeNoDataSymbol
+} from './ui_utils.js';
 
 /**
  * Creates a <td> or <th> element with a hover-card.
@@ -140,48 +137,13 @@ function appendAdditionalInfo(storedPlayerData) {
             let OR = parseNumber(valueNodes[4]);
 
             console.debug(`RE=${RE} GP=${GP} IN=${IN} CT=${CT} OR=${OR}`)
-            var defensiveAssistanceNoModifiers = OR
-            var defensiveAssistance = defensiveAssistanceNoModifiers
-            var defensiveAssistanceMax = 100
-
-            if (teamwork) {
-                switch (teamwork) {
-                    case -2:
-                        var twp = -0.25
-                        var teamworkDescription = `--`
-                        break;
-                    case -1:
-                        var twp = -0.15
-                        var teamworkDescription = `-`
-                        break;
-                    case 1:
-                        var twp = 0.15
-                        var teamworkDescription = `+`
-                        break;
-                    case 2:
-                        var twp = 0.25
-                        var teamworkDescription = `++`
-                        break;
-                    default:
-                        console.warn("Value of teamwork is unexpected: ", teamwork);
-                        var twp = 0
-                }
-                defensiveAssistance = Math.floor(defensiveAssistanceNoModifiers + defensiveAssistanceNoModifiers * twp)
-            }
-            let defensiveAssistanceDenomination = defensiveAssistance / defensiveAssistanceMax
-            let defensiveAssistanceDenominationNormalized = denomination(defensiveAssistanceDenomination * 100)
-
-            const defensiveAssistanceModifierDifference = defensiveAssistance - defensiveAssistanceNoModifiers
-            var defensiveAssistanceModifierDetails = ``
-            if (defensiveAssistanceModifierDifference !== 0) {
-                const sign = defensiveAssistanceModifierDifference > 0 ? '+' : '-'
-                defensiveAssistanceModifierDetails = ` (${defensiveAssistanceNoModifiers} ${sign} ${Math.abs(defensiveAssistanceModifierDifference)} from Teamwork${teamworkDescription} personality)`
-            }
+            const assistanceCalculations = calculateDefensiveAssistanceGK({ OR: OR, teamwork: teamwork });
+            
             const tdDA = createHoverCardCell(
                 "td",
-                defensiveAssistance,
-                `formula: OR\n${defensiveAssistance}${defensiveAssistanceModifierDetails}`,
-                `denom${defensiveAssistanceDenominationNormalized}`);
+                assistanceCalculations.defensiveAssistance,
+                `formula: OR\n${assistanceCalculations.defensiveAssistance}${assistanceCalculations.defensiveAssistanceModifierDetails}`,
+                `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
             rows[i].appendChild(tdDA);
         } else { // Outfielders
             let SC = parseNumber(valueNodes[0]);
@@ -336,7 +298,7 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
         { id: "teamworkCheckbox", label: "⬡ Teamwork", variable: "showTeamwork" },
         { id: "sportsmanshipCheckbox", label: "⚖︎ Sportsmanship", variable: "showSportsmanship" }
     ];
-    rightItems = document.createElement("div")
+    const rightItems = document.createElement("div")
     rightItems.classList.add("right-items")
 
     checkboxesData.forEach(item => {
@@ -346,7 +308,11 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
 
         const suffix = "Checkbox";
         const checkboxKey = item.id.slice(0, -suffix.length);
-        checkbox.checked = !!checkboxesDataFromStorage[checkboxKey]
+        if (checkboxesDataFromStorage[checkboxKey] === undefined) {
+            checkbox.checked = true; // default to checked
+        } else {
+            checkbox.checked = !!checkboxesDataFromStorage[checkboxKey];
+        }
         if (item.variable === "showTeamwork") showTeamwork = checkbox.checked;
         if (item.variable === "showSportsmanship") showSportsmanship = checkbox.checked;
 
@@ -386,88 +352,22 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
     cardHeader.appendChild(rightItems)
 }
 
-// Options for the observer (which mutations to observe)
-const playersObservingConfig = { attributes: false, childList: true, subtree: true, characterData: false };
-
-// Callback function to execute when mutations are observed
-const playersObservingCallback = (mutationList, observer) => {
+export async function processPlayersPage() {
+    console.info(`Processing players page...`);
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
-        observer.disconnect() // otherwise we end up in a loop
 
         console.debug(`Found the following table: `, tableNode)
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
-        //        mutationList.forEach(el => console.debug(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
 
-        storage.get(["player-data", "checkboxes"]).then(result => {
-            const checkboxesData = result["checkboxes"] || {};
-            const storedPlayerData = result["player-data"] || {};
+        const result = await storage.get(["player-data", "checkboxes"])
+        const checkboxesData = result["checkboxes"] || {};
+        const storedPlayerData = result["player-data"] || {};
 
-            cleanUpNodeForPlayers(tableNode)
+        cleanUpNodeForPlayers(tableNode)
 
-            addPersonalityCheckboxes(checkboxesData)
-            createHeaders()
-            appendAdditionalInfo(storedPlayerData)
-            observer.observe(alwaysPresentNode, playersObservingConfig);
-        });
-    } else {
-        console.debug(`Could not find the table, or the table is empty, observing...`)
-    }
-};
-
-// Create an observer instance linked to the callback function
-const playersObserver = new MutationObserver(playersObservingCallback);
-
-browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
-
-    if (!message) {
-        console.warn('runtime.onMessage called, but the message is undefined')
-        return
-    }
-
-    const url = message.url
-    if (url) {
-        if (url.endsWith("players")) {
-            // Start observing the target node for configured mutations
-            playersObserver.observe(alwaysPresentNode, playersObservingConfig);
-            console.debug(`Started the div.wrapper observation`)
-        } else {
-            playersObserver.disconnect()
-            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
-        }
-    }
-})
-
-
-async function applyCustomColorsSquadSymbols() {
-    try {
-        // Load colors from storage (with defaults)
-        const optionsStorage = browser.storage.sync;
-        const { colors = {} } = await optionsStorage.get("colors");
-
-        // Inject CSS rule so future elements are styled too
-        const style = document.createElement("style");
-        style.textContent = `
-        span.teamwork.doublePositive {
-            color: ${colors["color-setting-teamwork++"]};
-        }
-        span.teamwork.positive {
-            color: ${colors["color-setting-teamwork+"]};
-        }
-        span.teamwork.negative {
-            color: ${colors["color-setting-teamwork-"]};
-        }
-        span.teamwork.doubleNegative {
-            color: ${colors["color-setting-teamwork--"]};
-        }
-    `;
-        document.head.appendChild(style);
-
-    } catch (err) {
-        console.error("Failed to apply custom colors squad symbols:", err);
+        addPersonalityCheckboxes(checkboxesData)
+        createHeaders()
+        appendAdditionalInfo(storedPlayerData)
     }
 }
-
-// Run the function
-applyCustomColorsSquadSymbols();

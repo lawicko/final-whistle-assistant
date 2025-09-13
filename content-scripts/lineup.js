@@ -435,28 +435,6 @@ async function insertArroganceTresholdInput(parent) {
     parent.appendChild(questionMarkSpan)
 }
 
-function addNoDataSymbol(container) {
-    const hasNoDataSymbol = Array.from(container.children).some(
-        child => child.textContent.trim() === "📂"
-    );
-
-    if (!hasNoDataSymbol) {
-        const statusSpan = document.createElement("span");
-        statusSpan.textContent = " 📂";
-        statusSpan.title = "No data, visit this player's page to load the necessary data";
-        container.appendChild(statusSpan);
-    }
-}
-
-function removeNoDataSymbol(container) {
-    const spans = container.querySelectorAll("span");
-    spans.forEach(span => {
-        if (span.textContent.trim() === "📂") {
-            span.remove();
-        }
-    });
-}
-
 async function processLineup() {
     const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
@@ -700,41 +678,6 @@ async function processLineup() {
     proposePenaltyTakers(proposedPenaltyTakersArray)
 }
 
-function applySportsmanship(element, sportsmanship) {
-    const hasSportsmanshipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === "⚖\uFE0E"
-    );
-    if (!hasSportsmanshipSymbol) {
-        console.debug(`Applying sportsmanship: ${sportsmanship}`)
-
-        const sportsmanshipSpan = document.createElement("span");
-        sportsmanshipSpan.classList.add('sportsmanship')
-        sportsmanshipSpan.textContent = " ⚖\uFE0E"
-        switch (sportsmanship) {
-            case -2:
-                sportsmanshipSpan.classList.add('doubleNegative');
-                sportsmanshipSpan.title = "This players sportsmanship is very questionable, you want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen.";
-                break;
-            case -1:
-                sportsmanshipSpan.classList.add('negative');
-                sportsmanshipSpan.title = "This players sportsmanship is questionable, you may want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen.";
-                break;
-            case 1:
-                sportsmanshipSpan.classList.add('positive');
-                sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls.";
-                break;
-            case 2:
-                sportsmanshipSpan.classList.add('doublePositive');
-                sportsmanshipSpan.title = "This players is a fair competitor with excellent sportsmanship, his actions rarely result in fouls.";
-                break;
-            default:
-                console.warn("Value of sportsmanship is unexpected: ", sportsmanship);
-        }
-
-        element.parentNode.parentNode.parentNode.appendChild(sportsmanshipSpan)
-    }
-}
-
 function applyArrogance(element, arrogance) {
     const hasArroganceSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
         child => child.textContent.trim() === "♛"
@@ -882,68 +825,3 @@ browser.runtime.onMessage.addListener((message) => {
         }
     }
 })
-
-async function applyCustomColorsLineupSymbols() {
-    try {
-        // Load colors from storage (with defaults)
-        const optionsStorage = browser.storage.sync;
-        const { colors = {} } = await optionsStorage.get("colors");
-
-        // Inject CSS rule so future elements are styled too
-        const style = document.createElement("style");
-        style.textContent = `
-        span.leadership.doublePositive {
-            color: ${colors["color-setting-sportsmanship++"]};
-        }
-        span.leadership.positive {
-            color: ${colors["color-setting-sportsmanship+"]};
-        }
-        span.leadership.negative {
-            color: ${colors["color-setting-sportsmanship-"]};
-        }
-        span.leadership.doubleNegative {
-            color: ${colors["color-setting-sportsmanship--"]};
-        }
-        
-        span.composure.doublePositive {
-            color: ${colors["color-setting-composure++"]};
-        }
-        span.composure.positive {
-            color: ${colors["color-setting-composure+"]};
-        }
-        span.composure.negative {
-            color: ${colors["color-setting-composure-"]};
-        }
-        span.composure.doubleNegative {
-            color: ${colors["color-setting-composure--"]};
-        }
-
-        span.arrogance.negative {
-            color: ${colors["color-setting-arrogance-"]};
-        }
-        span.arrogance.doubleNegative {
-            color: ${colors["color-setting-arrogance--"]};
-        }
-
-        span.sportsmanship.doublePositive {
-            color: ${colors["color-setting-sportsmanship++"]};
-        }
-        span.sportsmanship.positive {
-            color: ${colors["color-setting-sportsmanship+"]};
-        }
-        span.sportsmanship.negative {
-            color: ${colors["color-setting-sportsmanship-"]};
-        }
-        span.sportsmanship.doubleNegative {
-            color: ${colors["color-setting-sportsmanship--"]};
-        }
-    `;
-        document.head.appendChild(style);
-
-    } catch (err) {
-        console.error("Failed to apply custom colors lineup symbols:", err);
-    }
-}
-
-// Run the function
-applyCustomColorsLineupSymbols();
