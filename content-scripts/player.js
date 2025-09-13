@@ -1,4 +1,5 @@
-console.log(`loading player.js...`)
+import { lastPathComponent, storage, pluginNodeClass } from "./utils.js"
+import { calculateAssistance } from "./ui_utils.js"
 
 const PositionsKeys = {
     CB: "CB",
@@ -45,7 +46,7 @@ const SpecialTalentsDefinitions = {
     [SpecialTalentsKeys.Dribbler]: {
         BC: 4
     },
-    [SpecialTalentsKeys.Jumper]: { 
+    [SpecialTalentsKeys.Jumper]: {
         AE: 5,
         IN: 5
     },
@@ -386,7 +387,7 @@ function appendComputedSkills(tableNode) {
 
     if (!SC_label_cell) return // Goalkeeper
 
-    SC_cell = SC_label_cell.nextElementSibling
+    const SC_cell = SC_label_cell.nextElementSibling
     let SC_span = SC_cell.querySelector("span")
     let SC = Number(SC_span.textContent.trim())
     if (Number.isNaN(SC)) {
@@ -395,9 +396,9 @@ function appendComputedSkills(tableNode) {
         return
     }
 
-    console.log(`appending the midfield dominance...`)
+    console.log(`Appending midfield dominance...`)
 
-    SC_pot_cell = SC_cell.nextElementSibling
+    const SC_pot_cell = SC_cell.nextElementSibling
     let SC_pot_span = SC_pot_cell.querySelector("span")
     let SC_POT = Number(SC_pot_span.textContent.trim())
     console.debug(`SC ${SC}/${SC_POT}`)
@@ -406,11 +407,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Off. Pos.'
     )
 
-    OP_cell = OP_label_cell.nextElementSibling
+    const OP_cell = OP_label_cell.nextElementSibling
     let OP_span = OP_cell.querySelector("span")
     let OP = Number(OP_span.textContent.trim())
 
-    OP_pot_cell = OP_cell.nextElementSibling
+    const OP_pot_cell = OP_cell.nextElementSibling
     let OP_pot_span = OP_pot_cell.querySelector("span")
     let OP_POT = Number(OP_pot_span.textContent.trim())
     console.debug(`OP ${OP}/${OP_POT}`)
@@ -419,11 +420,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Ball Control'
     )
 
-    BC_cell = BC_label_cell.nextElementSibling
+    const BC_cell = BC_label_cell.nextElementSibling
     let BC_span = BC_cell.querySelector("span")
     let BC = Number(BC_span.textContent.trim())
 
-    BC_pot_cell = BC_cell.nextElementSibling
+    const BC_pot_cell = BC_cell.nextElementSibling
     let BC_pot_span = BC_pot_cell.querySelector("span")
     let BC_POT = Number(BC_pot_span.textContent.trim())
     console.debug(`BC ${BC}/${BC_POT}`)
@@ -432,11 +433,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Passing'
     )
 
-    PA_cell = PA_label_cell.nextElementSibling
+    const PA_cell = PA_label_cell.nextElementSibling
     let PA_span = PA_cell.querySelector("span")
     let PA = Number(PA_span.textContent.trim())
 
-    PA_pot_cell = PA_cell.nextElementSibling
+    const PA_pot_cell = PA_cell.nextElementSibling
     let PA_pot_span = PA_pot_cell.querySelector("span")
     let PA_POT = Number(PA_pot_span.textContent.trim())
     console.debug(`PA ${PA}/${PA_POT}`)
@@ -445,11 +446,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Aerial Ability'
     )
 
-    AE_cell = AE_label_cell.nextElementSibling
+    const AE_cell = AE_label_cell.nextElementSibling
     let AE_span = AE_cell.querySelector("span")
     let AE = Number(AE_span.textContent.trim())
 
-    AE_pot_cell = AE_cell.nextElementSibling
+    const AE_pot_cell = AE_cell.nextElementSibling
     let AE_pot_span = AE_pot_cell.querySelector("span")
     let AE_POT = Number(AE_pot_span.textContent.trim())
     console.debug(`AE ${AE}/${AE_POT}`)
@@ -458,11 +459,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Constitution'
     )
 
-    CO_cell = CO_label_cell.nextElementSibling
+    const CO_cell = CO_label_cell.nextElementSibling
     let CO_span = CO_cell.querySelector("span")
     let CO = Number(CO_span.textContent.trim())
 
-    CO_pot_cell = CO_cell.nextElementSibling
+    const CO_pot_cell = CO_cell.nextElementSibling
     let CO_pot_span = CO_pot_cell.querySelector("span")
     let CO_POT = Number(CO_pot_span.textContent.trim())
     console.debug(`CO ${CO}/${CO_POT}`)
@@ -471,11 +472,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Tackling'
     )
 
-    TA_cell = TA_label_cell.nextElementSibling
+    const TA_cell = TA_label_cell.nextElementSibling
     let TA_span = TA_cell.querySelector("span")
     let TA = Number(TA_span.textContent.trim())
 
-    TA_pot_cell = TA_cell.nextElementSibling
+    const TA_pot_cell = TA_cell.nextElementSibling
     let TA_pot_span = TA_pot_cell.querySelector("span")
     let TA_POT = Number(TA_pot_span.textContent.trim())
     console.debug(`TA ${TA}/${TA_POT}`)
@@ -484,11 +485,11 @@ function appendComputedSkills(tableNode) {
         cell => cell.textContent.trim() === 'Def. Pos.'
     )
 
-    DP_cell = DP_label_cell.nextElementSibling
+    const DP_cell = DP_label_cell.nextElementSibling
     let DP_span = DP_cell.querySelector("span")
     let DP = Number(DP_span.textContent.trim())
 
-    DP_pot_cell = DP_cell.nextElementSibling
+    const DP_pot_cell = DP_cell.nextElementSibling
     let DP_pot_span = DP_pot_cell.querySelector("span")
     let DP_POT = Number(DP_pot_span.textContent.trim())
     console.debug(`DP ${DP}/${DP_POT}`)
@@ -640,25 +641,13 @@ function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText,
     targetCell.classList.add('header-tooltip')
 
     // Add tooltip with the formula to the value cell
-    valueCell = targetCell.nextElementSibling
+    const valueCell = targetCell.nextElementSibling
     valueCell.setAttribute("data-tooltip", valueTooltipText);
     valueCell.classList.add('value-tooltip')
 
     // Add tooltip with the formula to the potential cell
-    potentialCell = valueCell.nextElementSibling
+    const potentialCell = valueCell.nextElementSibling
     potentialCell.setAttribute("data-tooltip", potentialTooltipText)
-}
-
-function getLastPathComponent(removeExtension = false) {
-    const path = window.location.pathname;
-    const parts = path.split("/").filter(Boolean);
-    let last = parts.pop() || "";
-
-    if (removeExtension && last.includes(".")) {
-        last = last.split(".")[0];
-    }
-
-    return last;
 }
 
 function sumMinutes(minutesPlayed) {
@@ -714,7 +703,7 @@ function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
 }
 
 async function showInjuries() {
-    const playerID = getLastPathComponent()
+    const playerID = lastPathComponent(window.location.pathname)
     const playerDataFromStorage = await storage.get('player-data');
     var loadedPlayerData = playerDataFromStorage['player-data'] || {};
     console.debug('loadedPlayerData = ', loadedPlayerData)
@@ -958,22 +947,26 @@ function getHiddenSkillsTable() {
 }
 
 function getPlayerData() {
-    const personalitiesResult = getPersonalitiesData(getPersonalitiesTable())
-    console.debug('Result of reading the personalities', personalitiesResult)
+    const personalitiesTable = getPersonalitiesTable()
+    let personalitiesData
+    if (personalitiesTable) {
+        personalitiesData = getPersonalitiesData(personalitiesTable)
+    }
+    console.debug('Result of reading the personalities', personalitiesData)
 
     const specialTalentsTable = getSpecialTalentsTable()
-    let specialTalentsResult
+    let specialTalentsData
     if (specialTalentsTable) {
-        specialTalentsResult = getSpecialTalentsData(specialTalentsTable)
+        specialTalentsData = getSpecialTalentsData(specialTalentsTable)
     }
-    console.debug('Result of reading the special talents', specialTalentsResult)
+    console.debug('Result of reading the special talents', specialTalentsData)
 
-    const playerID = getLastPathComponent()
+    const playerID = lastPathComponent(window.location.pathname)
 
     return {
         playerID: playerID,
-        personalities: personalitiesResult,
-        ...(specialTalentsResult !== undefined && { specialTalents: specialTalentsResult })
+        ...(personalitiesData !== undefined && { personalities: personalitiesData }),
+        ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData })
     }
 }
 
@@ -1000,7 +993,7 @@ async function saveToStorage(clubData, playerData) {
     console.debug('preparedForSaving: ', preparedForSaving)
 
     await storage.set(preparedForSaving)
-    console.info(`Saved to storage: `,currentPlayerData,` and club data: `, clubData);
+    console.debug(`Saved to storage: `, currentPlayerData, ` and club data: `, clubData);
 }
 
 function getBidButton() {
@@ -1160,11 +1153,9 @@ function cleanUpNodeForPlayer(tableNode) {
     tableNode.querySelectorAll(`tr.${pluginNodeClass}`).forEach(el => el.remove())
 }
 
-// Options for the observer (which mutations to observe)
-const playerObservingConfig = { attributes: false, childList: true, subtree: true, characterData: false };
+export async function processPlayerPage() {
+    console.info("Processing player page...")
 
-// Callback function to execute when mutations are observed
-const playerObservingCallback = (mutationList, observer) => {
     const siteLoaded = checkSiteLoaded()
     if (siteLoaded) {
         console.info("✅ Site fully loaded")
@@ -1175,68 +1166,28 @@ const playerObservingCallback = (mutationList, observer) => {
 
     const clubData = getMyTeam()
     if (clubData) {
-        console.log("clubData: ", clubData)
+        console.debug("clubData: ", clubData)
         const playerData = getPlayerData()
         if (playerData) {
-            console.log("playerData: ", playerData)
-            saveToStorage(clubData, playerData)
+            console.debug("playerData: ", playerData)
+            await saveToStorage(clubData, playerData)
         }
     }
 
-    showInjuries()
+    await showInjuries()
 
     // If the player is on sale, add buying summary
     if (isPendingSale()) {
         showBuyingGuide()
     }
 
-    let tableNodes = document.querySelectorAll("table.table")
-
-    let targetTable = null;
-    for (const table of tableNodes) {
-        const firstHeaderSpan = table.querySelector('tr th span[ngbpopover="Core Skills"]')
-        if (firstHeaderSpan) {
-            targetTable = table
-            break;
-        }
+    const coreSkillsTable = getCoreSkillsTable()
+    if (coreSkillsTable && coreSkillsTable.rows && coreSkillsTable.rows.length > 1) {
+        cleanUpNodeForPlayer(coreSkillsTable)
+        appendComputedSkills(coreSkillsTable);
     }
+}
 
-    if (targetTable != undefined && targetTable.rows.length > 1) {
-        observer.disconnect() // otherwise we end up in a loop
-
-        console.debug(`Found the following table: `, targetTable)
-        console.debug(`tableNode.rows.length: ${targetTable.rows.length}`)
-        //        mutationList.forEach(el => console.debug(`mutationType: ${el.type}, mutationTarget: ${el.target}, oldValue: ${el.oldValue}, newValue: ${el.data}`))
-
-
-        cleanUpNodeForPlayer(targetTable)
-        appendComputedSkills(targetTable)
-        observer.observe(alwaysPresentNode, playerObservingConfig);
-    } else {
-        console.debug(`Could not find the table, or the table is empty, observing...`)
-    }
-};
-
-// Create an observer instance linked to the callback function
-const playerObserver = new MutationObserver(playerObservingCallback);
-
-browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
-
-    if (!message) {
-        console.warn('runtime.onMessage called, but the message is undefined')
-        return
-    }
-
-    const url = message.url
-    if (url) {
-        if (message.url.includes("player/")) {
-            // Start observing the target node for configured mutations
-            playerObserver.observe(alwaysPresentNode, playerObservingConfig);
-            console.debug(`Started the div.wrapper observation`)
-        } else {
-            playerObserver.disconnect()
-            console.debug(`Skipped (or disconnected) the div.wrapper observation`)
-        }
-    }
-})
+function getCoreSkillsTable() {
+    return document.querySelector("table.table:has(tr th span[ngbpopover='Core Skills'])")
+}

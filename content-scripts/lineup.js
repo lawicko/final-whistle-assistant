@@ -775,6 +775,7 @@ function applyLeadership(element, leadership) {
 }
 
 export async function processLineupPage() {
+    console.log("Processing lineup page...");
     if (hasActiveSetPieces()) {
         try {
             const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');

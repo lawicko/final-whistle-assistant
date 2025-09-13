@@ -5,6 +5,7 @@ import { processMatchIndicators } from './calendar.js';
 import { processMatch } from './match.js';
 import { processPlayersPage } from './players.js';
 import { processLineupPage } from './lineup.js';
+import { processPlayerPage } from './player.js';
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
@@ -65,6 +66,10 @@ const universalObserver = new MutationObserver(
             await debouncedProcessMatchPage();
         }
 
+        if (currentMessage.url.includes("player/")) {
+            await debouncedProcessPlayerPage();
+        }
+
         if (currentMessage.url.endsWith("players")) {
             await debouncedProcessPlayersPage();
         }
@@ -123,6 +128,14 @@ const debouncedProcessMatchPage = makeDebouncedWithReconnect(
 
 const debouncedProcessTags = makeDebouncedWithReconnect(
     processTags, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.PLAYER_PAGE_ENHANCEMENTS)) {
+            await processPlayerPage();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayersPage = makeDebouncedWithReconnect(

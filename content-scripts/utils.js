@@ -17,15 +17,14 @@ export function isString(value) {
     return typeof value === "string" || value instanceof String
 }
 
-export function lastPathComponent(url) {
-    try {
-        const u = new URL(url);         // parse the URL
-        const parts = u.pathname.split("/").filter(Boolean);
-        return parts.pop() || "";       // last component or "" if none
-    } catch (err) {
-        console.error("Invalid URL:", url, err);
-        return null;
+export function lastPathComponent(path, removeExtension = false) {
+    const parts = path.split("/").filter(Boolean);
+    let last = parts.pop() || "";
+
+    if (removeExtension && last.includes(".")) {
+        last = last.split(".")[0];
     }
+    return last;
 }
 
 /**
