@@ -1,5 +1,13 @@
 import { addCSS, optionsStorage } from "./utils"
 
+export function toggleClass(el, className) {
+    if (el.className.indexOf(className) >= 0) {
+        el.className = el.className.replace(` ${className}`, "");
+    } else {
+        el.className += ` ${className}`;
+    }
+}
+
 /**
  * Recreates the denomination used on the website, used for coloring the numbers
  * @param {number} value The value to get the denomination for (1-99)

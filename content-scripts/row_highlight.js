@@ -1,97 +1,56 @@
-const pluginRowHighlightClass = "player-selected"
+import { toggleClass } from "./ui_utils";
+import { alwaysPresentNode, storage, pluginNodeClass } from "./utils.js";
 
-console.log(`loading row_highlight.js...`)
-
-function toggleClass(el, className) {
-    if (el.className.indexOf(className) >= 0) {
-        el.className = el.className.replace(` ${className}`, "");
-    } else {
-        el.className += ` ${className}`;
-    }
+// Helpers
+function getPlayerIDFromRow(tr) {
+    // Select the first <a> inside a <td> whose href contains "/player/"
+    const playerLink = tr.querySelector('td a[href*="/player/"]');
+    // Match the number after /player/
+    const match = playerLink.href.match(/\/player\/(\d+)/);
+    const playerID = match ? match[1] : null;
+    return playerID
 }
 
-async function processTableRows(tableNode) {
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
-    for (let i = 1; i < tableNode.rows.length; i++) {
-        tr = tableNode.rows[i]
-        // Set onclick for the basic row highlight
-        tr.onclick = function () { toggleClass(this, pluginRowHighlightClass) }
+// Event listeners
+let clickedRow
+
+const contextMenuListener = (event) => {
+    clickedRow = event.target.closest("tr"); // get the closest <tr> ancestor
+}
+
+const mouseOverListener = (e) => {
+    var enabled = false
+
+    const row = e.target.closest("table.table tr")
+    if (row) {
+        // console.debug(`it's a row`)
 
         // Select the first <a> inside a <td> whose href contains "/player/"
-        const playerLink = tr.querySelector('td a[href*="/player/"]');
-        // Match the number after /player/
-        const match = playerLink.href.match(/\/player\/(\d+)/);
-        const playerID = match ? match[1] : null;
-        if (!playerID) {
-            console.error("Tried to extract player ID from href ", playerLink.href, " but there are no matches")
+        const playerLink = row.querySelector('td a[href*="/player/"]');
+        // console.debug(`playerLink: `, playerLink)
+        if (playerLink) {
+            enabled = true
         }
-        const classForPlayerID = rowHighlightData[playerID]
-        if (classForPlayerID) {
-            tr.classList.add(classForPlayerID)
-        } else {
-            const classPrefix = pluginNodeClass + "_playerBackground"
-            Array.from(tr.classList).forEach(cls => {
-                if (cls.startsWith(classPrefix)) {
-                    tr.classList.remove(cls);
-                }
-            });
-        }
-    }
-}
-
-// Options for the observer (which mutations to observe)
-const rowsObservingConfig = { attributes: false, childList: true, subtree: true };
-
-// Callback function to execute when mutations are observed
-const rowsObservingCallback = (mutationList, observer) => {
-    let tableNode = document.querySelector("table.table")
-    if (tableNode != undefined && tableNode.rows.length > 1) {
-
-        console.debug(`Found the following table: `, tableNode)
-
-        processTableRows(tableNode)
-
-        const c = (mutationList, observer) => {
-            console.debug(`table has changed`)
-            observer.disconnect()
-
-            processTableRows(tableNode)
-
-            observer.observe(tableNode, { childList: true, subtree: true, characterData: true })
-        }
-        const o = new MutationObserver(c)
-        console.debug(`starting the table observation...`)
-        o.observe(tableNode, { childList: true, subtree: true, characterData: true })
     } else {
-        console.debug(`Could not find the table, or the table is empty, observing...`)
+        // console.debug(`it's NOT a row`)
     }
-};
 
-// Create an observer instance linked to the callback function
-const rowsObserver = new MutationObserver(rowsObservingCallback);
-
-async function storeRowHighlightClass(rowHighlightClass, playerID) {
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
-    rowHighlightData[playerID] = rowHighlightClass
-    await storage.set({ "row-highlight-data": rowHighlightData });
+    browser.runtime.sendMessage({ type: "contextMenuConfig", enabled });
 }
 
-async function clearRowHighlight(playerID) {
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
-    delete rowHighlightData[playerID]
-    await storage.set({ "row-highlight-data": rowHighlightData });
-}
-
-async function clearAllRowHighlights() {
-    await storage.remove("row-highlight-data")
-}
-
-browser.runtime.onMessage.addListener((message) => {
-    console.debug(`runtime.onMessage with message:`, message);
+const onMessageListener = async (message) => {
+    console.debug(`row_highlight: runtime.onMessage with message:`, message);
 
     if (!message) {
         console.warn('runtime.onMessage called, but the message is undefined')
         return
+    }
+
+    if (!message.action) {
+        console.debug('row_highlight: runtime.onMessage arrived in row_highlight, but the message.action is undefined, skiping...')
+        return
+    } else {
+        console.debug("row_highlight: message.action: ", message.action)
     }
 
     // const playerRowColorRaw = {
@@ -115,8 +74,8 @@ browser.runtime.onMessage.addListener((message) => {
     const suffix = "Action";
 
     // highlighting and clearing specific rows
-    if (message.action && message.action.startsWith(prefix) && message.action.endsWith(suffix)) {
-        console.debug("message.action: ", message.action)
+    if (message.action.startsWith(prefix) && message.action.endsWith(suffix)) {
+        console.debug("row_highlight: highlighting/clearing specific row")
         const position = message.action.slice(prefix.length, -suffix.length)
         const tr = clickedRow
         if (tr) {
@@ -126,13 +85,9 @@ browser.runtime.onMessage.addListener((message) => {
                 }
             });
 
-            // Select the first <a> inside a <td> whose href contains "/player/"
-            const playerLink = tr.querySelector('td a[href*="/player/"]');
-            // Match the number after /player/
-            const match = playerLink.href.match(/\/player\/(\d+)/);
-            const playerID = match ? match[1] : null;
+            const playerID = getPlayerIDFromRow(tr)
             if (!playerID) {
-                console.error("Tried to extract player ID from href ", playerLink.href, " but there are no matches")
+                console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
             }
             clearRowHighlight(playerID)
             if (position !== "Clear") {
@@ -145,8 +100,8 @@ browser.runtime.onMessage.addListener((message) => {
     }
 
     // clearing all rows
-    if (message.action && message.action === "clearAllRowHighlightsMenuAction") {
-        console.debug("clearing all rows")
+    if (message.action === "clearAllRowHighlightsMenuAction") {
+        console.info("row_highlight: clearing all rows")
         clearAllRowHighlights()
         let tableNode = document.querySelector("table.table")
         if (tableNode != undefined && tableNode.rows.length > 1) {
@@ -154,39 +109,76 @@ browser.runtime.onMessage.addListener((message) => {
         }
         return
     }
+}
 
-    if (message.url.endsWith("players") || message.url.endsWith("#Squad") || message.url.endsWith("training")) {
-        // Start observing the target node for configured mutations
-        rowsObserver.observe(alwaysPresentNode, rowsObservingConfig);
-        console.debug(`Started the div.wrapper observation`)
-    } else {
-        rowsObserver.disconnect()
-        console.debug(`Skipped (or disconnected) the div.wrapper observation`)
-    }
-})
-
-var clickedRow = undefined
-document.addEventListener("contextmenu", (event) => {
-    clickedRow = event.target.closest("tr"); // get the closest <tr> ancestor
-});
-
-document.addEventListener("mouseover", (e) => {
-    var enabled = false
-
-    const row = e.target.closest("table.table tr")
-    if (row) {
-        console.debug(`it's a row`)
-
-        // Select the first <a> inside a <td> whose href contains "/player/"
-        const playerLink = row.querySelector('td a[href*="/player/"]');
-        console.debug(`playerLink: `, playerLink)
-        if (playerLink) {
-            enabled = true
+async function processTableRows(tableNode, config = {
+    basicHighlight: true,
+    persistentHighlight: true
+}) {
+    console.info("Adding row highlighting...")
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    for (let i = 1; i < tableNode.rows.length; i++) {
+        const tr = tableNode.rows[i]
+        if (config.basicHighlight) {
+            const pluginRowHighlightClass = "player-selected"
+            tr.onclick = function () {
+                console.info("Toggling row highlight for row: ", tr)
+                toggleClass(this, pluginRowHighlightClass)
+            }
         }
-    } else {
-        console.debug(`it's NOT a row`)
-    }
 
-    console.debug(`Sending enabled: `, enabled)
-    browser.runtime.sendMessage({ type: "contextMenuConfig", enabled });
-});
+        if (config.persistentHighlight) {
+            const playerID = getPlayerIDFromRow(tr)
+            if (!playerID) {
+                console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
+            }
+            const classForPlayerID = rowHighlightData[playerID]
+            if (classForPlayerID) {
+                tr.classList.add(classForPlayerID)
+            } else {
+                const classPrefix = pluginNodeClass + "_playerBackground"
+                Array.from(tr.classList).forEach(cls => {
+                    if (cls.startsWith(classPrefix)) {
+                        tr.classList.remove(cls);
+                    }
+                });
+            }
+            document.addEventListener("mouseover", mouseOverListener);
+            document.addEventListener("contextmenu", contextMenuListener);
+            browser.runtime.onMessage.addListener(onMessageListener);
+        } else {
+            document.removeEventListener("mouseover", mouseOverListener);
+            document.removeEventListener("contextmenu", contextMenuListener);
+            browser.runtime.onMessage.removeListener(onMessageListener);
+        }
+    }
+}
+
+export async function addTableRowsHighlighting(config = {
+    basicHighlight: true,
+    persistentHighlight: true
+}) {
+    let tableNode = document.querySelector("table.table")
+    if (tableNode != undefined && tableNode.rows.length > 1) {
+        console.debug(`Found the following table: `, tableNode)
+
+        processTableRows(tableNode, config)
+    }
+}
+
+// Saving to storage
+async function storeRowHighlightClass(rowHighlightClass, playerID) {
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    rowHighlightData[playerID] = rowHighlightClass
+    await storage.set({ "row-highlight-data": rowHighlightData });
+}
+
+async function clearRowHighlight(playerID) {
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    delete rowHighlightData[playerID]
+    await storage.set({ "row-highlight-data": rowHighlightData });
+}
+
+async function clearAllRowHighlights() {
+    await storage.remove("row-highlight-data")
+}

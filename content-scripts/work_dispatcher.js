@@ -6,6 +6,7 @@ import { processMatch } from './match.js';
 import { processPlayersPage } from './players.js';
 import { processLineupPage } from './lineup.js';
 import { processPlayerPage } from './player.js';
+import { addTableRowsHighlighting } from './row_highlight.js';
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
@@ -48,7 +49,9 @@ function makeDebouncedWithReconnect(fn, wait, targetNode, config, observer) {
 
 const universalObserver = new MutationObserver(
     createObserverCallback(alwaysPresentNode, observationConfig, async () => {
-        if (!currentMessage) return;
+        if (!currentMessage || !currentMessage.url) {
+            return;
+        }
 
         if (currentMessage.url.endsWith("/academy")) {
             await debouncedProcessAcademyPage();
@@ -74,28 +77,38 @@ const universalObserver = new MutationObserver(
             await debouncedProcessPlayersPage();
         }
 
-        if (
-            currentMessage.url.endsWith("training") ||
-            currentMessage.url.endsWith("training#Reports") ||
-            currentMessage.url.endsWith("training#Drills")
-        ) {
-            if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
-                debouncedProcessTags();
-            }
+        if (currentMessage.url.endsWith("training#Drills")) {
+            await debouncedProcessTrainingDrillsPage();
+        }
+
+        if (currentMessage.url.endsWith("training") || currentMessage.url.endsWith("training#Reports")) {
+            await debouncedProcessTrainingPage();
+        }
+
+        if (currentMessage.url.endsWith("#Squad")) {
+            await debouncedProcessSquadPage();
         }
     })
 );
 
 let currentMessage = null;
 
+/**
+ * Listens for messages from the background script about URL changes. ATTENTION: This method is critial for the handling of the DOM changes. Note how the currentMessage is not assigned if the message doesn't have a URL. The extension uses the messaging system to send other types of messages like context menu actions, which are not relevant for the DOM processing. It's important to ignore those messages here and not assign them to currentMessage, otherwise the observer will try to process the DOM based on an irrelevant message and likely fail. One example of this would be changing between FW, M, B and GK on the players page which doesn't send any messages at all but only changes the DOM. If a context menu message was the last one received, the observer would try to process the DOM with that message and fail.
+ */
 browser.runtime.onMessage.addListener((message) => {
     if (!message) {
-        console.warn("runtime.onMessage called with undefined message");
+        console.warn("work_dispatcher: runtime.onMessage called with undefined message");
         return;
     }
-    console.debug("runtime.onMessage with message:", message);
+    console.debug("work_dispatcher: runtime.onMessage with message:", message);
 
+    if (!message.url) {
+        console.debug("work_dispatcher: Message arrived without URL, skipping...");
+        return;
+    }
     currentMessage = message;
+    console.debug("work_dispatcher: assigned currentMessage to:", message);
 });
 
 // Start observing once
@@ -146,6 +159,17 @@ const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
+        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+            await addTableRowsHighlighting();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessSquadPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+            await addTableRowsHighlighting();
+        }
     }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
@@ -153,6 +177,25 @@ const debouncedProcessLineupPage = makeDebouncedWithReconnect(
     async () => {
         if (await isFeatureEnabled(FeatureFlagsKeys.LINEUP)) {
             await processLineupPage();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+            await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
+        }
+        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+            await processTags();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessTrainingDrillsPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+            await processTags();
         }
     }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
