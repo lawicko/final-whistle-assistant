@@ -101,7 +101,7 @@ const onMessageListener = async (message) => {
 
     // clearing all rows
     if (message.action === "clearAllRowHighlightsMenuAction") {
-        console.info("row_highlight: clearing all rows")
+        console.debug("row_highlight: clearing all rows")
         clearAllRowHighlights()
         let tableNode = document.querySelector("table.table")
         if (tableNode != undefined && tableNode.rows.length > 1) {
@@ -122,7 +122,7 @@ async function processTableRows(tableNode, config = {
         if (config.basicHighlight) {
             const pluginRowHighlightClass = "player-selected"
             tr.onclick = function () {
-                console.info("Toggling row highlight for row: ", tr)
+                console.debug("Toggling row highlight for row: ", tr)
                 toggleClass(this, pluginRowHighlightClass)
             }
         }

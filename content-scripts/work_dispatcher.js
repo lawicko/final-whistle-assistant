@@ -85,6 +85,10 @@ const universalObserver = new MutationObserver(
             await debouncedProcessTrainingPage();
         }
 
+        if (currentMessage.url.endsWith("/transfer") || currentMessage.url.endsWith("/transfer#Market")) {
+            await debouncedProcessTransfersPage();
+        }
+
         if (currentMessage.url.endsWith("#Squad")) {
             await debouncedProcessSquadPage();
         }
@@ -137,10 +141,6 @@ const debouncedProcessMatchPage = makeDebouncedWithReconnect(
             await processMatch();
         }
     }, 500, alwaysPresentNode, observationConfig, universalObserver
-);
-
-const debouncedProcessTags = makeDebouncedWithReconnect(
-    processTags, 500, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
@@ -196,6 +196,14 @@ const debouncedProcessTrainingDrillsPage = makeDebouncedWithReconnect(
     async () => {
         if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
+        }
+    }, 500, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+            await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
     }, 500, alwaysPresentNode, observationConfig, universalObserver
 );
