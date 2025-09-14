@@ -52,19 +52,40 @@ export async function processMatch() {
     const ownPlayers = ownLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
     console.debug('ownPlayers: ', ownPlayers)
 
-    const ownInitialLineup = {}
-    for (const player of ownPlayers) {
-        const initialPosition = player.querySelector("span.badge-position").textContent.trim()
-        const playerName = player.querySelector("fw-player-hover div.hovercard a span").textContent.trim()
-        const playerID = lastPathComponent(player.querySelector("fw-player-hover div.hovercard a").href)
-        console.info("Found in own lineup:", initialPosition, playerName, `(${playerID})`);
-        ownInitialLineup[playerID] = { name: playerName, initialPosition: initialPosition }
-    }
-    
-    const initialLineups = matchData["initialLineups"] ?? {}
-    initialLineups["own"] = ownInitialLineup
+    const lineupToggleButton = ownLineupContainer.querySelector("button.lineup-toggle")
+    const isStarting = lineupToggleButton.textContent.trim() === "Starting"
 
-    matchData["initialLineups"] = initialLineups
+    if (isStarting) {
+        const ownInitialLineup = {}
+        for (const player of ownPlayers) {
+            console.debug(debuggerSymbol, "processing own player:", player, debuggerSymbol)
+            const initialPosition = player.querySelector(".badge-position").textContent.trim()
+            const playerName = player.querySelector("fw-player-hover div.hovercard a span").textContent.trim()
+            const playerID = lastPathComponent(player.querySelector("fw-player-hover div.hovercard a").href)
+            console.debug("Found in own lineup:", initialPosition, playerName, `(${playerID})`);
+            ownInitialLineup[playerID] = { name: playerName, initialPosition: initialPosition }
+        }
+        
+        const initialLineups = matchData["initialLineups"] ?? {}
+        initialLineups["own"] = ownInitialLineup
+
+        matchData["initialLineups"] = initialLineups
+    } else {
+        const ownFinishingLineup = {}
+        for (const player of ownPlayers) {
+            console.debug(debuggerSymbol, "processing own player:", player, debuggerSymbol)
+            const finishingPosition = player.querySelector(".badge-position").textContent.trim()
+            const playerName = player.querySelector("fw-player-hover div.hovercard a span").textContent.trim()
+            const playerID = lastPathComponent(player.querySelector("fw-player-hover div.hovercard a").href)
+            console.debug("Found in own lineup:", finishingPosition, playerName, `(${playerID})`);
+            ownFinishingLineup[playerID] = { name: playerName, finishingPosition: finishingPosition }
+        }
+        
+        const finishingLineups = matchData["finishingLineups"] ?? {}
+        finishingLineups["own"] = ownFinishingLineup
+
+        matchData["finishingLineups"] = finishingLineups
+    }
     matches[matchID] = matchData
     await storage.set({ matches: matches })
 

@@ -1,378 +1,7 @@
-import { lastPathComponent, storage, pluginNodeClass } from "./utils.js"
-import { calculateAssistance } from "./ui_utils.js"
-
-const PositionsKeys = {
-    CB: "CB",
-    CM: "CM",
-    DM: "DM",
-    FW: "FW",
-    GK: "GK",
-    LB: "LB",
-    LM: "LM",
-    LW: "LW",
-    LWB: "LWB",
-    OM: "OM",
-    RB: "RB",
-    RM: "RM",
-    RW: "RW",
-    RWB: "RWB"
-}
-
-const SpecialTalentsKeys = {
-    OneOnOne: "1 on 1",
-    Ambidextrous: "ambidextrous",
-    Anticipator: "anticipator",
-    Dribbler: "dribbler",
-    Jumper: "jumper",
-    Playmaker: "playmaker",
-    Quick: "quick",
-    Scorer: "scorer",
-    SetPieceSpecialist: "set piece specialist",
-    Stamina: "stamina",
-    Stopper: "stopper",
-    SureHands: "sure hands",
-    Tough: "tough"
-}
-
-const SpecialTalentsDefinitions = {
-    [SpecialTalentsKeys.OneOnOne]: {
-        SC: 5,
-        RE: 5
-    },
-    [SpecialTalentsKeys.Anticipator]: {
-        DP: 5,
-        GP: 4
-    },
-    [SpecialTalentsKeys.Dribbler]: {
-        BC: 4
-    },
-    [SpecialTalentsKeys.Jumper]: {
-        AE: 5,
-        IN: 5
-    },
-    [SpecialTalentsKeys.Playmaker]: {
-        PA: 4
-    },
-    [SpecialTalentsKeys.Quick]: {
-        OP: 5,
-        DP: 5,
-        GP: 4
-    },
-    [SpecialTalentsKeys.Scorer]: {
-        SC: 5
-    },
-    [SpecialTalentsKeys.SetPieceSpecialist]: {
-        SC: 3,
-        PA: 3,
-        OR: 4
-    },
-    [SpecialTalentsKeys.Stamina]: {
-        CO: 10
-    },
-    [SpecialTalentsKeys.Stopper]: {
-        TA: 5
-    }
-}
-
-/**
- * Returns a special talent description for a given position.
- * @param {string} specialTalentKey - a key as in SpecialTalentsKeys
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function specialTalentDescription(specialTalentKey, positionKey) {
-    switch (specialTalentKey) {
-        case SpecialTalentsKeys.OneOnOne:
-            return oneOnOneDescription(positionKey)
-        case SpecialTalentsKeys.Ambidextrous:
-            return ambidextrousDescription(positionKey)
-        case SpecialTalentsKeys.Anticipator:
-            return anticipatorDescription(positionKey)
-        case SpecialTalentsKeys.Dribbler:
-            return dribblerDescription(positionKey)
-        case SpecialTalentsKeys.Jumper:
-            return jumperDescription(positionKey)
-        case SpecialTalentsKeys.Playmaker:
-            return playmakerDescription(positionKey)
-        case SpecialTalentsKeys.Quick:
-            return quickDescription(positionKey)
-        case SpecialTalentsKeys.Scorer:
-            return scorerDescription(positionKey)
-        case SpecialTalentsKeys.SetPieceSpecialist:
-            return setPieceSpecialistDescription(positionKey)
-        case SpecialTalentsKeys.Stamina:
-            return staminaDescription(positionKey)
-        case SpecialTalentsKeys.Stopper:
-            return stopperDescription(positionKey)
-        case SpecialTalentsKeys.SureHands:
-            return sureHandsDescription(positionKey)
-        case SpecialTalentsKeys.Tough:
-            return toughDescription(positionKey)
-        default:
-            return `🤔 No description available for this talent: ${specialTalentKey}`
-    }
-}
-
-/**
- * Returns 1 on 1 talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function oneOnOneDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.FW:
-            return "👍 1 on 1 is especially useful for forwards with high OP"
-        case PositionsKeys.GK:
-            return "👍 1 on 1 is especially useful for goalkeepers because it increases RE in one-on-one situations"
-        default:
-            return "🤔 There is no obvious benefit of 1 on 1 for outfielders that are not forwards"
-    }
-}
-
-/**
- * Returns Ambidextrous talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function ambidextrousDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.LW:
-        case PositionsKeys.RW:
-        case PositionsKeys.LM:
-        case PositionsKeys.RM:
-        case PositionsKeys.OM:
-        case PositionsKeys.CM:
-        case PositionsKeys.DM:
-        case PositionsKeys.LWB:
-        case PositionsKeys.RWB:
-        case PositionsKeys.LB:
-        case PositionsKeys.RB:
-            return "👍 Ambidextrous talent is especially useful for midfielders and side backs because you can field them on both sides of the pitch without penalty"
-        default:
-            return "🤔 There is no obvious benefit of ambidextrous talent for forwards, center backs or goalkeepers"
-    }
-}
-
-/**
- * Returns Anticipator talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function anticipatorDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.LM:
-        case PositionsKeys.RM:
-        case PositionsKeys.CM:
-        case PositionsKeys.DM:
-        case PositionsKeys.LWB:
-        case PositionsKeys.RWB:
-        case PositionsKeys.LB:
-        case PositionsKeys.RB:
-            return "👍 Anticipator talent is especially useful for players with defensive duties on the pitch"
-        case PositionsKeys.GK:
-            return "👍 Anticipator talent is especially useful for goalkeepers because it increases GP"
-        default:
-            return "🤔 There is no obvious benefit of anticipator talent for players without defensive duties on the field"
-    }
-}
-
-/**
- * Returns Dribbler talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function dribblerDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.FW:
-        case PositionsKeys.LW:
-        case PositionsKeys.RW:
-        case PositionsKeys.LM:
-        case PositionsKeys.RM:
-        case PositionsKeys.OM:
-        case PositionsKeys.CM:
-        case PositionsKeys.DM:
-        case PositionsKeys.LWB:
-        case PositionsKeys.RWB:
-        case PositionsKeys.LB:
-        case PositionsKeys.RB:
-            return "👍 Dribbler talent is especially useful for players with offensive duties on the pitch, but also for all the players that provide offensive assistance like side backs and side wing backs"
-        default:
-            return "🤔 There is no obvious benefit of dribbler talent for players without offensive duties on the field"
-    }
-}
-
-/**
- * Returns Jumper talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function jumperDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.FW:
-        case PositionsKeys.LW:
-        case PositionsKeys.RW:
-        case PositionsKeys.OM:
-        case PositionsKeys.CB:
-            return "👍 Jumper talent is especially useful for players operating in the penalty box"
-        default:
-            return "🤔 There is no obvious benefit of jumper talent for players that don't operate in the penalty box"
-    }
-}
-
-/**
- * Returns Playmaker talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function playmakerDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.LW:
-        case PositionsKeys.RW:
-        case PositionsKeys.OM:
-        case PositionsKeys.LM:
-        case PositionsKeys.RM:
-        case PositionsKeys.CM:
-        case PositionsKeys.DM:
-        case PositionsKeys.LWB:
-        case PositionsKeys.RWB:
-            return "👍 Playmaker talent is especially useful for outfielders who contribute to midfield dominance"
-        default:
-            return "🤔 There is no obvious benefit of playmaker talent for players who don't contribute to midfield dominance"
-    }
-}
-
-/**
- * Returns Quick talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function quickDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.FW:
-            return "👍 Quick talent is especially useful for forwards because it boosts their OP and allows them to avoid offsides"
-        case PositionsKeys.LW:
-        case PositionsKeys.RW:
-        case PositionsKeys.OM:
-        case PositionsKeys.LM:
-        case PositionsKeys.RM:
-        case PositionsKeys.CM:
-        case PositionsKeys.DM:
-            return "👍 Quick talent is especially useful for midfielders because it boosts their OP and DP"
-        case PositionsKeys.LWB:
-        case PositionsKeys.RWB:
-        case PositionsKeys.LB:
-        case PositionsKeys.RB:
-        case PositionsKeys.CB:
-            return "👍 Quick talent is especially useful for defenders because it boosts their DP"
-        case PositionsKeys.GK:
-            return "👍 Quick talent is especially useful for goalkeepers because it boosts their GP"
-    }
-}
-
-/**
- * Returns Scorer talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function scorerDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.FW:
-            return "👍 Scorer talent is especially useful for forwards because it boosts their SC"
-        case PositionsKeys.LW:
-        case PositionsKeys.RW:
-        case PositionsKeys.OM:
-            return "👍 Scorer talent is useful for midfielders who operate in the penalty box"
-        default:
-            return "🤔 There is no obvious benefit of scorer talent for players who don't normally operate in the penalty box"
-    }
-}
-
-/**
- * Returns Set piece specialist talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function setPieceSpecialistDescription(positionKey) {
-    switch (positionKey) {
-        default:
-            return "👍 Set piece specialist talent is useful for all players"
-    }
-}
-
-/**
- * Returns Stamina talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function staminaDescription(positionKey) {
-    switch (positionKey) {
-        default:
-            return "👍 Stamina talent is useful for all players"
-    }
-}
-
-/**
- * Returns Stopper talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function stopperDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.CB:
-        case PositionsKeys.LB:
-        case PositionsKeys.RB:
-        case PositionsKeys.DM:
-        case PositionsKeys.LWB:
-        case PositionsKeys.RWB:
-        case PositionsKeys.LM:
-        case PositionsKeys.RM:
-        case PositionsKeys.CM:
-            return "👍 Stopper talent is especially useful for defenders and defensively minded midfielders because it boosts their TA"
-        default:
-            return "🤔 Stopper talent is not particuraly useful for outfielders without defensive duties or goalkeepers"
-    }
-}
-
-/**
- * Returns Sure hands talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function sureHandsDescription(positionKey) {
-    switch (positionKey) {
-        case PositionsKeys.GK:
-            return "👍 Sure hands talent is very useful for goalkeepers because it boosts thier CT"
-        default:
-            return "🤔 Sure hands talent is not useful for outfielders"
-    }
-}
-
-/**
- * Returns Tough talent description for a given position.
- * @param {string} positionKey - a position key as in PositionsKeys
- * @returns {string} a formatted description of the talent ready for display on the front-end.
- */
-function toughDescription(positionKey) {
-    switch (positionKey) {
-        default:
-            return "👍 Tough talent is useful for all players"
-    }
-}
-
-// Recreates the denomination used on the website, used for coloring the numbers
-function denomination(value) {
-    let den = 0
-    if (value > 29) {
-        den = Math.trunc(value / 10)
-    } else {
-        if (value > 15) {
-            den = 2
-        } else {
-            den = 1
-        }
-    }
-    return den
-}
+import { lastPathComponent, storage, pluginNodeClass, mergeObjects } from "./utils.js"
+import { calculateAssistance, denomination } from "./ui_utils.js"
+import { SpecialTalentsKeys, specialTalentDescription } from "./special_talents_utils.js"
+import { personalityDescription } from "./personalities_utils.js"
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -702,6 +331,9 @@ function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
     return results
 }
 
+/**
+ * Adds injuries table to the player page if there is injury information in the storage
+ */
 async function showInjuries() {
     const playerID = lastPathComponent(window.location.pathname)
     const playerDataFromStorage = await storage.get('player-data');
@@ -820,25 +452,36 @@ async function showInjuries() {
     }
 }
 
-function getMyTeam() {
-    // Check if there are inputs on the page, if yes this is our player
+/**
+ * Performs a check if the player is ours.
+ * @returns {boolean} True if the player is ours
+ */
+function isOwnPlayer() {
+    // Check if there are inputs on the page
     const inputCheckbox = document.querySelector('input.form-check-input')
+    // The checkboxes can appear if the player is on sale, so we need another check for control buttons that only appear on own player page
     const controlButtons = Array.from(document.querySelectorAll("button"))
         .filter(btn => {
             const txt = btn.textContent.trim();
             return txt === "Sell" || txt === "Fire";
         });
-    console.debug("inputCheckbox:", inputCheckbox, "controlButtons:", controlButtons)
-    if (inputCheckbox && controlButtons.length >= 2) {
-        const link = document.querySelector('table span fw-club-hover a')
-        const clubID = lastPathComponent(link.href)
-        const clubName = link.querySelector('span.club-name').textContent
-        const clubData = {
-            id: clubID,
-            name: clubName
-        }
-        return clubData
+    // console.debug("inputCheckbox:", inputCheckbox, "controlButtons:", controlButtons)
+    return inputCheckbox && controlButtons.length >= 2
+}
+
+/**
+ * Gets the club data of the player.
+ * @returns {Object} data object { id: string, name: string}
+ */
+function getPlayerClubData() {
+    const link = document.querySelector('table span fw-club-hover a')
+    const clubID = lastPathComponent(link.href)
+    const clubName = link.querySelector('span.club-name').textContent
+    const clubData = {
+        id: clubID,
+        name: clubName
     }
+    return clubData
 }
 
 /**
@@ -947,6 +590,9 @@ function getHiddenSkillsTable() {
 }
 
 function getPlayerData() {
+    const position = getPlayerPosition()
+    const name = getPlayerName()
+
     const personalitiesTable = getPersonalitiesTable()
     let personalitiesData
     if (personalitiesTable) {
@@ -965,35 +611,35 @@ function getPlayerData() {
 
     return {
         playerID: playerID,
+        name: name,
+        position: position,
         ...(personalitiesData !== undefined && { personalities: personalitiesData }),
         ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData })
     }
 }
 
-async function saveToStorage(clubData, playerData) {
-    console.debug(`Will save personalities for playerID = ${playerData.playerID}`);
-    const playerDataFromStorage = await storage.get('player-data');
-    var loadedPlayerData = playerDataFromStorage['player-data'] || {};
-    console.debug('loadedPlayerData = ', loadedPlayerData)
-    var currentPlayerData = loadedPlayerData[playerData.playerID] || {};
-    console.debug('currentPlayerData = ', currentPlayerData)
-    currentPlayerData['personalities'] = playerData.personalities
-    const specialTalents = playerData.specialTalents
-    if (specialTalents) {
-        currentPlayerData['specialTalents'] = specialTalents
-    } else {
-        delete currentPlayerData['specialTalents']
-    }
-    loadedPlayerData[playerData.playerID] = currentPlayerData
+async function saveClubDataToStorage(clubData) {
+    console.debug(`Will save club data to storage`, clubData);
+    await storage.set({ club: clubData })
+    console.debug(`Done`);
+}
 
-    const preparedForSaving = {
-        club: clubData,
-        "player-data": loadedPlayerData
-    }
-    console.debug('preparedForSaving: ', preparedForSaving)
+async function savePlayerDataToStorage(playerData) {
+    console.debug(`Will save player data to storage`, playerData);
 
-    await storage.set(preparedForSaving)
-    console.debug(`Saved to storage: `, currentPlayerData, ` and club data: `, clubData);
+    const { "player-data": playersDictFromStorage = {} } = await storage.get('player-data');
+    console.debug('playersDictFromStorage = ', playersDictFromStorage)
+
+    var currentPlayerRepresentationInStorage = playersDictFromStorage[playerData.playerID] || {};
+    console.debug('currentPlayerRepresentationInStorage = ', currentPlayerRepresentationInStorage)
+
+    const newPlayerRepresentation = mergeObjects(currentPlayerRepresentationInStorage, playerData)
+    console.debug(`Will overwrite player data with`, newPlayerRepresentation);
+
+    playersDictFromStorage[playerData.playerID] = newPlayerRepresentation
+    await storage.set({ "player-data": playersDictFromStorage })
+
+    console.debug(`Done`);
 }
 
 function getBidButton() {
@@ -1006,43 +652,69 @@ function isPendingSale() {
 }
 /**
  * Checks if the buying guide is displayed, if not it calls the assembleBuyingGuide() and attaches the result after the bid button.
+ * @param {Object} playerData Data as gathered in the getPlayerData function
  */
-function showBuyingGuide() {
+function showBuyingGuide(playerData) {
     const bidButton = getBidButton()
 
     const buyingGuideIdentifier = `${pluginNodeClass}-buying-guide`
     if (document.getElementById(buyingGuideIdentifier)) return
 
-    const buyingGuide = assembleBuyingGuide(buyingGuideIdentifier)
+    const buyingGuide = assembleBuyingGuide(buyingGuideIdentifier, playerData)
     bidButton.after(buyingGuide)
 }
 
 /**
  * Assemble buying guide ready to be attached to DOM.
  * @param {string} identifier - identifier to be used for the buying guide
+ * @param {Object} playerData Data as gathered in the getPlayerData function
  * @returns {Object} buying guide node.
  */
-function assembleBuyingGuide(identifier) {
-    const position = getPlayerPosition()
+function assembleBuyingGuide(identifier, playerData) {
+    const position = playerData.position
     const buyingGuideList = document.createElement("ol")
     buyingGuideList.id = identifier
 
-    const personalitiesTable = getPersonalitiesTable()
-    let personalitiesData
-    if (personalitiesTable) {
-        personalitiesData = getPersonalitiesData(personalitiesTable)
+    let personalitiesData = playerData.personalities
+    const buyingGuideDescriptions = []
+    if (personalitiesData) {
+        console.info("Appending personalities guide")
+        Object.entries(personalitiesData).forEach(([personality, value]) => {
+            try {
+                const description = personalityDescription(personality, value, position)
+                if (!description) return
+                buyingGuideDescriptions.push(description)
+            } catch (e) {
+                console.error(e.message)
+            }
+        })
     }
 
-    const specialTalentsTable = getSpecialTalentsTable()
-    let specialTalentsData
-    if (specialTalentsTable) {
-        specialTalentsData = getSpecialTalentsData(specialTalentsTable)
+    let specialTalentsData = playerData.specialTalents
+    if (specialTalentsData) {
+        console.info("Appending special talents guide")
         for (const talent of specialTalentsData) {
             const description = specialTalentDescription(talent, position)
-            const li = document.createElement("li")
-            li.textContent = description
-            buyingGuideList.appendChild(li)
+            buyingGuideDescriptions.push(description)
         }
+    }
+
+    console.debug("buyingGuideDescriptions", buyingGuideDescriptions);
+
+    const processed = buyingGuideDescriptions
+        .filter(str => !str.startsWith("🤔")) // remove 🤔
+        .sort((a, b) => {
+            if (a.startsWith("👍") && b.startsWith("👎")) return -1; // 👍 before 👎
+            if (a.startsWith("👎") && b.startsWith("👍")) return 1;
+            return 0; // keep relative order otherwise
+        });
+
+    console.debug("buyingGuideDescriptions after", processed);
+
+    for (const description of processed) {
+        const li = document.createElement("li");
+        li.textContent = description;
+        buyingGuideList.appendChild(li);
     }
 
     return buyingGuideList
@@ -1056,6 +728,16 @@ function getPlayerPosition() {
     const badgeElement = document.querySelector(".badge-position")
     if (!badgeElement) return
     return badgeElement.textContent.trim()
+}
+
+/**
+ * Gets the player name.
+ * @returns {string} player name
+ */
+function getPlayerName() {
+    const headerElement = document.querySelector("div.card-header > div.row div.fw-header")
+    if (!headerElement) return
+    return headerElement.textContent.trim()
 }
 
 const positionEmoji = {
@@ -1121,6 +803,14 @@ function checkSiteLoaded() {
         console.info(`${getPositionEmoji(playerPosition)} Found player position`)
     }
 
+    const playerName = getPlayerName()
+    if (!playerName) {
+        console.log("Could not find player name")
+        return false
+    } else {
+        console.info(`🪪 Found player name`)
+    }
+
     const playerSkillsTable = getPlayerSkillsTable()
     if (!playerSkillsTable) {
         console.log("Could not find player skills table")
@@ -1164,21 +854,19 @@ export async function processPlayerPage() {
         return
     }
 
-    const clubData = getMyTeam()
-    if (clubData) {
-        console.debug("clubData: ", clubData)
-        const playerData = getPlayerData()
-        if (playerData) {
-            console.debug("playerData: ", playerData)
-            await saveToStorage(clubData, playerData)
-        }
+    let clubData
+    if (isOwnPlayer()) {
+        clubData = getPlayerClubData()
+        await saveClubDataToStorage(clubData)
     }
+    const playerData = getPlayerData()
+    await savePlayerDataToStorage(playerData)
 
     await showInjuries()
 
     // If the player is on sale, add buying summary
     if (isPendingSale()) {
-        showBuyingGuide()
+        showBuyingGuide(playerData)
     }
 
     const coreSkillsTable = getCoreSkillsTable()

@@ -1,5 +1,22 @@
 import { addCSS, optionsStorage } from "./utils"
 
+export const PositionsKeys = {
+    CB: "CB",
+    CM: "CM",
+    DM: "DM",
+    FW: "FW",
+    GK: "GK",
+    LB: "LB",
+    LM: "LM",
+    LW: "LW",
+    LWB: "LWB",
+    OM: "OM",
+    RB: "RB",
+    RM: "RM",
+    RW: "RW",
+    RWB: "RWB"
+}
+
 /**
  * Normalize a symbol/emoji to text or emoji presentation.
  *

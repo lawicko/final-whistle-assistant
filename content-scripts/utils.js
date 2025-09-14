@@ -28,6 +28,23 @@ export function lastPathComponent(path, removeExtension = false) {
 }
 
 /**
+ * Merges two objects into one.
+ * 
+ * @param {Object} obj1 - The first object
+ * @param {Object} obj2 - The second object
+ * @param {boolean} [preferSecond=true] - If true, keys in obj2 override obj1
+ * @returns {Object} The merged object
+ */
+export function mergeObjects(obj1, obj2, preferSecond = true) {
+    if (preferSecond) {
+        return { ...obj1, ...obj2 }; // obj2 takes precedence
+    } else {
+        return { ...obj2, ...obj1 }; // obj1 takes precedence
+    }
+}
+
+
+/**
  * Inject CSS into the page safely without duplicates
  * @param {string} css - The CSS string to inject
  * @param {string} id - Optional unique ID for this style block
