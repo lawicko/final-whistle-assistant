@@ -9,6 +9,7 @@ import {
     calculateAssistance,
     calculateDefensiveAssistanceGK,
     denomination,
+    personalitiesSymbols,
     removeNoDataSymbol
 } from './ui_utils.js';
 
@@ -207,7 +208,7 @@ function appendAdditionalInfo(storedPlayerData) {
 function clearTeamwork(element) {
     const spans = element.querySelectorAll("span");
     spans.forEach(span => {
-        if (span.textContent.trim() === "⬡") {
+        if (span.textContent.trim() === personalitiesSymbols["teamwork"]) {
             span.remove();
         }
     });
@@ -216,7 +217,7 @@ function clearTeamwork(element) {
 function clearSportsmanship(element) {
     const spans = element.querySelectorAll("span");
     spans.forEach(span => {
-        if (span.textContent.trim() === "⚖︎") {
+        if (span.textContent.trim() === personalitiesSymbols["sportsmanship"]) {
             span.remove();
         }
     });
@@ -224,14 +225,14 @@ function clearSportsmanship(element) {
 
 function applyTeamwork(element, teamwork) {
     const hasTeamworkSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === "⬡"
+        child => child.textContent.trim() === personalitiesSymbols["teamwork"]
     );
     if (!hasTeamworkSymbol) {
         console.debug(`Applying Teamwork: ${teamwork}`)
 
         const teamworkSpan = document.createElement("span");
         teamworkSpan.classList.add('teamwork')
-        teamworkSpan.textContent = " ⬡"
+        teamworkSpan.textContent = " " + personalitiesSymbols["teamwork"]
         switch (teamwork) {
             case -2:
                 teamworkSpan.classList.add('doubleNegative');
@@ -295,8 +296,8 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
     if (document.getElementById("teamworkCheckbox")) return;
 
     const checkboxesData = [
-        { id: "teamworkCheckbox", label: "⬡ Teamwork", variable: "showTeamwork" },
-        { id: "sportsmanshipCheckbox", label: "⚖︎ Sportsmanship", variable: "showSportsmanship" }
+        { id: "teamworkCheckbox", label: `${personalitiesSymbols["teamwork"]} Teamwork`, variable: "showTeamwork" },
+        { id: "sportsmanshipCheckbox", label: `${personalitiesSymbols["sportsmanship"]} Sportsmanship`, variable: "showSportsmanship" }
     ];
     const rightItems = document.createElement("div")
     rightItems.classList.add("right-items")

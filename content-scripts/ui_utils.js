@@ -1,5 +1,30 @@
 import { addCSS, optionsStorage } from "./utils"
 
+/**
+ * Normalize a symbol/emoji to text or emoji presentation.
+ *
+ * @param {string} char - The base character (emoji-capable).
+ * @param {"text"|"emoji"} [style="text"] - Force text (monochrome) or emoji (colorful).
+ * @returns {string} The normalized string with variation selector applied.
+ */
+function normalizeEmoji(char, style = "text") {
+    const VS15 = "\uFE0E"; // text presentation selector
+    const VS16 = "\uFE0F"; // emoji presentation selector
+
+    // Remove any existing variation selector to avoid duplication
+    const base = char.replace(/[\uFE0E\uFE0F]/g, "");
+
+    return style === "emoji" ? base + VS16 : base + VS15;
+}
+
+export const personalitiesSymbols = {
+    "arrogance": normalizeEmoji("♛", "text"),
+    "composure": normalizeEmoji("○", "text"),
+    "leadership": normalizeEmoji("✪", "text"),
+    "sportsmanship": normalizeEmoji("⚖", "text"),
+    "teamwork": normalizeEmoji("⬡", "text")
+}
+
 export function toggleClass(el, className) {
     if (el.className.indexOf(className) >= 0) {
         el.className = el.className.replace(` ${className}`, "");
@@ -171,14 +196,14 @@ export function addNoDataSymbol(container) {
 
 export function applySportsmanship(element, sportsmanship) {
     const hasSportsmanshipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === "⚖\uFE0E"
+        child => child.textContent.trim() === personalitiesSymbols["sportsmanship"]
     );
     if (!hasSportsmanshipSymbol) {
         console.debug(`Applying sportsmanship: ${sportsmanship}`)
 
         const sportsmanshipSpan = document.createElement("span");
         sportsmanshipSpan.classList.add('sportsmanship')
-        sportsmanshipSpan.textContent = " ⚖\uFE0E"
+        sportsmanshipSpan.textContent = " " + personalitiesSymbols["sportsmanship"]
         switch (sportsmanship) {
             case -2:
                 sportsmanshipSpan.classList.add('doubleNegative');

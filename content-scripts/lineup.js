@@ -1,9 +1,15 @@
 import {
+    storage,
+    isString,
+    lastPathComponent
+} from "./utils.js";
+
+import {
     applySportsmanship,
     hasActiveSetPieces,
-    removeNoDataSymbol
- } from "./ui_utils";
-import { storage, isString, lastPathComponent } from "./utils.js";
+    removeNoDataSymbol,
+    personalitiesSymbols
+} from "./ui_utils";
 
 function getPlayerLinks(selector) {
     // Get the container
@@ -79,7 +85,7 @@ function proposeAnchors(anchors) {
         if (anchor.sportsmanship > 0) {
             const sportsmanshipSpan = document.createElement("span");
             sportsmanshipSpan.classList.add('sportsmanship')
-            sportsmanshipSpan.textContent = " ⚖\uFE0E"
+            sportsmanshipSpan.textContent = " " + personalitiesSymbols["sportsmanship"]
             switch (anchor.sportsmanship) {
                 case 1:
                     sportsmanshipSpan.classList.add('positive');
@@ -226,7 +232,7 @@ async function proposePenaltyTakers(takers) {
             if (taker.composure) {
                 const composureSpan = document.createElement("span");
                 composureSpan.classList.add('composure')
-                composureSpan.textContent = " ○"
+                composureSpan.textContent = " " + personalitiesSymbols["composure"]
                 switch (taker.composure) {
                     case -2:
                         composureSpan.classList.add('doubleNegative');
@@ -304,7 +310,7 @@ async function proposePenaltyTakers(takers) {
             if (taker.composure) {
                 const composureSpan = document.createElement("span");
                 composureSpan.classList.add('composure')
-                composureSpan.textContent = " ○"
+                composureSpan.textContent = " " + personalitiesSymbols["composure"]
                 switch (taker.composure) {
                     case -2:
                         composureSpan.classList.add('doubleNegative');
@@ -386,7 +392,7 @@ async function insertComposureTresholdInput(parent) {
     parent.appendChild(input)
     const questionMarkSpan = document.createElement("span")
     questionMarkSpan.textContent = " \uf29c "
-    questionMarkSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ○ symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
+    questionMarkSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ${personalitiesSymbols["composure"]} symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
     parent.appendChild(questionMarkSpan)
 }
 
@@ -423,8 +429,8 @@ async function insertArroganceTresholdInput(parent) {
     // Inject into the page
     parent.appendChild(input)
     const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = " \uf29c "
-    questionMarkSpan.title = `Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, ♛ symbol will appear next to his name.`
+    questionMarkSpan.textContent = "  \uf29c "
+    questionMarkSpan.title = `Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, ${personalitiesSymbols["arrogance"]} symbol will appear next to his name.`
     parent.appendChild(questionMarkSpan)
 }
 
@@ -547,7 +553,7 @@ async function processLineup() {
                 } else {
                     console.debug('Has composure in profile, but not in the attack or midfield zone or penaltyKick under reasonable level, removing symbol if necessary');
                     const composureSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
-                        el => el.textContent.trim() === '○'
+                        el => el.textContent.trim() === personalitiesSymbols["composure"]
                     );
                     if (composureSpan) {
                         console.debug(`removing composure from ${name}`)
@@ -563,7 +569,7 @@ async function processLineup() {
         }
 
         if (arrogance && arrogance < 0) { // only bother with this if the arrogance is negative, otherwise there is no impact on offsides
-            console.debug('Arrogance negative, proceeding...');
+            console.debug(`${name} arrogance negative, proceeding...`);
             // First check if on a defensive position
             // Get all siblings
             const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
@@ -580,10 +586,10 @@ async function processLineup() {
             if (skills.length == 8) { // goalkeepers have only 6 skills
                 const DP = skills[7].querySelector('span[class^="denom"]').textContent.trim();
                 if (DP > arrogance_treshold) {
-                    console.debug(`DP = ${DP} reasonable, setting reasonableDP to true`);
+                    console.debug(`DP = ${DP} reasonable, setting reasonableDP to true for ${name}`);
                     reasonableDP = true
                 } else {
-                    console.debug(`DP = ${DP} below reasonable level, leaving reasonableDP as false`);
+                    console.debug(`DP = ${DP} below reasonable level, leaving reasonableDP as false for ${name}`);
                 }
             }
 
@@ -591,9 +597,9 @@ async function processLineup() {
                 console.debug(`applying arrogance: ${arrogance} to ${name}`)
                 applyArrogance(pLinks[i], arrogance)
             } else {
-                console.debug('Has arrogance in profile, but not in the defence zone or DP under reasonable level, removing symbol if necessary');
+                console.debug(`${name} has arrogance in profile, but not in the defence zone or DP under reasonable level, removing symbol if necessary`);
                 const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
-                    el => el.textContent.trim() === '♛'
+                    el => el.textContent.trim() === personalitiesSymbols["arrogance"]
                 );
                 if (arroganceSpan) {
                     console.debug(`removing arrogance from ${name}`)
@@ -601,9 +607,9 @@ async function processLineup() {
                 }
             }
         } else {
-            console.debug('Arrogance positive or not in profile, removing symbol if necessary');
+            console.debug(`${name} arrogance positive or not in profile, removing symbol if necessary`);
             const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
-                el => el.textContent.trim() === '♛'
+                el => el.textContent.trim() === personalitiesSymbols["arrogance"]
             );
             if (arroganceSpan) {
                 console.debug(`removing arrogance from ${name}`)
@@ -673,14 +679,14 @@ async function processLineup() {
 
 function applyArrogance(element, arrogance) {
     const hasArroganceSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === "♛"
+        child => child.textContent.trim() === personalitiesSymbols["arrogance"]
     );
     if (!hasArroganceSymbol) {
         console.debug(`Applying arrogance: ${arrogance}`)
 
         const arroganceSpan = document.createElement("span");
         arroganceSpan.classList.add('arrogance')
-        arroganceSpan.textContent = " ♛"
+        arroganceSpan.textContent = " " + personalitiesSymbols["arrogance"]
         switch (arrogance) {
             case -2:
                 arroganceSpan.classList.add('doubleNegative');
@@ -706,14 +712,14 @@ function applyArrogance(element, arrogance) {
 
 function applyComposure(element, composure) {
     const hasComposureSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === "○"
+        child => child.textContent.trim() === personalitiesSymbols["composure"]
     );
     if (!hasComposureSymbol) {
         console.debug(`Applying composure: ${composure}`)
 
         const composureSpan = document.createElement("span");
         composureSpan.classList.add('composure')
-        composureSpan.textContent = " ○"
+        composureSpan.textContent = " " + personalitiesSymbols["composure"]
         switch (composure) {
             case -2:
                 composureSpan.classList.add('doubleNegative');
@@ -741,14 +747,14 @@ function applyComposure(element, composure) {
 
 function applyLeadership(element, leadership) {
     const hasLeadershipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === "✪"
+        child => child.textContent.trim() === personalitiesSymbols["leadership"]
     );
     if (!hasLeadershipSymbol) {
         console.debug(`Applying Leadership: ${leadership}`)
 
         const leadershipSpan = document.createElement("span");
         leadershipSpan.classList.add('leadership')
-        leadershipSpan.textContent = " ✪"
+        leadershipSpan.textContent = " " + personalitiesSymbols["leadership"]
         switch (leadership) {
             case -2:
                 leadershipSpan.classList.add('doubleNegative');

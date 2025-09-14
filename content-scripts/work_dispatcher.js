@@ -8,6 +8,9 @@ import { processLineupPage } from './lineup.js';
 import { processPlayerPage } from './player.js';
 import { addTableRowsHighlighting } from './row_highlight.js';
 
+// How long to wait after the last mutation before processing the DOM (in ms)
+const DEBOUNCE_WAIT_MS = 0;
+
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
 
@@ -124,7 +127,7 @@ const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.ACADEMY_BUTTONS)) {
             processAcademyButtons();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
@@ -132,7 +135,7 @@ const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
             await processMatchIndicators();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessMatchPage = makeDebouncedWithReconnect(
@@ -140,7 +143,7 @@ const debouncedProcessMatchPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
             await processMatch();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
@@ -148,7 +151,7 @@ const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.PLAYER_PAGE_ENHANCEMENTS)) {
             await processPlayerPage();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
@@ -162,7 +165,7 @@ const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessSquadPage = makeDebouncedWithReconnect(
@@ -170,7 +173,7 @@ const debouncedProcessSquadPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessLineupPage = makeDebouncedWithReconnect(
@@ -178,7 +181,7 @@ const debouncedProcessLineupPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.LINEUP)) {
             await processLineupPage();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
@@ -189,7 +192,7 @@ const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTrainingDrillsPage = makeDebouncedWithReconnect(
@@ -197,7 +200,7 @@ const debouncedProcessTrainingDrillsPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
@@ -205,5 +208,5 @@ const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
-    }, 500, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
