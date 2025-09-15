@@ -201,151 +201,123 @@ async function proposePenaltyTakers(takers) {
         return
     }
 
+    function createTakerListItem(taker, personalitiesSymbols) {
+        const li = document.createElement("li");
+
+        const nameSpan = document.createElement("span");
+        nameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`);
+        nameSpan.textContent = `${taker.name} (${taker.penaltyKick})`;
+        li.appendChild(nameSpan);
+
+        if (taker.composure) {
+            const composureSpan = document.createElement("span");
+            composureSpan.classList.add("composure");
+            composureSpan.textContent = " " + personalitiesSymbols["composure"];
+
+            switch (taker.composure) {
+                case -2:
+                    composureSpan.classList.add("doubleNegative");
+                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
+                    break;
+                case -1:
+                    composureSpan.classList.add("negative");
+                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
+                    break;
+                case 1:
+                    composureSpan.classList.add("positive");
+                    composureSpan.title = "This player has good composure, consider using him as penalty taker";
+                    break;
+                case 2:
+                    composureSpan.classList.add("doublePositive");
+                    composureSpan.title = "This player has excellent composure, use him as penalty taker";
+                    break;
+                default:
+                    console.warn("Value of taker.composure is unexpected: ", taker.composure);
+            }
+            li.appendChild(composureSpan);
+        }
+
+        return li;
+    }
+
+    function buildTakersList(takers, personalitiesSymbols) {
+        const ol = document.createElement("ol");
+        ol.id = "proposed-penalty-takers";
+        for (const taker of takers) {
+            ol.appendChild(createTakerListItem(taker, personalitiesSymbols));
+        }
+        return ol;
+    }
+
+    function createSectionHeader(text, tooltip) {
+        const header = document.createElement("h6");
+        header.id = "proposed-penalty-takers-header";
+        header.textContent = text + " ";
+
+        const questionMark = document.createElement("span");
+        questionMark.textContent = "\uf29c"; // your icon char
+        questionMark.title = tooltip;
+
+        header.appendChild(questionMark);
+        return header;
+    }
+
+    // Always build recommended takers
+    const recommendedHeader = createSectionHeader(
+        "Recommended penalty takers",
+        "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+    );
+    const recommendedList = buildTakersList(takers.recommended, personalitiesSymbols);
+
+    // Decide layout
     if (takers.other.length > 0) {
-        const proposedPenaltyTakersContainer = document.createElement("div")
-        proposedPenaltyTakersContainer.classList.add("proposed-penalty-takers-container")
+        // Create two-panel layout
+        const container = document.createElement("div");
+        container.classList.add("proposed-penalty-takers-container");
 
-        const leftPanel = document.createElement("div")
-        leftPanel.classList.add("proposed-penalty-takers-panel")
+        const leftPanel = document.createElement("div");
+        leftPanel.classList.add("proposed-penalty-takers-panel");
 
-        const rightPanel = document.createElement("div")
-        rightPanel.classList.add("proposed-penalty-takers-panel")
+        const rightPanel = document.createElement("div");
+        rightPanel.classList.add("proposed-penalty-takers-panel");
 
-        proposedPenaltyTakersContainer.appendChild(leftPanel)
-        proposedPenaltyTakersContainer.appendChild(rightPanel)
+        container.append(leftPanel, rightPanel);
+        targetHeader.parentNode.after(container);
 
-        targetHeader.parentNode.after(proposedPenaltyTakersContainer)
+        // Fill left panel with recommended
+        leftPanel.append(recommendedHeader, recommendedList);
+        await insertComposureTresholdInput(recommendedHeader);
 
-        const proposedPenaltyTakers = document.createElement("ol");
-        proposedPenaltyTakers.id = 'proposed-penalty-takers'
-        console.debug('Will iterate takers.recommended: ', takers.recommended)
-        for (const taker of takers.recommended) {
-            console.debug('creating takerSpan')
-            var takerLi = document.createElement('li')
-            var takerNameSpan = document.createElement('span')
-            takerNameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-            takerNameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
-            takerLi.appendChild(takerNameSpan)
-            console.debug('appending takerSpan to proposedPenaltyTakers')
-            proposedPenaltyTakers.appendChild(takerLi)
+        // Add “other takers” on the right
+        const otherHeader = createSectionHeader(
+            "Other penalty takers",
+            "These are other players with the penalty kick skill above the composure treshold, who didn't make it to the recommended list for some reason - likely other players having positive composure which this extension really favours. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+        );
+        const otherList = buildTakersList(takers.other, personalitiesSymbols);
 
-            if (taker.composure) {
-                const composureSpan = document.createElement("span");
-                composureSpan.classList.add('composure')
-                composureSpan.textContent = " " + personalitiesSymbols["composure"]
-                switch (taker.composure) {
-                    case -2:
-                        composureSpan.classList.add('doubleNegative');
-                        composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
-                        break;
-                    case -1:
-                        composureSpan.classList.add('negative');
-                        composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
-                        break;
-                    case 1:
-                        composureSpan.classList.add('positive');
-                        composureSpan.title = "This player has good composure, consider using him as penalty taker";
-                        break;
-                    case 2:
-                        composureSpan.classList.add('doublePositive');
-                        composureSpan.title = "This player has excellent composure, use him as penalty taker";
-                        break;
-                    default:
-                        console.warn("Value of taker.composure is unexpected: ", taker.composure);
-                }
-                takerLi.appendChild(composureSpan)
-            }
-        }
+        rightPanel.append(otherHeader, otherList);
 
-        const proposedPenaltyTakersHeader = document.createElement("h6");
-        proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
-        proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
-        const questionMarkSpan = document.createElement("span")
-        questionMarkSpan.textContent = "\uf29c"
-        questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-        proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
-
-        leftPanel.appendChild(proposedPenaltyTakersHeader)
-        leftPanel.appendChild(proposedPenaltyTakers)
-        await insertComposureTresholdInput(proposedPenaltyTakersHeader)
-
-        // Add the other penalty takers to the right panel
-        const otherPenaltyTakers = document.createElement("ol");
-        otherPenaltyTakers.id = 'proposed-penalty-takers'
-        console.debug('Will iterate takers.other: ', takers.other)
-        for (const taker of takers.other) {
-            console.debug('creating takerSpan')
-            var takerLi = document.createElement('li')
-            var takerNameSpan = document.createElement('span')
-            takerNameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-            takerNameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
-            takerLi.appendChild(takerNameSpan)
-            console.debug('appending takerSpan to otherPenaltyTakers')
-            otherPenaltyTakers.appendChild(takerLi)
-        }
-        const otherPenaltyTakersHeader = document.createElement("h6");
-        otherPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
-        otherPenaltyTakersHeader.textContent = "Other penalty takers "
-        const questionMarkSpanOther = document.createElement("span")
-        questionMarkSpanOther.textContent = "\uf29c "
-        questionMarkSpanOther.title = "These are other players with the penalty kick skill above the composure treshold, who didn't make it to the recommended list for some reason - likely other players having positive composure which this extension really favours. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-        otherPenaltyTakersHeader.appendChild(questionMarkSpanOther)
-
-        rightPanel.appendChild(otherPenaltyTakersHeader)
-        rightPanel.appendChild(otherPenaltyTakers)
     } else {
-        const proposedPenaltyTakers = document.createElement("ol");
-        proposedPenaltyTakers.id = 'proposed-penalty-takers'
-        console.debug('Will iterate takers.recommended: ', takers.recommended)
-        for (const taker of takers.recommended) {
-            console.debug('creating takerSpan')
-            var takerLi = document.createElement('li')
-            var takerNameSpan = document.createElement('span')
-            takerNameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
-            takerNameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
-            takerLi.appendChild(takerNameSpan)
-            console.debug('appending takerSpan to proposedPenaltyTakers')
-            proposedPenaltyTakers.appendChild(takerLi)
+        // Just show recommended below targetHeader
+        targetHeader.parentNode.after(recommendedList);
+        targetHeader.parentNode.after(recommendedHeader);
+        await insertComposureTresholdInput(recommendedHeader);
+    }
+}
 
-            if (taker.composure) {
-                const composureSpan = document.createElement("span");
-                composureSpan.classList.add('composure')
-                composureSpan.textContent = " " + personalitiesSymbols["composure"]
-                switch (taker.composure) {
-                    case -2:
-                        composureSpan.classList.add('doubleNegative');
-                        composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
-                        break;
-                    case -1:
-                        composureSpan.classList.add('negative');
-                        composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
-                        break;
-                    case 1:
-                        composureSpan.classList.add('positive');
-                        composureSpan.title = "This player has good composure, consider using him as penalty taker";
-                        break;
-                    case 2:
-                        composureSpan.classList.add('doublePositive');
-                        composureSpan.title = "This player has excellent composure, use him as penalty taker";
-                        break;
-                    default:
-                        console.warn("Value of taker.composure is unexpected: ", taker.composure);
-                }
-                takerLi.appendChild(composureSpan)
-            }
+function removeProposedPenaltyTakersControls() {
+    if (document.querySelector('.proposed-penalty-takers-container')) {
+        console.debug("removing .proposed-penalty-takers-container")
+        document.querySelector('.proposed-penalty-takers-container').remove()
+    } else {
+        if (document.querySelector('#proposed-penalty-takers-header')) {
+            console.debug("removing #proposed-penalty-takers-header")
+            document.querySelector('#proposed-penalty-takers-header').remove()
         }
-        targetHeader.parentNode.after(proposedPenaltyTakers);
-
-        const proposedPenaltyTakersHeader = document.createElement("h6");
-        proposedPenaltyTakersHeader.id = 'proposed-penalty-takers-header'
-        proposedPenaltyTakersHeader.textContent = "Recommended penalty takers "
-        const questionMarkSpan = document.createElement("span")
-        questionMarkSpan.textContent = "\uf29c "
-        questionMarkSpan.title = "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-        proposedPenaltyTakersHeader.appendChild(questionMarkSpan)
-        targetHeader.parentNode.after(proposedPenaltyTakersHeader);
-
-        await insertComposureTresholdInput(proposedPenaltyTakersHeader)
+        if (document.querySelector('#proposed-penalty-takers')) {
+            console.debug("removing #proposed-penalty-takers")
+            document.querySelector('#proposed-penalty-takers').remove()
+        }
     }
 }
 
@@ -375,17 +347,7 @@ async function insertComposureTresholdInput(parent) {
 
         await storage.set({ tresholds: tresholds });
         console.debug("Updated tresholds =", tresholds);
-
-        if (document.querySelector('.proposed-penalty-takers-container')) {
-            document.querySelector('.proposed-penalty-takers-container').remove()
-        } else {
-            if (document.querySelector('#proposed-penalty-takers-header')) {
-                document.querySelector('#proposed-penalty-takers-header').remove()
-            }
-            if (document.querySelector('#proposed-penalty-takers')) {
-                document.querySelector('#proposed-penalty-takers').remove()
-            }
-        }
+        removeProposedPenaltyTakersControls()
     });
 
     // Inject into the page
@@ -394,6 +356,31 @@ async function insertComposureTresholdInput(parent) {
     questionMarkSpan.textContent = " \uf29c "
     questionMarkSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ${personalitiesSymbols["composure"]} symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
     parent.appendChild(questionMarkSpan)
+
+    // Ignore composure
+    const checkbox = document.createElement("input")
+    checkbox.type = "checkbox"
+    checkbox.id = "ignoreComposureForPenaltyTakers"
+    const { checkboxes = {} } = await storage.get("checkboxes")
+    checkbox.checked = checkboxes["ignoreComposureForPenaltyTakers"]
+    checkbox.addEventListener("change", async () => {
+        const { checkboxes = {} } = await storage.get("checkboxes")
+        if (checkbox.checked) {
+            checkboxes["ignoreComposureForPenaltyTakers"] = "true"
+        } else {
+            delete checkboxes["ignoreComposureForPenaltyTakers"]
+        }
+        await storage.set({ checkboxes: checkboxes })
+        removeProposedPenaltyTakersControls()
+    });
+
+    const label = document.createElement("label")
+    label.appendChild(checkbox)
+    const labelSpan = document.createElement("span")
+    labelSpan.textContent = " Ignore composure"
+    label.appendChild(labelSpan)
+    label.htmlFor = "ignoreComposureForPenaltyTakers"
+    parent.appendChild(label)
 }
 
 async function insertArroganceTresholdInput(parent) {
@@ -435,6 +422,7 @@ async function insertArroganceTresholdInput(parent) {
 }
 
 async function processLineup() {
+    console.info("processing lineup...")
     const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
     console.debug(hrefs);
@@ -447,7 +435,7 @@ async function processLineup() {
     const { tresholds = {} } = await storage.get("tresholds");
     console.debug(`Loaded tresholds from storage: `, tresholds)
 
-    var proposedPenaltyTakersArray = {
+    var penaltyTakersData = {
         recommended: [],
         other: [],
         discouraged: []
@@ -537,10 +525,10 @@ async function processLineup() {
                     if (composure > 0) {
                         console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, composure ${composure} > 0, setting reasonablePenaltyKick to true`);
                         reasonablePenaltyKick = true
-                        proposedPenaltyTakersArray.recommended.push({ name: name, penaltyKick: penaltyKick, composure: composure });
+                        penaltyTakersData.recommended.push({ name: name, penaltyKick: penaltyKick, composure: composure });
                     } else {
                         console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, but composure ${composure} < 0, leaving reasonablePenaltyKick as false`);
-                        proposedPenaltyTakersArray.discouraged.push({ name: name, penaltyKick: penaltyKick, composure: composure });
+                        penaltyTakersData.discouraged.push({ name: name, penaltyKick: penaltyKick, composure: composure });
                     }
                 } else {
                     console.debug(`processing composure, penaltyKick = ${penaltyKick} below reasonable level, leaving reasonablePenaltyKick as false`);
@@ -649,32 +637,42 @@ async function processLineup() {
     proposeCrossTakers(crossingPlayers.slice(0, 3))
 
     // Propose penalty takers
-    penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
-    console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
-    const recommendedWithComposure = proposedPenaltyTakersArray.recommended
-    console.debug('recommendedWithComposure: ', recommendedWithComposure)
-    const proposedCount = 5
-    console.debug(`proposedCount (${proposedCount}) versus recommendedWithComposure.count (${recommendedWithComposure.length})`)
-    if (recommendedWithComposure.length < proposedCount) {
-        var mergedArray = recommendedWithComposure.concat(penaltyTakersWithoutComposure.slice(0, 5 - recommendedWithComposure.length));
-        console.debug('mergedArray: ', mergedArray)
+    const { checkboxes = {} } = await storage.get("checkboxes")
+    const ignoreComposure = checkboxes["ignoreComposureForPenaltyTakers"] || false
 
-        mergedArray.sort((a, b) => {
-            const pkDiff = b.penaltyKick - a.penaltyKick;
-            if (pkDiff !== 0) return pkDiff;          // sort by penaltyKick first
-            return b.composure - a.composure;         // tie-breaker by composure
-        });
+    if (ignoreComposure) {
+        let allTakers = penaltyTakersData.recommended.concat(penaltyTakersData.discouraged).concat(penaltyTakersWithoutComposure)
+        allTakers.sort((a, b) => b.penaltyKick - a.penaltyKick);
+        penaltyTakersData.recommended = allTakers.slice(0, 5)
+        penaltyTakersData.other = allTakers.slice(5, 10)
+    } else {
+        penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
+        console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
+        const recommendedWithComposure = penaltyTakersData.recommended
+        console.debug('recommendedWithComposure: ', recommendedWithComposure)
+        const proposedCount = 5
+        console.debug(`proposedCount (${proposedCount}) versus recommendedWithComposure.count (${recommendedWithComposure.length})`)
+        if (recommendedWithComposure.length < proposedCount) {
+            var mergedArray = recommendedWithComposure.concat(penaltyTakersWithoutComposure.slice(0, 5 - recommendedWithComposure.length));
+            console.debug('mergedArray: ', mergedArray)
 
-        console.debug('mergedArray sorted: ', mergedArray)
-        proposedPenaltyTakersArray.recommended = mergedArray
+            mergedArray.sort((a, b) => {
+                const pkDiff = b.penaltyKick - a.penaltyKick;
+                if (pkDiff !== 0) return pkDiff;          // sort by penaltyKick first
+                return b.composure - a.composure;         // tie-breaker by composure
+            });
 
-        // add other for the players with high penalty kick skill but for some reason not recommended (e.g. no positive or negative composure etc.)
-        const other = penaltyTakersWithoutComposure.slice(5 - recommendedWithComposure.length, penaltyTakersWithoutComposure.length)
-        proposedPenaltyTakersArray.other = other
+            console.debug('mergedArray sorted: ', mergedArray)
+            penaltyTakersData.recommended = mergedArray
+
+            // add other for the players with high penalty kick skill but for some reason not recommended (e.g. no positive or negative composure etc.)
+            const other = penaltyTakersWithoutComposure.slice(5 - recommendedWithComposure.length, penaltyTakersWithoutComposure.length)
+            penaltyTakersData.other = other
+        }
     }
 
-    console.debug('passing to proposePenaltyTakers: ', proposedPenaltyTakersArray)
-    await proposePenaltyTakers(proposedPenaltyTakersArray)
+    console.debug('passing to proposePenaltyTakers: ', penaltyTakersData)
+    await proposePenaltyTakers(penaltyTakersData)
 }
 
 function applyArrogance(element, arrogance) {

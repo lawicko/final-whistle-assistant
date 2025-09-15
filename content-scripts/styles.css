@@ -32,9 +32,13 @@ h6#proposed-penalty-takers-header, h6#proposed-corner-takers-header, h6#proposed
     text-align: center;
 }
 
-h6#proposed-penalty-takers-header span, h6#proposed-corner-takers-header span, h6#proposed-anchors-header span {
+h6#proposed-penalty-takers-header > span, h6#proposed-corner-takers-header > span, h6#proposed-anchors-header > span {
     cursor: help;
     font: 14px/1 FontAwesome;
+}
+
+h6#proposed-penalty-takers-header label span {
+  font-size: 0.8rem;
 }
 
 div.proposed-penalty-takers-container {
@@ -171,6 +175,11 @@ fw-players div.card-header > div.row > input, fw-players div.card-header > div.r
 }
 input[type="checkbox"] {
     accent-color: #3d453d;
+    margin-left: 6px;
+}
+
+input[type="checkbox"]#ignoreComposureForPenaltyTakers {
+    accent-color: #323932;
     margin-left: 6px;
 }
 
