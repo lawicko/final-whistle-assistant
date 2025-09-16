@@ -1,6 +1,7 @@
 import {
     storage,
-    pluginNodeClass
+    pluginNodeClass,
+    version
 } from './utils.js';
 
 import { 
@@ -354,7 +355,7 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
 }
 
 export async function processPlayersPage() {
-    console.info(`Processing players page...`);
+    console.info(`${version} Processing players page...`);
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
 

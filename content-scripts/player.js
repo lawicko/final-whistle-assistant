@@ -1,4 +1,4 @@
-import { lastPathComponent, storage, pluginNodeClass, mergeObjects } from "./utils.js"
+import { lastPathComponent, storage, pluginNodeClass, mergeObjects, version } from "./utils.js"
 import { calculateAssistance, denomination } from "./ui_utils.js"
 import { SpecialTalentsKeys, specialTalentDescription } from "./special_talents_utils.js"
 import { personalityDescription } from "./personalities_utils.js"
@@ -21,7 +21,7 @@ function appendComputedSkills(tableNode) {
     let SC = Number(SC_span.textContent.trim())
     if (Number.isNaN(SC)) {
         console.debug("Invalid number in SC_span:", SC_span.textContent, "<- assuming not our player.");
-        console.info("Not our player, will not append computed skills")
+        console.info("Can't see numbers in core skills table, will not append computed skills")
         return
     }
 
@@ -658,8 +658,12 @@ function showBuyingGuide(playerData) {
     const bidButton = getBidButton()
 
     const buyingGuideIdentifier = `${pluginNodeClass}-buying-guide`
-    if (document.getElementById(buyingGuideIdentifier)) return
+    if (document.getElementById(buyingGuideIdentifier)) {
+        console.info("Buing guide already present")
+        return
+    }
 
+    console.info("Adding buying guide")
     const buyingGuide = assembleBuyingGuide(buyingGuideIdentifier, playerData)
     bidButton.after(buyingGuide)
 }
@@ -678,7 +682,7 @@ function assembleBuyingGuide(identifier, playerData) {
     let personalitiesData = playerData.personalities
     const buyingGuideDescriptions = []
     if (personalitiesData) {
-        console.info("Appending personalities guide")
+        console.info("Appending personalities info to buying guide")
         Object.entries(personalitiesData).forEach(([personality, value]) => {
             try {
                 const description = personalityDescription(personality, value, position)
@@ -692,7 +696,7 @@ function assembleBuyingGuide(identifier, playerData) {
 
     let specialTalentsData = playerData.specialTalents
     if (specialTalentsData) {
-        console.info("Appending special talents guide")
+        console.info("Appending special talents info to buying guide")
         for (const talent of specialTalentsData) {
             const description = specialTalentDescription(talent, position)
             buyingGuideDescriptions.push(description)
@@ -797,7 +801,7 @@ function getPlayerComputeSkillsTable() {
 function checkSiteLoaded() {
     const playerPosition = getPlayerPosition()
     if (!playerPosition) {
-        console.log("Could not find player position")
+        console.info("Could not find player position")
         return false
     } else {
         console.info(`${getPositionEmoji(playerPosition)} Found player position`)
@@ -805,7 +809,7 @@ function checkSiteLoaded() {
 
     const playerName = getPlayerName()
     if (!playerName) {
-        console.log("Could not find player name")
+        console.info("Could not find player name")
         return false
     } else {
         console.info(`🪪 Found player name`)
@@ -813,7 +817,7 @@ function checkSiteLoaded() {
 
     const playerSkillsTable = getPlayerSkillsTable()
     if (!playerSkillsTable) {
-        console.log("Could not find player skills table")
+        console.info("Could not find player skills table")
         return false
     } else {
         console.info(`🏋️ Found player skills table`)
@@ -844,13 +848,13 @@ function cleanUpNodeForPlayer(tableNode) {
 }
 
 export async function processPlayerPage() {
-    console.info("Processing player page...")
+    console.info(`⏳ ${version} Processing player page for ${lastPathComponent(window.location.pathname)}...`)
 
     const siteLoaded = checkSiteLoaded()
     if (siteLoaded) {
         console.info("✅ Site fully loaded")
     } else {
-        console.log("Site not ready, skipping update...")
+        console.info("📄 Site not ready, skipping update...")
         return
     }
 

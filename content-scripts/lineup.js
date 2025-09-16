@@ -1,7 +1,8 @@
 import {
     storage,
     isString,
-    lastPathComponent
+    lastPathComponent,
+    version
 } from "./utils.js";
 
 import {
@@ -422,7 +423,7 @@ async function insertArroganceTresholdInput(parent) {
 }
 
 async function processLineup() {
-    console.info("processing lineup...")
+    console.info(`${version} Processing lineup...`)
     const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
     console.debug(hrefs);

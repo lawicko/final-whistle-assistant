@@ -1,5 +1,5 @@
 import { toggleClass } from "./ui_utils";
-import { alwaysPresentNode, storage, pluginNodeClass } from "./utils.js";
+import { alwaysPresentNode, storage, pluginNodeClass, version } from "./utils.js";
 
 // Helpers
 function getPlayerIDFromRow(tr) {
@@ -115,7 +115,7 @@ async function processTableRows(tableNode, config = {
     basicHighlight: true,
     persistentHighlight: true
 }) {
-    console.info("Adding row highlighting...")
+    console.info(`${version} Adding row highlighting...`)
     const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
     for (let i = 1; i < tableNode.rows.length; i++) {
         const tr = tableNode.rows[i]

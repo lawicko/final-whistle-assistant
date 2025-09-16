@@ -1,4 +1,4 @@
-import { optionsStorage, addCSS } from './utils.js';
+import { optionsStorage, addCSS, version } from './utils.js';
 
 async function applyCustomColorsForTags() {
     console.debug(`Applying custom colors for tags...`);
@@ -45,7 +45,7 @@ async function applyCustomColorsForTags() {
 applyCustomColorsForTags();
 
 export async function processTags() {
-    console.info(`Processing tags...`)
+    console.info(`${version} Processing tags...`)
 
     let tableNodes = document.querySelectorAll("table.table")
     for (let tableNode of tableNodes) {

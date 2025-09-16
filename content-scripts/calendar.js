@@ -1,7 +1,7 @@
-import { storage } from './utils.js';
+import { storage, version } from './utils.js';
 
 export async function processMatchIndicators() {
-    console.info(`Processing match indicators...`);
+    console.info(`${version} Processing match indicators...`);
 
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.tBodies[0] && tableNode.tBodies[0].rows.length > 1) {

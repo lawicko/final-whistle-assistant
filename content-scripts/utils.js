@@ -13,6 +13,8 @@ if (typeof browser == "undefined") {
 export const storage = browser.storage.local;
 export const optionsStorage = browser.storage.sync;
 
+export const version = browser.runtime.getManifest().version;
+
 export function isString(value) {
     return typeof value === "string" || value instanceof String
 }
