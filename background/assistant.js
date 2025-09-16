@@ -1,4 +1,4 @@
-import { optionsStorage } from '../content-scripts/utils.js';
+import { optionsStorage, version, storage, dateStorageFormat } from '../content-scripts/utils.js';
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
@@ -75,6 +75,29 @@ const defaultOptions = {
 
 async function handleInstalled(details) {
     console.log(`handleInstalled reason: ${details.reason}`);
+
+    console.info(`🔗 Making local data compatible with ${version}`)
+    const { "player-data": playerDataFromStorage = {} } = await storage.get("player-data")
+    for (const [playerID, player] of Object.entries(playerDataFromStorage)) {
+        const minutesDictionary = player["minutes-played"] || {}
+        if (Object.keys(minutesDictionary).length === 0) continue
+        console.debug("minutesDictionary:", minutesDictionary)
+
+        const entries = Object.entries(minutesDictionary)
+            .map(([key, value]) => {
+                const date = new Date(key)
+                if (isNaN(date)) return null; // skip invalid dates
+                const formatted = dateStorageFormat(date)
+                return [formatted, value];
+            })
+            .filter(Boolean); // remove nulls
+        const newMinutesDictionary = Object.fromEntries(entries)
+        console.debug("newMinutesDictionary", newMinutesDictionary)
+        player["minutes-played"] = newMinutesDictionary
+        playerDataFromStorage[playerID] = player
+    }
+    await storage.set({ "player-data": playerDataFromStorage })
+
     const { modules = {}, colors = {} } = await optionsStorage.get(["modules", "colors"]);
     for (const key in defaultOptions.modules) {
         if (!(key in modules)) {

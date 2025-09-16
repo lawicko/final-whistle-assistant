@@ -1,15 +1,14 @@
-import { storage, lastPathComponent } from './utils.js';
-
-let debuggerSymbol = "================"
+import { storage, lastPathComponent, version, mergeObjects, dateStorageFormat } from './utils.js';
 
 export async function processMatch() {
+    console.info(`⏳ ${version} Processing match ${lastPathComponent(window.location.pathname)}`)
     const dateElement = document.querySelector('div.col-md-2:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)')
     const homeTeamElement = document.querySelector('div.col-lg-6:nth-child(1) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
-    const guestTeamElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
-    if (dateElement && dateElement.textContent && homeTeamElement && homeTeamElement.textContent && guestTeamElement && guestTeamElement.textContent) {
-        console.info(debuggerSymbol,'Processing match from', dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', guestTeamElement.textContent.trim(),debuggerSymbol)
+    const awayTeamElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
+    if (dateElement && dateElement.textContent && homeTeamElement && homeTeamElement.textContent && awayTeamElement && awayTeamElement.textContent) {
+        console.info(`⚽ Processing match from`, dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', awayTeamElement.textContent.trim())
     } else {
-        console.info(debuggerSymbol,`Match processing finished, page not loaded yet`,debuggerSymbol);
+        console.info(`📄 Match processing finished, page not loaded yet (can't find match date or home and away teams)`);
         return
     }
 
@@ -17,197 +16,171 @@ export async function processMatch() {
     const competitionNameTextValue = competitionSymbol.parentNode.nextElementSibling.textContent
     const competitionName = competitionNameTextValue.replace(/^[A-Za-z]\s*/, "").trim();
     if (competitionName == "Friendly" || competitionName == "Quick match") {
-        console.info(debuggerSymbol,`Match processing finished, skipping the ${competitionName}`,debuggerSymbol);
+        console.info(`⏩ Match processing finished, skipping the ${competitionName}`);
         return
     }
 
-    const result = await storage.get('club')
-    if (!result) {
-        console.warn("Can't determine own club ID and name, please visit one of your players page first and then relaod this page.")
-        return
-    }
-    const clubData = result['club']
-    const clubID = clubData['id']
-    const clubName = clubData['name']
-
-    const allContainers = document.querySelectorAll('div.card-body.text-center')
-    console.debug('allContainers: ', allContainers)
-    const lineupContainers = Array.from(allContainers).filter(container => container.querySelector('h5 fw-flag a'))
-    console.debug('lineupContainers: ', lineupContainers)
-    const ownLineupContainer = Array.from(lineupContainers).filter(container => {
-        const link = container.querySelector('h5 > a')
-        const thisClubID = lastPathComponent(link.href)
-        const thisClubName = link.textContent.trim()
-        return thisClubID === clubID && thisClubName === clubName
-    })[0]
-    if (!ownLineupContainer) { // not our match, skip
-        console.info(debuggerSymbol`Match processing finished, not our own match`,debuggerSymbol);
-        return
-    }
-    console.debug('ownLineupContainer: ', ownLineupContainer)
     const { matches = {} } = await storage.get("matches");
+
+    const startingLineupContainers = document.querySelectorAll('div.lineup-section div.starting-lineup')
+    const startingSubstituesContainers = document.querySelectorAll('div.lineup-section div.substitutes')
+    const displaysStartingLineups = startingLineupContainers.length > 0
+    const finishingLineupContainers = document.querySelectorAll('div.lineup-section div.finishing-lineup')
+    const finishingSubstituesContainers = document.querySelectorAll('div.lineup-section div.substitutes')
+    const displaysFinishingLineups = finishingLineupContainers.length > 0
+
+    if (!displaysStartingLineups && !displaysFinishingLineups) {
+        console.info(`📄 Match processing finished, page not loaded yet (can't find lineups)`);
+    }
+
     const matchID = lastPathComponent(window.location.href)
-    const matchData = matches[matchID] ?? {};
+    const matchDataFromStorage = matches[matchID] ?? {};
 
-    const ownPlayers = ownLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
-    console.debug('ownPlayers: ', ownPlayers)
+    if (displaysStartingLineups) {
+        console.info(`🧍🧍🧍🧍 Processing starting lineups`);
+        const startingLineups = await processLineups(
+            startingLineupContainers,
+            startingSubstituesContainers
+        )
 
-    const lineupToggleButton = ownLineupContainer.querySelector("button.lineup-toggle")
-    const isStarting = lineupToggleButton.textContent.trim() === "Starting"
+        matchDataFromStorage["startingLineups"] = startingLineups
+        matches[matchID] = matchDataFromStorage
+        await storage.set({ matches: matches })
+        console.info(`🧍🧍🧍📥 Saved the starting lineups to storage`)
+    }
 
-    if (isStarting) {
-        const ownInitialLineup = {}
-        for (const player of ownPlayers) {
-            console.debug(debuggerSymbol, "processing own player:", player, debuggerSymbol)
-            const initialPosition = player.querySelector(".badge-position").textContent.trim()
-            const playerName = player.querySelector("fw-player-hover div.hovercard a span").textContent.trim()
-            const playerID = lastPathComponent(player.querySelector("fw-player-hover div.hovercard a").href)
-            console.debug("Found in own lineup:", initialPosition, playerName, `(${playerID})`);
-            ownInitialLineup[playerID] = { name: playerName, initialPosition: initialPosition }
+    if (displaysFinishingLineups) {
+        console.info(`⚽🧍🧍🧍 Processing finishing lineups`);
+        const finishingLineups = await processLineups(
+            finishingLineupContainers,
+            finishingSubstituesContainers,
+            true
+        )
+
+        matchDataFromStorage["finishingLineups"] = finishingLineups
+        matches[matchID] = matchDataFromStorage
+        await storage.set({ matches: matches })
+        console.info(`⚽🧍🧍📥 Saved the finishing lineups to storage`)
+
+        await saveInjuriesAndMinutesPlayedForLineups(finishingLineups, new Date(dateElement.textContent.trim()))
+    }
+
+    console.info(`✅ Match processing finished`)
+}
+
+async function processLineups(lineups, substitutes, isFinishingLineup = false) {
+    const lineupContainersArray = Array.from(lineups)
+    console.debug('lineupContainersArray: ', lineupContainersArray)
+
+    if (lineupContainersArray.length !== 2) {
+        console.warn(`⚠️ Expected lineupContainersArray length 2 but got ${lineupContainersArray.length} instead`, lineupContainersArray)
+        return
+    }
+
+    const homeLineupContainer = lineupContainersArray[0]
+    const homeSubstitutesContainer = substitutes[0]
+    const homeFirstEleven = homeLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+    const homeSubstitutes = homeSubstitutesContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+    const homePlayers = [...homeFirstEleven, ...homeSubstitutes]
+    console.debug('homePlayers: ', homePlayers)
+    const homeLineup = await processIntoLineup(homePlayers, isFinishingLineup)
+
+    const awayLineupContainer = lineupContainersArray[1]
+    const awaySubstitutesContainer = substitutes[1]
+    const awayFirstEleven = awayLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+    const awaySubstitutes = awaySubstitutesContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+    const awayPlayers = [...awayFirstEleven, ...awaySubstitutes]
+    console.debug('awayPlayers: ', awayPlayers)
+    const awayLineup = await processIntoLineup(awayPlayers, isFinishingLineup)
+
+    return { home: homeLineup, away: awayLineup }
+}
+
+async function processIntoLineup(players, isFinishingLineup) {
+    const lineup = {}
+    for (const player of players) {
+        console.debug("processing player:", player)
+        const position = player
+            .querySelector(".badge-position")
+            .textContent
+            .trim()
+        const playerName = player
+            .querySelector("fw-player-hover div.hovercard a span")
+            .textContent
+            .trim()
+        const playerID = lastPathComponent(player.querySelector("fw-player-hover div.hovercard a").href)
+        console.debug("Found in lineup:", position, playerName, `(${playerID})`);
+        lineup[playerID] = { name: playerName, position: position }
+
+        if (isFinishingLineup) {
+            // Injuries
+            const lightInjury = player.querySelector('i.bi-capsule')
+            if (lightInjury) {
+                lineup[playerID] = mergeObjects(lineup[playerID], { injury: "light" })
+            }
+            const severeInjury = player.querySelector('img[src="assets/images/injury.png"]')
+            if (severeInjury) {
+                lineup[playerID] = mergeObjects(lineup[playerID], { injury: "severe" })
+            }
+
+            // Minutes played
+            let minutesPlayed = '90'
+            const playerHoverElement = player.querySelector('fw-player-hover')
+            let minutesElement = playerHoverElement.nextElementSibling
+            if (minutesElement && (minutesElement.tagName.toLowerCase() === "div" || minutesElement.tagName.toLowerCase() === "sup")) {
+                minutesPlayed = minutesElement.textContent.trim().replace(/\D/g, "")
+            }
+
+            const playerNameSpan = player.querySelector('fw-player-hover div.hovercard a span')
+            const playerName = playerNameSpan.textContent.trim()
+
+            console.debug(playerName, '(', playerID, ') played', minutesPlayed, 'minutes.')
+            lineup[playerID] = mergeObjects(lineup[playerID], { minutes: minutesPlayed })
         }
-        
-        const initialLineups = matchData["initialLineups"] ?? {}
-        initialLineups["own"] = ownInitialLineup
-
-        matchData["initialLineups"] = initialLineups
-    } else {
-        const ownFinishingLineup = {}
-        for (const player of ownPlayers) {
-            console.debug(debuggerSymbol, "processing own player:", player, debuggerSymbol)
-            const finishingPosition = player.querySelector(".badge-position").textContent.trim()
-            const playerName = player.querySelector("fw-player-hover div.hovercard a span").textContent.trim()
-            const playerID = lastPathComponent(player.querySelector("fw-player-hover div.hovercard a").href)
-            console.debug("Found in own lineup:", finishingPosition, playerName, `(${playerID})`);
-            ownFinishingLineup[playerID] = { name: playerName, finishingPosition: finishingPosition }
-        }
-        
-        const finishingLineups = matchData["finishingLineups"] ?? {}
-        finishingLineups["own"] = ownFinishingLineup
-
-        matchData["finishingLineups"] = finishingLineups
     }
-    matches[matchID] = matchData
-    await storage.set({ matches: matches })
-
-    const playerDataFromStorage = await storage.get('player-data');
-    var loadedPlayerData = playerDataFromStorage['player-data'] || {};
-    console.debug('initial loadedPlayerData = ', loadedPlayerData)
-
-    const foundInjuries = await processInjuries(loadedPlayerData, ownPlayers, dateElement.textContent.trim())
-    console.debug('after processInjuries loadedPlayerData = ', loadedPlayerData)
-
-    const foundPlayingPlayers = await processMinutesPlayed(loadedPlayerData, ownPlayers, dateElement.textContent.trim())
-    console.debug('after processMinutes loadedPlayerData = ', loadedPlayerData)
-
-    // TODO: In the future save any data we can find, even the starting lineups and tactics
-    if (foundInjuries || foundPlayingPlayers) {
-        const key = 'player-data';
-        await storage.set({ [key]: loadedPlayerData })
-        console.info(debuggerSymbol,`Match processing finished, saved player data to storage`,debuggerSymbol);
-    } else {
-        console.info(debuggerSymbol,`Match processing finished, skipping the saving step as nothing interesting was found`,debuggerSymbol);
-    }
+    return lineup
 }
 
-async function processInjuries(loadedPlayerData, players, date) {
-    // Filter only those that contain an <i> with class 'bi-capsule' (light injury) or an <img> with src equal to assets/images/injury.png (serious injury)
-    const injuried = Array.from(players).filter(container =>
-        container.querySelector('i.bi-capsule') || container.querySelector('img[src="assets/images/injury.png"]')
-    );
+async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
+    console.info(`🤕⏱️ Processing injuries and minutes played`)
+    const { "player-data": playerDataFromStorage = {} } = await storage.get('player-data')
 
-    if (injuried.length == 0) {
-        console.debug('Did not find any injuried players.')
-        return false
-    }
-    console.info('Found these injuried players: ', injuried)
-    var playerIDs = []
-    for (const playerElement of injuried) {
-        const link = playerElement.querySelector('fw-player-hover div.hovercard a');
-        const href = link.href
-        const playerID = lastPathComponent(href)
-        playerIDs.push(playerID)
-    }
+    const allPlayers = mergeObjects(lineups.home, lineups.away)
+    for (const [playerID, player] of Object.entries(allPlayers)) {
+        console.debug("player (", playerID, "):", player)
+        let playerFromStorage = playerDataFromStorage[playerID] || {}
+        let minutesDictionary = playerFromStorage["minutes-played"] || {}
 
-    console.debug('before saveInjuriesToLoadedObject: ', loadedPlayerData)
-    await saveInjuriesToLoadedObject(loadedPlayerData, playerIDs, date)
-    return true
-}
+        const newEntry = { [dateStorageFormat(date)]: player.minutes }
+        minutesDictionary = mergeObjects(minutesDictionary, newEntry)
 
-async function saveInjuriesToLoadedObject(loadedPlayerData, playerIDs, date) {
-    console.debug('saveInjuriesToLoadedObject for playerIDs: ', playerIDs, ' date: ', date)
-    console.debug('inside saveInjuriesToLoadedObject: ', loadedPlayerData)
+        // DEBUGGING: Sort by converting keys into Date objects
+        // const sortedEntries = Object.entries(minutesDictionary).sort(
+        //     ([a], [b]) => new Date(a) - new Date(b)
+        // );
+        // console.info(`sortedEntries for ${player.name}:`, sortedEntries)
 
-    for (const playerID of playerIDs) {
-        var currentPlayerData = loadedPlayerData[playerID] || {};
-        console.debug('currentPlayerData for playerID: ', playerID, ' is: ', currentPlayerData)
-        var injuries = currentPlayerData['injuries'] || [];
+        playerFromStorage["minutes-played"] = minutesDictionary
 
-        // can't just push, because the match reports can be viewed in random order
-        injuries.push(date)
-        const dates = injuries.map(s => new Date(s));
-        dates.sort((a, b) => b - a);
-        const storageReady = dates.map(d =>
-            d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
-        );
+        if (player.injury) {
+            let injuriesArray = playerFromStorage["injuries"] || []
 
-        // removing unexpected things like nulls and repeated values, only makes sense for development but doesn't hurt to leave it there for now
-        const cleaned = [...new Set(storageReady.filter(x => x !== null))];
-        console.debug('cleaned for playerID: ', playerID, 'is: ', cleaned)
+            // can't just push, because the match reports can be viewed in random order
+            injuriesArray.push(date)
+            const dates = injuriesArray.map(dateAsString => new Date(dateAsString));
+            dates.sort((a, b) => b - a);
+            const storageReady = dates.map(d => dateStorageFormat(d));
 
-        currentPlayerData['injuries'] = cleaned
-        loadedPlayerData[playerID] = currentPlayerData
-    }
-}
+            // removing unexpected things like nulls and repeated values, only makes sense for development but doesn't hurt to leave it there for now
+            const cleaned = [...new Set(storageReady.filter(x => x !== null))];
+            console.debug('cleaned for playerID: ', playerID, 'is: ', cleaned)
 
-async function processMinutesPlayed(loadedPlayerData, players, date) {
-    // Filter only those who played, use rating element for that
-    const playing = Array.from(players).filter(container => container.querySelector('div.rating-badge'))
-
-    if (playing.length == 0) {
-        console.debug('Did not find any playing players, maybe the starting lineups are displayed?')
-        return false
-    }
-    console.debug('Found these playing players: ', playing)
-
-    var minutesPlayedDictionary = {}
-    for (const playerElement of playing) {
-        var minutesPlayed = '90'
-
-        const playerHoverElement = playerElement.querySelector('fw-player-hover')
-        let minutesElement = playerHoverElement.nextElementSibling
-        if (minutesElement && (minutesElement.tagName.toLowerCase() === "div" || minutesElement.tagName.toLowerCase() === "sup")) {
-            minutesPlayed = minutesElement.textContent.trim().replace(/\D/g, "")
+            playerFromStorage['injuries'] = cleaned
         }
 
-        const playerNameSpan = playerElement.querySelector('fw-player-hover div.hovercard a span')
-        const playerName = playerNameSpan.textContent.trim()
-        const link = playerElement.querySelector('fw-player-hover div.hovercard a');
-        const href = link.href
-        const playerID = lastPathComponent(href)
-
-        console.debug(playerName, '(', playerID, ') played', minutesPlayed, 'minutes.')
-        minutesPlayedDictionary[playerID] = { [date]: minutesPlayed }
+        playerDataFromStorage[playerID] = playerFromStorage
     }
 
-    await saveMinutesPlayedToLoadedObject(loadedPlayerData, minutesPlayedDictionary)
-    return true
-}
-
-async function saveMinutesPlayedToLoadedObject(loadedPlayerData, minutesPlayed) {
-    console.debug('saving minutesPlayed: ', minutesPlayed)
-
-    for (const [key, value] of Object.entries(minutesPlayed)) {
-        var currentPlayerData = loadedPlayerData[key] || {};
-        console.debug('currentPlayerData for ', key, ' = ', currentPlayerData)
-
-        var loadedMinutesPlayed = currentPlayerData['minutes-played'] || {};
-        console.debug('loadedMinutesPlayed = ', loadedMinutesPlayed)
-        const [minutesPlayedKey, minutesPlayedValue] = Object.entries(value)[0];
-        console.debug('minutesPlayedKey: ', minutesPlayedKey, 'minutesPlayedValue: ', minutesPlayedValue)
-        loadedMinutesPlayed[minutesPlayedKey] = minutesPlayedValue
-        console.debug('updated loadedMinutesPlayed = ', loadedMinutesPlayed)
-
-        currentPlayerData['minutes-played'] = loadedMinutesPlayed
-        loadedPlayerData[key] = currentPlayerData
-    }
+    await storage.set({ "player-data": playerDataFromStorage })
+    console.info(`📥 Saved injuries and minutes played to storage`)
 }

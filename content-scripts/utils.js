@@ -29,6 +29,19 @@ export function lastPathComponent(path, removeExtension = false) {
     return last;
 }
 
+export function dateStorageFormat(date) {
+    if (!(date instanceof Date)) {
+        throw new Error(`dateStorageFormat called with non-Date argument ${typeof date}: ${date}`);
+    }
+    return date.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    })
+}
+
 /**
  * Merges two objects into one.
  * 
