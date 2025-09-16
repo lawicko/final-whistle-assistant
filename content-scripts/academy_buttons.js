@@ -1,7 +1,7 @@
-import { addCSS } from "./utils";
+import { addCSS, version } from "./utils";
 
 export function processAcademyButtons() {
-    console.info(`Processing academy buttons...`);
+    console.info(`${version} Processing academy buttons...`);
 
     addCSS(
         `div > button.btn-danger {

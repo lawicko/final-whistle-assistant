@@ -1,9 +1,9 @@
+import { optionsStorage } from '../content-scripts/utils.js';
+
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
 }
-
-const optionsStorage = browser.storage.sync
 
 const lastURLMap = new Map()
 

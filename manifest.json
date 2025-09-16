@@ -20,9 +20,9 @@
     ],
     "background": {
         "scripts": [
-            "assistant.js"
+            "dist/background-scripts.bundle.js"
         ],
-        "service_worker": "assistant.js",
+        "service_worker": "dist/background-scripts.bundle.js",
         "type": "module"
     },
     "host_permissions": [
