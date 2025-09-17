@@ -19,6 +19,17 @@ export function isString(value) {
     return typeof value === "string" || value instanceof String
 }
 
+export async function getStoredString(key, defaultValue = undefined) {
+    const result = await storage.get(key);
+    const value = result[key];
+
+    // Return the value if it's a string, otherwise fallback
+    if (typeof value === "string" && value.length > 0) {
+        return value;
+    }
+    return defaultValue;
+}
+
 export function lastPathComponent(path, removeExtension = false) {
     const parts = path.split("/").filter(Boolean);
     let last = parts.pop() || "";

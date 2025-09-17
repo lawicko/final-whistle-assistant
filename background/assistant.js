@@ -1,4 +1,4 @@
-import { optionsStorage, version, storage, dateStorageFormat } from '../content-scripts/utils.js';
+import { optionsStorage, version, storage, dateStorageFormat, getStoredString } from '../content-scripts/utils.js';
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
@@ -73,10 +73,29 @@ const defaultOptions = {
     }
 }
 
-async function handleInstalled(details) {
-    console.log(`handleInstalled reason: ${details.reason}`);
+/**
+ * 
+ * @param {string} v1 
+ * @param {string} v2 
+ * @returns returns 1 if v1 is newer, 0 if they are equal, and -1 if v2 is newer
+ */
+function compareVersions(v1, v2) {
+    const a = v1.split(".").map(Number);
+    const b = v2.split(".").map(Number);
 
-    console.info(`🔗 Making local data compatible with ${version}`)
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+        const num1 = a[i] || 0;
+        const num2 = b[i] || 0;
+
+        if (num1 > num2) return 1;   // v1 is newer
+        if (num1 < num2) return -1;  // v2 is newer
+    }
+
+    return 0; // equal
+}
+
+async function handleMigrationAndBumpLocalDataVersion() {
+    console.info(`🔗 Migrating: Making local data compatible with ${version}`)
     const { "player-data": playerDataFromStorage = {} } = await storage.get("player-data")
     for (const [playerID, player] of Object.entries(playerDataFromStorage)) {
         const minutesDictionary = player["minutes-played"] || {}
@@ -96,7 +115,20 @@ async function handleInstalled(details) {
         player["minutes-played"] = newMinutesDictionary
         playerDataFromStorage[playerID] = player
     }
-    await storage.set({ "player-data": playerDataFromStorage })
+    await storage.set({ "player-data": playerDataFromStorage, version: version })
+}
+
+async function handleInstalled(details) {
+    console.log(`handleInstalled reason: ${details.reason}`);
+
+    // Check the local storage version
+    const localStorageVersion = await getStoredString("version")
+    console.info("localStorageVersion", localStorageVersion)
+    if (localStorageVersion && compareVersions(version, localStorageVersion) <= 0) {
+        console.info(`💾 Local storage on version ${localStorageVersion}, this extension version ${version} skipping migration`)
+    } else {
+        await handleMigrationAndBumpLocalDataVersion()
+    }
 
     const { modules = {}, colors = {} } = await optionsStorage.get(["modules", "colors"]);
     for (const key in defaultOptions.modules) {
