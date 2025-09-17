@@ -1,5 +1,5 @@
-import { toggleClass } from "./ui_utils";
-import { alwaysPresentNode, storage, pluginNodeClass, version } from "./utils.js";
+import { toggleClass, alwaysPresentNode } from "./ui_utils";
+import { storage, pluginNodeClass, version } from "./utils.js";
 
 // Helpers
 function getPlayerIDFromRow(tr) {

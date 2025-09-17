@@ -1,9 +1,6 @@
 // The class for the new nodes inserted by the plugin, so that they can be easily found and managed later
 export const pluginNodeClass = "FinalWhistlePlugin"
 
-// The node that will be observed for mutations
-export const alwaysPresentNode = document.querySelector("div.wrapper");
-
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;

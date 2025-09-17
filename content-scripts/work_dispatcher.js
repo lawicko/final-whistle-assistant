@@ -1,7 +1,8 @@
-import { alwaysPresentNode, debounceAsync, FeatureFlagsKeys, isFeatureEnabled } from './utils.js';
+import { debounceAsync, FeatureFlagsKeys, isFeatureEnabled } from './utils.js';
+import { alwaysPresentNode } from './ui_utils.js'
 import { processTags } from './tags.js';
 import { processAcademyButtons } from './academy_buttons.js';
-import { processMatchIndicators } from './calendar.js';
+import { processFixturesPage } from './calendar.js';
 import { processMatch } from './match.js';
 import { processPlayersPage } from './players.js';
 import { processLineupPage } from './lineup.js';

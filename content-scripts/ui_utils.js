@@ -1,5 +1,8 @@
 import { addCSS, optionsStorage } from "./utils"
 
+// The node that will be observed for mutations
+export const alwaysPresentNode = document.querySelector("div.wrapper");
+
 export const PositionsKeys = {
     CB: "CB",
     CM: "CM",
