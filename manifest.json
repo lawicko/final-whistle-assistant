@@ -12,7 +12,9 @@
             "matches": [
                 "*://*.finalwhistle.org/*"
             ],
-            "js": ["dist/content-scripts.bundle.js"],
+            "js": [
+                "dist/content-scripts.bundle.js"
+            ],
             "css": [
                 "content-scripts/styles.css"
             ]
