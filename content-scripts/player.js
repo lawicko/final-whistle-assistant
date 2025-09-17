@@ -639,7 +639,7 @@ async function savePlayerDataToStorage(playerData) {
     playersDictFromStorage[playerData.playerID] = newPlayerRepresentation
     await storage.set({ "player-data": playersDictFromStorage })
 
-    console.debug(`Done`);
+    console.info(`📥 Saved player data to storage (${playerData.playerID} ${playerData.name})`)
 }
 
 function getBidButton() {
@@ -741,7 +741,9 @@ function getPlayerPosition() {
 function getPlayerName() {
     const headerElement = document.querySelector("div.card-header > div.row div.fw-header")
     if (!headerElement) return
-    return headerElement.textContent.trim()
+    let playerName = headerElement.textContent.trim()
+    playerName = playerName.replace(/\s+/g, " ") // removes repeated spaces
+    return playerName
 }
 
 const positionEmoji = {

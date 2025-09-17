@@ -21,6 +21,38 @@ export async function processMatch() {
     }
 
     const { matches = {} } = await storage.get("matches");
+    const matchID = lastPathComponent(window.location.href)
+    const matchDataFromStorage = matches[matchID] ?? {};
+
+    const teamMentalityContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-lightning-charge-fill")
+    const styleOfPlayContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-diagram-3-fill")
+    const markingContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-shield-fill)")
+    const defenceFocusContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-bullseye)")
+    const preferredSideContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-arrow-left-right)")
+    if (
+        !teamMentalityContainer ||
+        !styleOfPlayContainer ||
+        !markingContainer ||
+        !defenceFocusContainer ||
+        !preferredSideContainer
+    ) {
+        console.info(`📄 Match processing finished, page not loaded yet (can't find tactics)`);
+        return
+    } else {
+        console.info(`📋 Processing tactics`)
+        const tacticsData = await processTactics([
+            teamMentalityContainer,
+            styleOfPlayContainer,
+            markingContainer,
+            defenceFocusContainer,
+            preferredSideContainer
+        ])
+        console.debug("tacticsData", tacticsData)
+        matchDataFromStorage["tactics"] = tacticsData
+        matches[matchID] = matchDataFromStorage
+        await storage.set({ matches: matches })
+        console.info(`📋📥 Saved tactics to storage`)
+    }
 
     const startingLineupContainers = document.querySelectorAll('div.lineup-section div.starting-lineup')
     const startingSubstituesContainers = document.querySelectorAll('div.lineup-section div.substitutes')
@@ -31,10 +63,8 @@ export async function processMatch() {
 
     if (!displaysStartingLineups && !displaysFinishingLineups) {
         console.info(`📄 Match processing finished, page not loaded yet (can't find lineups)`);
+        return
     }
-
-    const matchID = lastPathComponent(window.location.href)
-    const matchDataFromStorage = matches[matchID] ?? {};
 
     if (displaysStartingLineups) {
         console.info(`🧍🧍🧍🧍 Processing starting lineups`);
@@ -66,6 +96,38 @@ export async function processMatch() {
     }
 
     console.info(`✅ Match processing finished`)
+}
+
+function formatTacticsLabel(label) {
+    return label.trim().toLowerCase().replace(/\s+/g, "_")
+}
+
+async function processTactics(tacticsContainers) {
+    let tacticsData = {}
+    let tacticsHome = {}
+    let tacticsAway = {}
+
+    try {
+        for (const container of tacticsContainers) {
+            let label = container.querySelector("div.tactics-label > span")
+            label = formatTacticsLabel(label.textContent)
+
+            let homeValue = container.querySelector("div.text-end")
+            homeValue = formatTacticsLabel(homeValue.textContent)
+
+            let awayValue = container.querySelector("div.text-start")
+            awayValue = formatTacticsLabel(awayValue.textContent)
+
+            tacticsHome[label] = homeValue
+            tacticsAway[label] = awayValue
+        }
+        tacticsData["home"] = tacticsHome
+        tacticsData["away"] = tacticsAway
+    } catch (e) {
+        console.error(e.message)
+    }
+
+    return tacticsData
 }
 
 async function processLineups(lineups, substitutes, isFinishingLineup = false) {
