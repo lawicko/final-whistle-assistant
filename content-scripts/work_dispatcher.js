@@ -133,7 +133,7 @@ const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
 const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
     async () => {
         if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
-            await processMatchIndicators();
+            await processFixturesPage();
         }
     }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
