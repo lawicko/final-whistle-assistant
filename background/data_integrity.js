@@ -50,8 +50,8 @@ export async function checkDataIntegrity() {
         console.debug("Players in local storage that are not in any of the matches (visited organically):", missing)
         console.info("✅🔍 Passed check for players in matches that are not in the local storage, you have more players in local storage than in the matches, but this is perfectly fine if you visit player pages organically")
     } else if (playersLength > playersDataFromStorageLength) {
-        const missing = Object.keys(playersDataFromStorage).filter(key => !(key in playersFromMatches));
-        presentInBoth = Object.keys(playersDataFromStorage).filter(key => (key in playersFromMatches));
+        const missing = Object.keys(playersFromMatches).filter(key => !(key in playersDataFromStorage));
+        presentInBoth = Object.keys(playersFromMatches).filter(key => (key in playersDataFromStorage));
         console.info("Players from matches that are not in local storage:", missing)
         console.warn(`⚠️🔍 This doesn't make sense, match module always saves all players, data integrity error!`)
     } else {
