@@ -24,6 +24,13 @@ export async function processMatch() {
     const matchID = lastPathComponent(window.location.href)
     const matchDataFromStorage = matches[matchID] ?? {};
 
+    // Save the match date
+    const matchDate = dateElement.textContent.trim()
+    matchDataFromStorage['date'] = matchDate
+    matches[matchID] = matchDataFromStorage
+    await storage.set({ matches: matches })
+    console.info(`📅📥 Saved match date to storage`)
+
     const teamMentalityContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-lightning-charge-fill")
     const styleOfPlayContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-diagram-3-fill")
     const markingContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-shield-fill)")
@@ -92,7 +99,7 @@ export async function processMatch() {
         await storage.set({ matches: matches })
         console.info(`⚽🧍🧍📥 Saved the finishing lineups to storage`)
 
-        await saveInjuriesAndMinutesPlayedForLineups(finishingLineups, new Date(dateElement.textContent.trim()))
+        await saveInjuriesAndMinutesPlayedForLineups(finishingLineups, new Date(matchDate))
     }
 
     console.info(`✅ Match processing finished`)
