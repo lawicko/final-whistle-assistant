@@ -32,8 +32,10 @@ export default [
             resolve(),
             commonjs(),
             copy({
-                targets: copyCommonFiles
-            })
+                targets: copyCommonFiles,
+                hook: 'writeBundle'
+            },
+        )
         ]
     },
 
@@ -50,7 +52,8 @@ export default [
             resolve(),
             commonjs(),
             copy({
-                targets: copyCommonFiles
+                targets: copyCommonFiles,
+                hook: 'writeBundle'
             })
         ]
     },
