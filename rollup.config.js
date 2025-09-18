@@ -5,18 +5,18 @@ import copy from 'rollup-plugin-copy';
 import fs from 'fs';
 import path from 'path';
 
-const targets = ['chromium', 'firefox'];
-const configs = targets.flatMap((target) => 
+const targets = ['chromium', 'firefox', 'firefox_dev'];
+const configs = targets.flatMap((target) =>
     createManifestForTarget(target)
 )
 const copyCommonFiles = targets.flatMap((target) => [
     { src: 'icons/*', dest: `dist/${target}/icons` },
     { src: 'options/*', dest: `dist/${target}/options` },
     { src: 'content-scripts/styles.css', dest: `dist/${target}` },
-    { src: 'dist/background-scripts.bundle.js', dest: `dist/${target}`},
-    { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}`},
-    { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}`},
-    { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}`}
+    { src: 'dist/background-scripts.bundle.js', dest: `dist/${target}` },
+    { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}` },
+    { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
+    { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` }
 ])
 
 export default [
@@ -25,7 +25,7 @@ export default [
         input: "background/background.js",
         output: {
             file: "dist/background-scripts.bundle.js",
-            format: "esm",       // ES module for MV3 service_worker
+            format: "esm", // ES module for MV3 service_worker
             sourcemap: true
         },
         plugins: [
@@ -42,7 +42,7 @@ export default [
         input: "content-scripts/main.js",
         output: {
             file: "dist/content-scripts.bundle.js",
-            format: "iife",      // classic script
+            format: "iife", // classic script
             name: "ContentScriptBundle", // required for IIFE
             sourcemap: true
         },
@@ -88,7 +88,7 @@ function createManifestForTarget(target) {
                     const raw = fs.readFileSync('src/manifest.template.json', 'utf8');
 
                     let replacement
-                    if (target === "firefox") {
+                    if (target.includes("firefox")) {
                         replacement = `{
                             "scripts": ["../background-scripts.bundle.js"],
                             "type": "module"
@@ -99,12 +99,26 @@ function createManifestForTarget(target) {
 
                     const replaced = raw.replace(/__BACKGROUND_CONTENT__/g, replacement);
                     // console.log(`🔧 replaced: ${replaced}`);
-                    const template = JSON.parse(replaced);
+                    const manifest = JSON.parse(replaced);
+                    if (target === 'firefox_dev') {
+                        manifest.browser_specific_settings = {
+                            gecko: {
+                                id: 'lawicko@gmail.com'
+                            }
+                        };
+                    }
+                    if (target === 'firefox') {
+                        manifest.browser_specific_settings = {
+                            gecko: {
+                                id: '{ced6d24e-3379-4594-be2f-af52229c80f2}'
+                            }
+                        };
+                    }
 
                     fs.mkdirSync(`dist/${target}`, { recursive: true });
                     fs.writeFileSync(
                         path.join(`dist/${target}`, 'manifest.json'),
-                        JSON.stringify(template, null, 2)
+                        JSON.stringify(manifest, null, 2)
                     );
                 }
             }

@@ -21,11 +21,6 @@
         }
     ],
     "background": __BACKGROUND_CONTENT__,
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "lawicko@gmail.com"
-        }
-    },
     "host_permissions": [
         "*://*.finalwhistle.org/*"
     ],
