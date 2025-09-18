@@ -1,31 +1,15 @@
-import { optionsStorage, version, storage, dateStorageFormat, getStoredString } from '../content-scripts/utils.js';
+import {
+    dateStorageFormat,
+    getStoredString,
+    optionsStorage,
+    storage,
+    version
+} from '../content-scripts/utils.js';
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
 }
-
-const lastURLMap = new Map()
-
-function handleUpdated(tabId, changeInfo, tabInfo) {
-    console.debug(`handleUpdated called`)
-    console.debug(`tabId: ${tabId}`)
-    console.debug(`changeInfo: ${JSON.stringify(changeInfo)}`)
-    console.debug(`tabInfo: ${JSON.stringify(tabInfo)}`)
-    // On Firefox the new url comes in the changeInfo, on Chrome-based browsers the only way is to get it from the tabInfo
-    let url = changeInfo.url || tabInfo.url
-    if (changeInfo.status === "complete" && url) {
-        console.debug("Changed attributes: ", changeInfo)
-        handleURLChanged(tabId, url)
-    }
-}
-
-async function handleURLChanged(tabId, url) {
-    browser.tabs.sendMessage(tabId, { url: url })
-    lastURLMap.set(tabId, url)
-}
-
-browser.tabs.onUpdated.addListener(handleUpdated);
 
 const defaultOptions = {
     modules: {
@@ -94,8 +78,7 @@ function compareVersions(v1, v2) {
     return 0; // equal
 }
 
-async function handleMigrationAndBumpLocalDataVersion() {
-    console.info(`🔗 Migrating: Making local data compatible with ${version}`)
+async function migrateLocalStorageFromBefore3_1_0() {
     const { "player-data": playerDataFromStorage = {} } = await storage.get("player-data")
     for (const [playerID, player] of Object.entries(playerDataFromStorage)) {
         const minutesDictionary = player["minutes-played"] || {}
@@ -115,19 +98,125 @@ async function handleMigrationAndBumpLocalDataVersion() {
         player["minutes-played"] = newMinutesDictionary
         playerDataFromStorage[playerID] = player
     }
-    await storage.set({ "player-data": playerDataFromStorage, version: version })
+    await storage.set({ "player-data": playerDataFromStorage })
 }
 
+async function handleMigrationAndBumpLocalDataVersion(localStorageVersion) {
+    console.info(`🔗 Migrating: Making local data compatible with ${version}`)
+
+    if (!localStorageVersion) {
+        await migrateLocalStorageFromBefore3_1_0()
+    } else {
+        // if (compareVersions(version, localStorageVersion) > 0) {
+
+        // }
+    }
+
+    await storage.set({ version: version })
+}
+
+// Context menus
+browser.contextMenus.removeAll()
+
+// menus
+const parentMenuID = "parentMenu"
+const colorPlayerRowMenuID = "colorPlayerRowMenuID"
+const clearAllRowsOnThisPageMenuID = "clearAllRowsOnThisPageMenuID"
+const clearAllRowsOnThisPageMenuAction = "clearAllRowsOnThisPageMenuAction"
+const clearAllRowHighlightsMenuID = "clearAllRowHighlightsMenuID"
+const clearAllRowHighlightsMenuAction = "clearAllRowHighlightsMenuAction"
+
+const playerRowColorRaw = {
+    "playerRowColorFW": "playerRowColorFWAction",
+    "playerRowColorLW": "playerRowColorLWAction",
+    "playerRowColorLM": "playerRowColorLMAction",
+    "playerRowColorRW": "playerRowColorRWAction",
+    "playerRowColorRM": "playerRowColorRMAction",
+    "playerRowColorOM": "playerRowColorOMAction",
+    "playerRowColorCM": "playerRowColorCMAction",
+    "playerRowColorDM": "playerRowColorDMAction",
+    "playerRowColorLWB": "playerRowColorLWBAction",
+    "playerRowColorLB": "playerRowColorLBAction",
+    "playerRowColorRWB": "playerRowColorRWBAction",
+    "playerRowColorRB": "playerRowColorRBAction",
+    "playerRowColorCB": "playerRowColorCBAction",
+    "clearRowColors": "playerRowColorClearAction"
+}
+
+// Handle clicks on the menu
+browser.contextMenus.onClicked.addListener((info, tab) => {
+    switch (info.menuItemId) {
+        case clearAllRowsOnThisPageMenuID:
+            console.info("contexMenus.onClicked clearAllRowsOnThisPageMenuID")
+            browser.tabs.sendMessage(tab.id, { action: clearAllRowsOnThisPageMenuAction })
+            break
+        case clearAllRowHighlightsMenuID:
+            console.info("contextMenus.onClicked clearAllRowHighlightsMenuID")
+            browser.tabs.sendMessage(tab.id, { action: clearAllRowHighlightsMenuAction })
+            break
+        default:
+            console.info(`contextMenus.onClicked ${info.menuItemId}`)
+            browser.tabs.sendMessage(tab.id, { action: playerRowColorRaw[info.menuItemId] })
+    }
+})
+
+// Receive messages from content script
+browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    console.debug("received message: ", msg)
+    if (msg.type === "contextMenuConfig") {
+        browser.contextMenus.update("colorPlayerRowMenuID", { enabled: msg.enabled })
+    }
+})
+
+// WebNavigation
+const filter = { url: [{ hostContains: "finalwhistle.org" }] };
+
+function handleNav(tabId, url) {
+    console.info(`🧭 Navigation in tab ${tabId}: ${url}`);
+    browser.tabs.sendMessage(tabId, { url: url })
+}
+
+// Fired when a document, including the resources it refers to, is completely loaded and initialized.
+browser.webNavigation.onCompleted.addListener(details => {
+    console.debug(`🧭 onCompleted`);
+    handleNav(details.tabId, details.url);
+}, filter);
+
+// SPA history updates (pushState / replaceState)
+browser.webNavigation.onHistoryStateUpdated.addListener(details => {
+    console.debug(`🧭 onHistoryStateUpdated`);
+    handleNav(details.tabId, details.url);
+}, filter)
+
+// Optional: catch hash-only changes
+browser.webNavigation.onReferenceFragmentUpdated.addListener(details => {
+    console.debug(`🧭 onReferenceFragmentUpdated`);
+    handleNav(details.tabId, details.url);
+}, filter)
+
+
+// Service worker lifecycle
+function handleStartup() {
+    console.info("▶️ Starting up service worker")
+}
+
+browser.runtime.onStartup.addListener(handleStartup);
+
+function handleSuspend() {
+    console.info("⏸️ Suspending service worker")
+}
+
+browser.runtime.onSuspend.addListener(handleSuspend);
+
 async function handleInstalled(details) {
-    console.log(`handleInstalled reason: ${details.reason}`);
+    console.info(`📦 Installed (${details.reason})`);
 
     // Check the local storage version
     const localStorageVersion = await getStoredString("version")
-    console.info("localStorageVersion", localStorageVersion)
     if (localStorageVersion && compareVersions(version, localStorageVersion) <= 0) {
         console.info(`💾 Local storage on version ${localStorageVersion}, this extension version ${version} skipping migration`)
     } else {
-        await handleMigrationAndBumpLocalDataVersion()
+        await handleMigrationAndBumpLocalDataVersion(localStorageVersion)
     }
 
     const { modules = {}, colors = {} } = await optionsStorage.get(["modules", "colors"]);
@@ -137,10 +226,6 @@ async function handleInstalled(details) {
             modules[key] = defaultOptions.modules[key];
         }
     }
-    console.info("Saving modules", modules)
-    optionsStorage.set({ modules: modules }, () => {
-        console.info("Modules saved", { modules });
-    });
 
     for (const key in defaultOptions.colors) {
         if (!(key in colors)) {
@@ -148,34 +233,10 @@ async function handleInstalled(details) {
             colors[key] = defaultOptions.colors[key];
         }
     }
-    optionsStorage.set({ colors: colors }, () => {
-        console.info("Colors saved", { colors });
-    });
 
-    browser.contextMenus.removeAll()
-
-    // context menus
-    const parentMenuID = "parentMenu"
-    const colorPlayerRowMenuID = "colorPlayerRowMenuID"
-    const clearAllRowHighlightsMenuID = "clearAllRowHighlightsMenuID"
-    const clearAllRowHighlightsMenuAction = "clearAllRowHighlightsMenuAction"
-
-    const playerRowColorRaw = {
-        "playerRowColorFW": "playerRowColorFWAction",
-        "playerRowColorLW": "playerRowColorLWAction",
-        "playerRowColorLM": "playerRowColorLMAction",
-        "playerRowColorRW": "playerRowColorRWAction",
-        "playerRowColorRM": "playerRowColorRMAction",
-        "playerRowColorOM": "playerRowColorOMAction",
-        "playerRowColorCM": "playerRowColorCMAction",
-        "playerRowColorDM": "playerRowColorDMAction",
-        "playerRowColorLWB": "playerRowColorLWBAction",
-        "playerRowColorLB": "playerRowColorLBAction",
-        "playerRowColorRWB": "playerRowColorRWBAction",
-        "playerRowColorRB": "playerRowColorRBAction",
-        "playerRowColorCB": "playerRowColorCBAction",
-        "clearRowColors": "playerRowColorClearAction"
-    }
+    console.info("☁️ Saving sync storage")
+    await optionsStorage.set({ modules: modules, colors: colors })
+    console.info("📥 Saved");
 
     browser.contextMenus.create({
         id: parentMenuID,
@@ -190,6 +251,14 @@ async function handleInstalled(details) {
         title: "Color player row",
         contexts: ["all"],
         enabled: false
+    });
+
+    browser.contextMenus.create({
+        id: clearAllRowsOnThisPageMenuID,
+        parentId: parentMenuID,
+        title: "Clear All Rows On This Page",
+        contexts: ["all"],
+        enabled: true
     });
 
     browser.contextMenus.create({
@@ -209,7 +278,7 @@ async function handleInstalled(details) {
             var formattedTitle = key.replace(/(?!^)([A-Z])/g, " $1");
             formattedTitle = formattedTitle.charAt(0).toUpperCase() + formattedTitle.slice(1);
         }
-        console.info("Adding menu item: ", key)
+        console.debug("Adding menu item: ", key)
         browser.contextMenus.create({
             id: key,
             parentId: colorPlayerRowMenuID,
@@ -217,25 +286,7 @@ async function handleInstalled(details) {
             contexts: ["all"]
         });
     }
-
-    // Handle clicks on the menu
-    browser.contextMenus.onClicked.addListener((info, tab) => {
-        if (info.menuItemId === clearAllRowHighlightsMenuID) {
-            console.info("contextMenus.onClicked clearAllRowHighlightsMenuID")
-            browser.tabs.sendMessage(tab.id, { action: clearAllRowHighlightsMenuAction });
-        } else {
-            browser.tabs.sendMessage(tab.id, { action: playerRowColorRaw[info.menuItemId] });
-        }
-    });
-
-    // Receive messages from content script
-    browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        console.debug("received message: ", msg)
-        if (msg.type === "contextMenuConfig") {
-            browser.contextMenus.update("colorPlayerRowMenuID", { enabled: msg.enabled });
-        }
-    });
+    console.info("☰ Added menu items")
 }
-browser.runtime.onInstalled.addListener(handleInstalled);
 
-console.debug(`assistant.js loaded`)
+browser.runtime.onInstalled.addListener(handleInstalled);

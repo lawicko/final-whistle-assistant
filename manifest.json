@@ -36,7 +36,8 @@
         "contextMenus",
         "scripting",
         "storage",
-        "tabs"
+        "tabs",
+        "webNavigation"
     ],
     "options_ui": {
         "page": "options/options.html"

@@ -88,6 +88,7 @@ const onMessageListener = async (message) => {
             const playerID = getPlayerIDFromRow(tr)
             if (!playerID) {
                 console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
+                return
             }
             clearRowHighlight(playerID)
             if (position !== "Clear") {
@@ -99,10 +100,21 @@ const onMessageListener = async (message) => {
         return
     }
 
+    // clearing the rows on the page
+    if (message.action === "clearAllRowsOnThisPageMenuAction") {
+        console.debug("row_highlight: clear all rows on the page")
+        await clearAllRowsOnThisPage()
+        let tableNode = document.querySelector("table.table")
+        if (tableNode != undefined && tableNode.rows.length > 1) {
+            processTableRows(tableNode)
+        }
+        return
+    }
+
     // clearing all rows
     if (message.action === "clearAllRowHighlightsMenuAction") {
         console.debug("row_highlight: clearing all rows")
-        clearAllRowHighlights()
+        await clearAllRowHighlights()
         let tableNode = document.querySelector("table.table")
         if (tableNode != undefined && tableNode.rows.length > 1) {
             processTableRows(tableNode)
@@ -131,6 +143,7 @@ async function processTableRows(tableNode, config = {
             const playerID = getPlayerIDFromRow(tr)
             if (!playerID) {
                 console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
+                continue
             }
             const classForPlayerID = rowHighlightData[playerID]
             if (classForPlayerID) {
@@ -176,7 +189,25 @@ async function storeRowHighlightClass(rowHighlightClass, playerID) {
 async function clearRowHighlight(playerID) {
     const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
     delete rowHighlightData[playerID]
-    await storage.set({ "row-highlight-data": rowHighlightData });
+    await storage.set({ "row-highlight-data": rowHighlightData })
+}
+
+async function clearAllRowsOnThisPage() {
+    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    let tableNode = document.querySelector("table.table")
+    if (tableNode != undefined && tableNode.rows.length > 1) {
+        for (let i = 1; i < tableNode.rows.length; i++) {
+            const tr = tableNode.rows[i]
+            const playerID = getPlayerIDFromRow(tr)
+            if (!playerID) {
+                console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
+                continue
+            }
+            console.debug("removing row highlighting for", playerID)
+            delete rowHighlightData[playerID]
+        }
+        await storage.set({ "row-highlight-data": rowHighlightData })
+    }
 }
 
 async function clearAllRowHighlights() {

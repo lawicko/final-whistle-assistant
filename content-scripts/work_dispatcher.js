@@ -51,55 +51,63 @@ function makeDebouncedWithReconnect(fn, wait, targetNode, config, observer) {
     }, wait);
 }
 
+async function dispatchWork(currentMessage) {
+    if (!currentMessage || !currentMessage.url) {
+        return;
+    }
+
+    if (currentMessage.url.endsWith("/academy")) {
+        await debouncedProcessAcademyPage();
+    }
+
+    if (currentMessage.url.endsWith("fixtures")) {
+        await debouncedProcessFixturesPage();
+    }
+
+    if (currentMessage.url.includes("lineup")) {
+        await debouncedProcessLineupPage();
+    }
+
+    if (currentMessage.url.includes("match/")) {
+        await debouncedProcessMatchPage();
+    }
+
+    if (currentMessage.url.includes("player/")) {
+        await debouncedProcessPlayerPage();
+    }
+
+    if (currentMessage.url.endsWith("players")) {
+        await debouncedProcessPlayersPage();
+    }
+
+    if (currentMessage.url.endsWith("training") || currentMessage.url.endsWith("training#Reports")) {
+        await debouncedProcessTrainingPage();
+    }
+
+    if (currentMessage.url.endsWith("training#Drills")) {
+        await debouncedProcessTrainingDrillsPage();
+    }
+
+    if (currentMessage.url.endsWith("training#Settings")) {
+        await debouncedProcessTrainingSettingsPage();
+    }
+
+    if (currentMessage.url.endsWith("/transfer") || currentMessage.url.endsWith("/transfer#Market")) {
+        await debouncedProcessTransfersPage();
+    }
+
+    if (currentMessage.url.endsWith("#Squad")) {
+        await debouncedProcessSquadPage();
+    }
+}
+
 const universalObserver = new MutationObserver(
     createObserverCallback(alwaysPresentNode, observationConfig, async () => {
-        if (!currentMessage || !currentMessage.url) {
-            return;
-        }
-
-        if (currentMessage.url.endsWith("/academy")) {
-            await debouncedProcessAcademyPage();
-        }
-
-        if (currentMessage.url.endsWith("fixtures")) {
-            await debouncedProcessFixturesPage();
-        }
-
-        if (currentMessage.url.includes("lineup")) {
-            await debouncedProcessLineupPage();
-        }
-
-        if (currentMessage.url.includes("match/")) {
-            await debouncedProcessMatchPage();
-        }
-
-        if (currentMessage.url.includes("player/")) {
-            await debouncedProcessPlayerPage();
-        }
-
-        if (currentMessage.url.endsWith("players")) {
-            await debouncedProcessPlayersPage();
-        }
-
-        if (currentMessage.url.endsWith("training#Drills")) {
-            await debouncedProcessTrainingDrillsPage();
-        }
-
-        if (currentMessage.url.endsWith("training") || currentMessage.url.endsWith("training#Reports")) {
-            await debouncedProcessTrainingPage();
-        }
-
-        if (currentMessage.url.endsWith("/transfer") || currentMessage.url.endsWith("/transfer#Market")) {
-            await debouncedProcessTransfersPage();
-        }
-
-        if (currentMessage.url.endsWith("#Squad")) {
-            await debouncedProcessSquadPage();
-        }
+        dispatchWork(lastMessageFromBackground)
     })
 );
 
-let currentMessage = null;
+let lastMessageFromBackground = null;
 
 /**
  * Listens for messages from the background script about URL changes. ATTENTION: This method is critial for the handling of the DOM changes. Note how the currentMessage is not assigned if the message doesn't have a URL. The extension uses the messaging system to send other types of messages like context menu actions, which are not relevant for the DOM processing. It's important to ignore those messages here and not assign them to currentMessage, otherwise the observer will try to process the DOM based on an irrelevant message and likely fail. One example of this would be changing between FW, M, B and GK on the players page which doesn't send any messages at all but only changes the DOM. If a context menu message was the last one received, the observer would try to process the DOM with that message and fail.
@@ -115,8 +123,9 @@ browser.runtime.onMessage.addListener((message) => {
         console.debug("work_dispatcher: Message arrived without URL, skipping...");
         return;
     }
-    currentMessage = message;
-    console.debug("work_dispatcher: assigned currentMessage to:", message);
+    lastMessageFromBackground = message;
+    console.debug("work_dispatcher: runtime.onMessage assigned lastMessageFromBackground to:", message);
+    dispatchWork(message)
 });
 
 // Start observing once
@@ -190,6 +199,13 @@ const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
+        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+            await processTags();
+        }
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+);
+const debouncedProcessTrainingSettingsPage = makeDebouncedWithReconnect(
+    async () => {
         if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
