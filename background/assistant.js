@@ -11,52 +11,6 @@ if (typeof browser == "undefined") {
     globalThis.browser = chrome;
 }
 
-const defaultOptions = {
-    modules: {
-        academy_buttons: true,
-        calendar: true,
-        lineup: true,
-        match: true,
-        player: true,
-        players: true,
-        row_highlight: true,
-        tags: true
-    },
-    colors: {
-        color1: "#c96a68",
-        color2: "#afb248",
-        color3: "#33cccc",
-        color4: "#ffffff",
-        color5: "#dcc6c6",
-        color6: "#ff99cc",
-        color7: "#ff9966",
-        color8: "#ff8833",
-        color9: "#db6612",
-        "color-setting-arrogance-": "#FFD700",
-        "color-setting-arrogance--": "#FF4500",
-        "color-setting-composure+": "#4CBB17",
-        "color-setting-composure++": "#228B22",
-        "color-setting-composure-": "#FFD700",
-        "color-setting-composure--": "#FF4500",
-        "color-setting-leadership+": "#4CBB17",
-        "color-setting-leadership++": "#228B22",
-        "color-setting-leadership-": "#FFD700",
-        "color-setting-leadership--": "#FF4500",
-        "color-setting-sportsmanship+": "#4CBB17",
-        "color-setting-sportsmanship++": "#228B22",
-        "color-setting-sportsmanship-": "#FFD700",
-        "color-setting-sportsmanship--": "#FF4500",
-        "color-setting-teamwork+": "#4CBB17",
-        "color-setting-teamwork++": "#228B22",
-        "color-setting-teamwork-": "#FFD700",
-        "color-setting-teamwork--": "#FF4500"
-    },
-    tresholds: {
-        composure_treshold: 50,
-        arrogance_treshold: 50
-    }
-}
-
 /**
  * 
  * @param {string} v1 
@@ -115,9 +69,6 @@ async function handleMigrationAndBumpLocalDataVersion(localStorageVersion) {
     await storage.set({ version: version })
 }
 
-// Context menus
-browser.contextMenus.removeAll()
-
 // menus
 const parentMenuID = "parentMenu"
 const colorPlayerRowMenuID = "colorPlayerRowMenuID"
@@ -144,7 +95,7 @@ const playerRowColorRaw = {
 }
 
 // Handle clicks on the menu
-browser.contextMenus.onClicked.addListener((info, tab) => {
+function handleContextMenuClicked(info, tab) {
     switch (info.menuItemId) {
         case clearAllRowsOnThisPageMenuID:
             console.info("contexMenus.onClicked clearAllRowsOnThisPageMenuID")
@@ -158,15 +109,17 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
             console.info(`contextMenus.onClicked ${info.menuItemId}`)
             browser.tabs.sendMessage(tab.id, { action: playerRowColorRaw[info.menuItemId] })
     }
-})
+}
+browser.contextMenus.onClicked.addListener(handleContextMenuClicked)
 
 // Receive messages from content script
-browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+function handleOnMessage(msg, sender, sendResponse) {
     console.debug("received message: ", msg)
     if (msg.type === "contextMenuConfig") {
-        browser.contextMenus.update("colorPlayerRowMenuID", { enabled: msg.enabled })
+        browser.contextMenus.update(colorPlayerRowMenuID, { enabled: msg.enabled })
     }
-})
+}
+browser.runtime.onMessage.addListener(handleOnMessage)
 
 // WebNavigation
 const filter = { url: [{ hostContains: "finalwhistle.org" }] };
@@ -217,6 +170,52 @@ async function handleInstalled(details) {
         console.info(`💾 Local storage on version ${localStorageVersion}, this extension version ${version} skipping migration`)
     } else {
         await handleMigrationAndBumpLocalDataVersion(localStorageVersion)
+    }
+
+    const defaultOptions = {
+        modules: {
+            academy_buttons: true,
+            calendar: true,
+            lineup: true,
+            match: true,
+            player: true,
+            players: true,
+            row_highlight: true,
+            tags: true
+        },
+        colors: {
+            color1: "#c96a68",
+            color2: "#afb248",
+            color3: "#33cccc",
+            color4: "#ffffff",
+            color5: "#dcc6c6",
+            color6: "#ff99cc",
+            color7: "#ff9966",
+            color8: "#ff8833",
+            color9: "#db6612",
+            "color-setting-arrogance-": "#FFD700",
+            "color-setting-arrogance--": "#FF4500",
+            "color-setting-composure+": "#4CBB17",
+            "color-setting-composure++": "#228B22",
+            "color-setting-composure-": "#FFD700",
+            "color-setting-composure--": "#FF4500",
+            "color-setting-leadership+": "#4CBB17",
+            "color-setting-leadership++": "#228B22",
+            "color-setting-leadership-": "#FFD700",
+            "color-setting-leadership--": "#FF4500",
+            "color-setting-sportsmanship+": "#4CBB17",
+            "color-setting-sportsmanship++": "#228B22",
+            "color-setting-sportsmanship-": "#FFD700",
+            "color-setting-sportsmanship--": "#FF4500",
+            "color-setting-teamwork+": "#4CBB17",
+            "color-setting-teamwork++": "#228B22",
+            "color-setting-teamwork-": "#FFD700",
+            "color-setting-teamwork--": "#FF4500"
+        },
+        tresholds: {
+            composure_treshold: 50,
+            arrogance_treshold: 50
+        }
     }
 
     const { modules = {}, colors = {} } = await optionsStorage.get(["modules", "colors"]);
@@ -289,4 +288,4 @@ async function handleInstalled(details) {
     console.info("☰ Added menu items")
 }
 
-browser.runtime.onInstalled.addListener(handleInstalled);
+browser.runtime.onInstalled.addListener(handleInstalled)
