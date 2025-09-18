@@ -1,7 +1,18 @@
-import { lastPathComponent, storage, pluginNodeClass, mergeObjects, version } from "./utils.js"
+import {
+    lastPathComponent,
+    mergeObjects,
+    pluginNodeClass,
+    storage,
+    toCamelCase,
+    version
+} from "./utils.js"
 import { calculateAssistance, denomination } from "./ui_utils.js"
-import { SpecialTalentsKeys, specialTalentDescription } from "./special_talents_utils.js"
+import { specialTalentDescription } from "./special_talents_utils.js"
 import { personalityDescription } from "./personalities_utils.js"
+import {
+    parseNumbersInHiddenSkillsTable,
+    getSeasonStartDate
+} from "./player_utils.js"
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -501,17 +512,18 @@ function getPersonalitiesTable() {
 }
 
 /**
- * Returns the player personalities data from a give table.
+ * Returns the player personalities data from a given table.
+ * @param {Object} personalitiesTable as gathered in the getPersonalitiesTable function
  * @returns {Object} player personalities data.
  */
-function getPersonalitiesData(personalityTable) {
-    if (!personalityTable) {
-        throw new Error("personalityTable is undefined");
+function getPersonalitiesData(personalitiesTable) {
+    if (!personalitiesTable) {
+        throw new Error("personalitiesTable is undefined");
     }
     const result = {};
 
     // Loop over each row
-    personalityTable.querySelectorAll("tr").forEach(row => {
+    personalitiesTable.querySelectorAll("tr").forEach(row => {
         const link = row.querySelector("a");
         if (!link) return; // skip rows without <a>
 
@@ -552,7 +564,8 @@ function getSpecialTalentsTable() {
 }
 
 /**
- * Returns the player special talents data from a give table.
+ * Returns the player special talents data from a given table.
+ * @param {Object} specialTalentsTable as gathered in the getSpecialTalentsTable function
  * @returns {Object} player special talents data.
  */
 function getSpecialTalentsData(specialTalentsTable) {
@@ -589,6 +602,29 @@ function getHiddenSkillsTable() {
     return hiddenSkillsTable
 }
 
+/**
+ * Returns the player hidden skills data from a given table.
+ * @param {Object} hiddenSkillsTable as gathered in the getHiddenSkillsTable function
+ * @returns {Object} player hidden skills data.
+ */
+function getHiddenSkillsData(hiddenSkillsTable) {
+    if (!hiddenSkillsTable) {
+        throw new Error("hiddenSkillsTable is undefined");
+    }
+    const result = {};
+
+    // Loop over each row
+    hiddenSkillsTable.querySelectorAll("tr:has(td.hidden-skill)").forEach(row => {
+        const skillLabelElement = row.querySelector("td.hidden-skill")
+        const skillLabelText = skillLabelElement.textContent.trim()
+        const skillValueElement = skillLabelElement.nextElementSibling
+
+        result[toCamelCase(skillLabelText)] = parseNumbersInHiddenSkillsTable(skillValueElement)
+    });
+
+    return result
+}
+
 function getPlayerData() {
     const position = getPlayerPosition()
     const name = getPlayerName()
@@ -607,6 +643,13 @@ function getPlayerData() {
     }
     console.debug('Result of reading the special talents', specialTalentsData)
 
+    const hiddenSkillsTable = getHiddenSkillsTable()
+    let hiddenSkillsData
+    if (hiddenSkillsTable) {
+        hiddenSkillsData = getHiddenSkillsData(hiddenSkillsTable)
+    }
+    console.debug("hiddenSkillsData", hiddenSkillsData)
+
     const playerID = lastPathComponent(window.location.pathname)
 
     return {
@@ -614,7 +657,8 @@ function getPlayerData() {
         name: name,
         position: position,
         ...(personalitiesData !== undefined && { personalities: personalitiesData }),
-        ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData })
+        ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData }),
+        ...(hiddenSkillsData != undefined && { hiddenSkills: hiddenSkillsData })
     }
 }
 
@@ -879,6 +923,17 @@ export async function processPlayerPage() {
     if (coreSkillsTable && coreSkillsTable.rows && coreSkillsTable.rows.length > 1) {
         cleanUpNodeForPlayer(coreSkillsTable)
         appendComputedSkills(coreSkillsTable);
+    }
+    
+    // TODO: develop this further
+    try {
+        const now = new Date(); // current date/time
+        const currentWeek = 6;  // example: week 5 of the season
+        const seasonsAhead = 2; // e.g., season after next
+        const targetSeasonStart = getSeasonStartDate(now, currentWeek, seasonsAhead);
+        console.info(`Season ${seasonsAhead} ahead starts on:`, targetSeasonStart.toString());
+    } catch (error) {
+        console.error(error);
     }
 }
 

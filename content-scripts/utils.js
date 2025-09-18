@@ -16,6 +16,17 @@ export function isString(value) {
     return typeof value === "string" || value instanceof String
 }
 
+export function toCamelCase(str) {
+    return str
+        .toLowerCase()
+        .trim()
+        .split(/\s+/) // split by one or more spaces
+        .map((word, i) =>
+            i === 0 ? word : word[0].toUpperCase() + word.slice(1)
+        )
+        .join('');
+}
+
 export async function getStoredString(key, defaultValue = undefined) {
     const result = await storage.get(key);
     const value = result[key];
