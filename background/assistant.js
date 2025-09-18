@@ -6,6 +6,8 @@ import {
     version
 } from '../content-scripts/utils.js';
 
+import { checkDataIntegrity } from './data_integrity.js'
+
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
@@ -67,6 +69,7 @@ async function handleMigrationAndBumpLocalDataVersion(localStorageVersion) {
     }
 
     await storage.set({ version: version })
+    console.info(`✅ Migration completed, new local data version: ${version}`)
 }
 
 // menus
@@ -163,6 +166,8 @@ browser.runtime.onSuspend.addListener(handleSuspend);
 
 async function handleInstalled(details) {
     console.info(`📦 Installed (${details.reason})`);
+
+    await checkDataIntegrity()
 
     // Check the local storage version
     const localStorageVersion = await getStoredString("version")

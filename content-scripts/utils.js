@@ -77,6 +77,18 @@ export function mergeObjects(obj1, obj2, preferSecond = true) {
     }
 }
 
+/**
+ * Sums minutes from the minutes-played dictionary
+ * @param {Object} minutesPlayed in this format { "15 Aug 2025, 18:00": "90" }
+ * @returns {Number} Sum of total minutes
+ */
+export function sumMinutes(minutesPlayed) {
+    const sum = Object.values(minutesPlayed)
+        .map(Number)              // convert strings like "54" → number 54
+        .reduce((a, b) => a + b, 0);
+    return sum
+}
+
 
 /**
  * Inject CSS into the page safely without duplicates

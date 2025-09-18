@@ -3,6 +3,7 @@ import {
     mergeObjects,
     pluginNodeClass,
     storage,
+    sumMinutes,
     toCamelCase,
     version
 } from "./utils.js"
@@ -289,13 +290,6 @@ function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText,
     // Add tooltip with the formula to the potential cell
     const potentialCell = valueCell.nextElementSibling
     potentialCell.setAttribute("data-tooltip", potentialTooltipText)
-}
-
-function sumMinutes(minutesPlayed) {
-    const sum = Object.values(minutesPlayed)
-        .map(Number)              // convert strings like "54" → number 54
-        .reduce((a, b) => a + b, 0);
-    return sum
 }
 
 function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
