@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Final Whistle Assistant (DEV)",
+    "name": "Final Whistle Assistant",
     "version": "3.1.4",
     "description": "Displays additional information when browsing FinalWhistle website.",
     "icons": {

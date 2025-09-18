@@ -101,6 +101,7 @@ function createManifestForTarget(target) {
                     // console.log(`🔧 replaced: ${replaced}`);
                     const manifest = JSON.parse(replaced);
                     if (target === 'firefox_dev') {
+                        manifest.name += " (DEV)"
                         manifest.browser_specific_settings = {
                             gecko: {
                                 id: 'lawicko@gmail.com'
