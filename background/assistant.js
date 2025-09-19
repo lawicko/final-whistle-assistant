@@ -6,7 +6,7 @@ import {
     version
 } from '../content-scripts/utils.js';
 
-import { checkDataIntegrity } from './data_integrity.js'
+import { checkDataIntegrityFor } from './data_integrity.js'
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
@@ -167,7 +167,11 @@ browser.runtime.onSuspend.addListener(handleSuspend);
 async function handleInstalled(details) {
     console.info(`📦 Installed (${details.reason})`);
 
-    await checkDataIntegrity()
+    const {
+        "player-data": playersDataFromStorage = {},
+        "matches": matches = {}
+    } = await storage.get(["player-data", "matches"])
+    await checkDataIntegrityFor(playersDataFromStorage, matches, true)
 
     // Check the local storage version
     const localStorageVersion = await getStoredString("version")
@@ -240,7 +244,7 @@ async function handleInstalled(details) {
 
     console.info("☁️ Saving sync storage")
     await optionsStorage.set({ modules: modules, colors: colors })
-    console.info("📥 Saved");
+    console.info("📥 Saved")
 
     browser.contextMenus.create({
         id: parentMenuID,

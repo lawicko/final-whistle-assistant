@@ -1,10 +1,16 @@
+import * as utils from "../content-scripts/utils"
+
 export function calculateDataGatheringProgressForMatch(matchDataFromStorage) {
     let progress = 0
     if (
         matchDataFromStorage.tactics &&
+        !utils.isEmpty(matchDataFromStorage.tactics) &&
         matchDataFromStorage.startingLineups &&
+        !utils.isEmpty(matchDataFromStorage.startingLineups) &&
         matchDataFromStorage.startingLineups["home"] &&
-        matchDataFromStorage.startingLineups["away"]
+        !utils.isEmpty(matchDataFromStorage.startingLineups["home"]) &&
+        matchDataFromStorage.startingLineups["away"] &&
+        !utils.isEmpty(matchDataFromStorage.startingLineups["away"])
     ) {
         progress += 25
     } else {
@@ -13,8 +19,11 @@ export function calculateDataGatheringProgressForMatch(matchDataFromStorage) {
 
     if (
         matchDataFromStorage.finishingLineups &&
+        !utils.isEmpty(matchDataFromStorage.finishingLineups) &&
         matchDataFromStorage.finishingLineups["home"] &&
-        matchDataFromStorage.finishingLineups["away"]
+        !utils.isEmpty(matchDataFromStorage.finishingLineups["home"]) &&
+        matchDataFromStorage.finishingLineups["away"] &&
+        !utils.isEmpty(matchDataFromStorage.finishingLineups["away"])
     ) {
         progress += 25
     } else {

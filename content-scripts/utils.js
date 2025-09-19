@@ -62,6 +62,125 @@ export function dateStorageFormat(date) {
 }
 
 /**
+ * Checks whether a JavaScript object is empty.
+ *
+ * An object is considered empty if it has no own enumerable properties.
+ * 
+ * @param {Object} obj - The object to check.
+ * @returns {boolean} - Returns true if the object is empty, false otherwise.
+ *
+ * @example
+ * isEmpty({});            // true
+ * isEmpty({ a: 1 });      // false
+ * isEmpty(Object.create(null)); // true (no inherited keys, no own keys)
+ */
+export function isEmpty(obj, ignoreList = []) {
+    // console.info("👉 checking for emptiness:", obj, "type:", (typeof obj))
+    if (obj === null) throw new Error(`Null passed to isEmpty()`)
+    if (obj === undefined) throw new Error(`Undefined passed to isEmpty()`)
+    if (!Array.isArray(ignoreList)) {
+        throw new Error(`ignoreList must be an array, got ${typeof ignoreList} ${ignoreList}, obj: ${JSON.stringify(obj)}`);
+    }
+    const objectType = typeof obj
+    if (ignoreList.includes(objectType)) return false
+    if (!(objectType === 'object') && !ignoreList.includes(objectType)) {
+        throw new Error(`Object of type ${typeof obj} passed to isEmpty(): ${JSON.stringify(obj)}`);
+    }
+    return Object.keys(obj).length === 0
+}
+
+export function hasEmptyRecursive(obj, ignoreList = []) {
+    const type = typeof obj;
+
+    // Stop recursion for primitives or ignored types
+    if (obj === null || obj === undefined) return true; // treat as empty
+    if (type !== "object" || ignoreList.includes(type)) return false;
+
+    // Handle arrays
+    if (Array.isArray(obj)) {
+        return obj.some(v => hasEmptyRecursive(v, ignoreList));
+    }
+
+    // Handle objects
+    if (Object.keys(obj).length === 0) {
+        return true; // empty object found
+    }
+
+    return Object.values(obj).some(v => hasEmptyRecursive(v, ignoreList));
+}
+
+
+export function removeEmptyProps(obj, ignoreList = ["string", "number"]) {
+    if (obj === null || obj === undefined) return obj; // preserve null/undefined
+
+    if (Array.isArray(obj)) {
+        // Clean array elements recursively
+        return obj
+            .map(item => removeEmptyProps(item, ignoreList))
+            .filter(item => !isEmpty(item, ignoreList));
+    }
+
+    if (typeof obj === "object") {
+        // Clean object properties recursively
+        const cleaned = Object.fromEntries(
+            Object.entries(obj)
+                .map(([key, value]) => [key, removeEmptyProps(value, ignoreList)])
+                .filter(([_, value]) => !isEmpty(value, ignoreList))
+        );
+        return cleaned;
+    }
+
+    // Primitive values (string, number, boolean, etc.)
+    return obj;
+}
+
+export function diffObjects(obj1, obj2) {
+    const diff = { added: {}, removed: {}, changed: {} };
+
+    const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
+
+    for (const key of keys) {
+        const val1 = obj1[key];
+        const val2 = obj2[key];
+
+        // Key removed
+        if (!(key in obj2)) {
+            diff.removed[key] = val1;
+            continue;
+        }
+
+        // Key added
+        if (!(key in obj1)) {
+            diff.added[key] = val2;
+            continue;
+        }
+
+        // Key exists in both
+        if (
+            typeof val1 === "object" &&
+            typeof val2 === "object" &&
+            val1 !== null &&
+            val2 !== null
+        ) {
+            const nestedDiff = diffObjects(val1, val2);
+
+            // only record non-empty nested diffs
+            if (
+                Object.keys(nestedDiff.added).length ||
+                Object.keys(nestedDiff.removed).length ||
+                Object.keys(nestedDiff.changed).length
+            ) {
+                diff.changed[key] = nestedDiff;
+            }
+        } else if (val1 !== val2) {
+            diff.changed[key] = { before: val1, after: val2 };
+        }
+    }
+
+    return diff;
+}
+
+/**
  * Merges two objects into one.
  * 
  * @param {Object} obj1 - The first object
