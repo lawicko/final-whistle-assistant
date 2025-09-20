@@ -8,31 +8,31 @@ async function applyCustomColorsForTags() {
 
         // Inject CSS rule so future elements are styled too
         addCSS(`
-            i.denom1 {
+            i.denom1, span.denom1 i {
                 color: ${colors.color1} !important;
             }
-            i.denom2 {
+            i.denom2, span.denom2 i {
                 color: ${colors.color2} !important;
             }
-            i.denom3 {
+            i.denom3, span.denom3 i {
                 color: ${colors.color3} !important;
             }
-            i.denom4 {
+            i.denom4, span.denom4 i {
                 color: ${colors.color4} !important;
             }
-            i.denom5 {
+            i.denom5, span.denom5 i {
                 color: ${colors.color5} !important;
             }
-            i.denom6 {
+            i.denom6, span.denom6 i {
                 color: ${colors.color6} !important;
             }
-            i.denom7 {
+            i.denom7, span.denom7 i {
                 color: ${colors.color7} !important;
             }
-            i.denom8 {
+            i.denom8, span.denom8 i {
                 color: ${colors.color8} !important;
             }
-            i.denom9 {
+            i.denom9, span.denom9 i {
                 color: ${colors.color9} !important;
             }
         `, "final-whistle-custom-tag-colors");
