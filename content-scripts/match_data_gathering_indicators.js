@@ -13,9 +13,6 @@ import { calculateDataGatheringProgressForMatch, createProgressDot } from './mat
  *     commentStart: "⚽ Processing matches payed by the player",
  *     commentFinished: "🔴🟠🟡🟢 Matches payed by the player, missing data indicators added"
  * }
- * 
- * processPlayedMatches(config)
- * 
  */
 export async function processPlayedMatches(playedMatchesContainers, config) {
     if (!playedMatchesContainers) {

@@ -15,6 +15,7 @@ import {
     getSeasonStartDate
 } from "./player_utils.js"
 import { processPlayedMatches } from './match_data_gathering_indicators.js'
+import { addYAndSLabelsForMatchBadges } from './y_and_s_labels_for_match_badges.js'
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -921,12 +922,18 @@ export async function processPlayerPage() {
         const playedMatchesContainers = document.querySelectorAll("table.table-striped > tr")
         console.debug("playedMatchesContainers", playedMatchesContainers)
         if (playedMatchesContainers.length > 0) {
+            await addYAndSLabelsForMatchBadges(playedMatchesContainers, {
+                youthNodeQuery: "span.badge-youth",
+                seniorNodeQuery: "span.badge-senior",
+                commentStart: "Processing match badges for 🇸enior and 🇾outh matches",
+                commentFinished: "Match badges for 🇸enior and 🇾outh matches processed"
+            })
             await processPlayedMatches(playedMatchesContainers, {
-                        matchLinkContainerQuery: "td:has(fw-club-hover)",
-                        matchLinkElementQuery: "span > a",
-                        commentStart: `⚽ Processing matches payed by the player`,
-                        commentFinished: `🔴🟠🟡🟢 Matches payed by the player, missing data indicators added`
-                    })
+                matchLinkContainerQuery: "td:has(fw-club-hover)",
+                matchLinkElementQuery: "span > a",
+                commentStart: `⚽ Processing matches payed by the player`,
+                commentFinished: `🔴🟠🟡🟢 Matches payed by the player, missing data indicators added`
+            })
         } else {
             console.info("Did not find any played matches, skipping")
         }
