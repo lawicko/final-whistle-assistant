@@ -6,8 +6,9 @@ import {
 } from "./utils.js";
 
 import {
-    applySportsmanship,
+    applyArrogance,
     applyComposure,
+    applySportsmanship,
     hasActiveSetPieces,
     removeNoDataSymbol,
     personalitiesSymbols
@@ -585,7 +586,7 @@ async function processLineup() {
 
             if (isInDefenceZone || (isSub && reasonableDP)) {
                 console.debug(`applying arrogance: ${arrogance} to ${name}`)
-                applyArrogance(pLinks[i], arrogance)
+                applyArrogance(pLinks[i].parentNode.parentNode.parentNode, arrogance)
             } else {
                 console.debug(`${name} has arrogance in profile, but not in the defence zone or DP under reasonable level, removing symbol if necessary`);
                 const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
@@ -675,39 +676,6 @@ async function processLineup() {
 
     console.debug('passing to proposePenaltyTakers: ', penaltyTakersData)
     await proposePenaltyTakers(penaltyTakersData)
-}
-
-function applyArrogance(element, arrogance) {
-    const hasArroganceSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === personalitiesSymbols["arrogance"]
-    );
-    if (!hasArroganceSymbol) {
-        console.debug(`Applying arrogance: ${arrogance}`)
-
-        const arroganceSpan = document.createElement("span");
-        arroganceSpan.classList.add('arrogance')
-        arroganceSpan.textContent = " " + personalitiesSymbols["arrogance"]
-        switch (arrogance) {
-            case -2:
-                arroganceSpan.classList.add('doubleNegative');
-                arroganceSpan.title = "This player is very arrogant, he will significantly disrupt your offside attempts";
-                break;
-            case -1:
-                arroganceSpan.classList.add('negative');
-                arroganceSpan.title = "This player is arrogant, he will disrupt your offside attempts";
-                break;
-            case 1:
-                // not used for offsides
-                break;
-            case 2:
-                // not used for offsides
-                break;
-            default:
-                console.warn("Value of arrogance is unexpected: ", arrogance);
-        }
-
-        element.parentNode.parentNode.parentNode.appendChild(arroganceSpan)
-    }
 }
 
 function applyLeadership(element, leadership) {

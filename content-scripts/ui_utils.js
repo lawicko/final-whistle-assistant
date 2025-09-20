@@ -284,6 +284,39 @@ export function applyComposure(element, composure) {
     }
 }
 
+export function applyArrogance(element, arrogance) {
+    const hasArroganceSymbol = Array.from(element.children).some(
+        child => child.textContent.trim() === personalitiesSymbols["arrogance"]
+    );
+    if (!hasArroganceSymbol) {
+        console.debug(`Applying arrogance: ${arrogance}`)
+
+        const arroganceSpan = document.createElement("span");
+        arroganceSpan.classList.add('arrogance')
+        arroganceSpan.textContent = " " + personalitiesSymbols["arrogance"]
+        switch (arrogance) {
+            case -2:
+                arroganceSpan.classList.add('doubleNegative');
+                arroganceSpan.title = "This player is very arrogant, he will significantly disrupt your offside attempts";
+                break;
+            case -1:
+                arroganceSpan.classList.add('negative');
+                arroganceSpan.title = "This player is arrogant, he will disrupt your offside attempts";
+                break;
+            case 1:
+                // not used for offsides
+                break;
+            case 2:
+                // not used for offsides
+                break;
+            default:
+                console.warn("Value of arrogance is unexpected: ", arrogance);
+        }
+
+        element.appendChild(arroganceSpan)
+    }
+}
+
 export function hasActiveSetPieces() {
     const link = document.querySelector('ul.nav-tabs > li.nav-item > a.nav-link.active');
     if (!link) {

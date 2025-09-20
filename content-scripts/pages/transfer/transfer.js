@@ -1,5 +1,5 @@
 import * as utils from "../../utils.js"
-import { applySportsmanship, applyTeamwork } from "../../ui_utils.js"
+import { applyArrogance, applyComposure, applySportsmanship, applyTeamwork, PositionsKeys } from "../../ui_utils.js"
 
 export async function processTransferPage() {
     console.info("💸 Processing transfer page")
@@ -17,7 +17,7 @@ export async function processTransferPage() {
         console.debug("We have a record on ", playerName, "(", playerID, "):", loadedPlayerData)
         const personalities = loadedPlayerData["personalities"]
         if (!personalities) continue
-        
+
         const insertionPoint = row.querySelector("td:has(fw-player-hover)")
         const teamwork = personalities["teamwork"]
         if (teamwork) {
@@ -27,8 +27,21 @@ export async function processTransferPage() {
         if (sportsmanship) {
             applySportsmanship(insertionPoint, sportsmanship)
         }
-        // for (const [pName, pValue] of Object.entries(personalities)) {
-        //     console.info(pName, pValue)
-        // }
+        const position = loadedPlayerData["position"]
+        const composure = personalities["composure"]
+        if (composure && position === PositionsKeys.FW) {
+            applyComposure(insertionPoint, composure)
+        }
+        const arrogance = personalities["arrogance"]
+        const DEFENSIVE_POSITIONS = [
+            PositionsKeys.LB,
+            PositionsKeys.LWB,
+            PositionsKeys.CB,
+            PositionsKeys.RB,
+            PositionsKeys.RWB
+        ]
+        if (arrogance && DEFENSIVE_POSITIONS.includes(position)) {
+            applyArrogance(insertionPoint, arrogance)
+        }
     }
 }
