@@ -28,7 +28,6 @@
         "clipboardRead",
         "clipboardWrite",
         "contextMenus",
-        "scripting",
         "storage",
         "tabs",
         "webNavigation"
