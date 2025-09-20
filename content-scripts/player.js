@@ -14,7 +14,7 @@ import {
     parseNumbersInHiddenSkillsTable,
     getSeasonStartDate
 } from "./player_utils.js"
-import { calculateDataGatheringProgressForMatch, createProgressDot } from './match_utils.js'
+import { processPlayedMatches } from './match_data_gathering_indicators.js'
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -916,12 +916,17 @@ export async function processPlayerPage() {
         appendComputedSkills(coreSkillsTable);
     }
 
-    if (showingStatistics()) {
+    if (isShowingStatistics()) {
         console.debug("Showing Stats")
         const playedMatchesContainers = document.querySelectorAll("table.table-striped > tr")
         console.debug("playedMatchesContainers", playedMatchesContainers)
         if (playedMatchesContainers.length > 0) {
-            await processPlayedMatches(playedMatchesContainers)
+            await processPlayedMatches(playedMatchesContainers, {
+                        matchLinkContainerQuery: "td:has(fw-club-hover)",
+                        matchLinkElementQuery: "span > a",
+                        commentStart: `⚽ Processing matches payed by the player`,
+                        commentFinished: `🔴🟠🟡🟢 Matches payed by the player, missing data indicators added`
+                    })
         } else {
             console.info("Did not find any played matches, skipping")
         }
@@ -943,36 +948,7 @@ function getCoreSkillsTable() {
     return document.querySelector("table.table:has(tr th span[ngbpopover='Core Skills'])")
 }
 
-function showingStatistics() {
+function isShowingStatistics() {
     const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
     return activeTab && activeTab.textContent.trim() === "Stats"
-}
-
-async function processPlayedMatches(playedMatchesContainers) {
-    console.info(`⚽ Processing matches payed by the player`);
-
-    const { matches = {} } = await storage.get("matches");
-
-    try {
-        for (const tr of playedMatchesContainers) {
-            const tdWithLink = tr.querySelector("td:has(fw-club-hover)")
-
-            const existingIndicator = tdWithLink.querySelector("span.final-whistle-assistant-played-match-indicator")
-            if (existingIndicator) {
-                existingIndicator.remove()
-            }
-
-            const matchLinkElement = tdWithLink.querySelector("span > a")
-            const matchID = lastPathComponent(matchLinkElement.href)
-
-            const matchDataFromStorage = matches[matchID] ?? {};
-            const progress = calculateDataGatheringProgressForMatch(matchDataFromStorage)
-            const dotSpan = createProgressDot(progress)
-
-            tdWithLink.appendChild(dotSpan)
-        }
-    } catch (e) {
-        console.error(e.message)
-    }
-    console.info(`🔴🟠🟡🟢 Matches payed by the player, missing data indicators added`);
 }

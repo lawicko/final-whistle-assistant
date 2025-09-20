@@ -1,5 +1,5 @@
 import { storage, version, lastPathComponent } from './utils.js';
-import { calculateDataGatheringProgressForMatch, createProgressDot } from './match_utils.js'
+import { processPlayedMatches } from './match_data_gathering_indicators.js'
 
 export async function processFixturesPage() {
     console.info(`${version} 📅 Processing fixtures page`);
@@ -8,39 +8,15 @@ export async function processFixturesPage() {
     const playedMatchesContainers = document.querySelectorAll("table.table > tbody > tr.finished-match")
     console.debug("playedMatchesContainers", playedMatchesContainers)
     if (playedMatchesContainers.length > 0) {
-        await processPlayedMatches(playedMatchesContainers)
+        await processPlayedMatches(playedMatchesContainers, {
+            matchLinkContainerQuery: "td:has(a i.fa-file-text-o",
+            matchLinkElementQuery: "a",
+            commentStart: `⚽ Processing played matches`,
+            commentFinished: `🔴🟠🟡🟢 Played matches processed, missing data indicators added`
+        })
     } else {
         console.info("Did not find any played matches, skipping")
     }
-}
-
-async function processPlayedMatches(playedMatchesContainers) {
-    console.info(`⚽ Processing played matches`);
-
-    const { matches = {} } = await storage.get("matches");
-
-    try {
-        for (const tr of playedMatchesContainers) {
-            const lastTD = tr.querySelector("td:has(a i.fa-file-text-o")
-
-            const existingIndicator = lastTD.querySelector("span.final-whistle-assistant-played-match-indicator")
-            if (existingIndicator) {
-                existingIndicator.remove()
-            }
-
-            const matchLinkElement = lastTD.querySelector("a")
-            const matchID = lastPathComponent(matchLinkElement.href)
-
-            const matchDataFromStorage = matches[matchID] ?? {};
-            const progress = calculateDataGatheringProgressForMatch(matchDataFromStorage)
-            const dotSpan = createProgressDot(progress)
-
-            lastTD.appendChild(dotSpan)
-        }
-    } catch (e) {
-        console.error(e.message)
-    }
-    console.info(`🔴🟠🟡🟢 Played matches processed, missing data indicators added`);
 }
 
 async function processMatchIndicators() {

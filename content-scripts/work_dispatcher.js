@@ -8,6 +8,7 @@ import { processPlayersPage } from './players.js';
 import { processLineupPage } from './lineup.js';
 import { processPlayerPage } from './player.js';
 import { addTableRowsHighlighting } from './row_highlight.js';
+import { processLeaguePage } from './league.js';
 
 // How long to wait after the last mutation before processing the DOM (in ms)
 const DEBOUNCE_WAIT_MS = 0;
@@ -64,6 +65,10 @@ async function dispatchWork(currentMessage) {
         await debouncedProcessFixturesPage();
     }
 
+    if (currentMessage.url.includes("league")) {
+        await debouncedProcessLeaguePage();
+    }
+
     if (currentMessage.url.includes("lineup")) {
         await debouncedProcessLineupPage();
     }
@@ -103,6 +108,7 @@ async function dispatchWork(currentMessage) {
 
 const universalObserver = new MutationObserver(
     createObserverCallback(alwaysPresentNode, observationConfig, async () => {
+        console.debug("universalObserver: dispatching work with the last known message:", lastMessageFromBackground);
         dispatchWork(lastMessageFromBackground)
     })
 );
@@ -124,7 +130,7 @@ browser.runtime.onMessage.addListener((message) => {
         return;
     }
     lastMessageFromBackground = message;
-    console.debug("work_dispatcher: runtime.onMessage assigned lastMessageFromBackground to:", message);
+    console.debug("work_dispatcher: runtime.onMessage assigned lastMessageFromBackground to:", message)
     dispatchWork(message)
 });
 
@@ -144,6 +150,14 @@ const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
     async () => {
         if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
             await processFixturesPage();
+        }
+    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+);
+
+const debouncedProcessLeaguePage = makeDebouncedWithReconnect(
+    async () => {
+        if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
+            await processLeaguePage();
         }
     }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );
