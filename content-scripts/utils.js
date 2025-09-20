@@ -208,7 +208,6 @@ export function sumMinutes(minutesPlayed) {
     return sum
 }
 
-
 /**
  * Inject CSS into the page safely without duplicates
  * @param {string} css - The CSS string to inject

@@ -13,11 +13,11 @@ function getPlayerIDFromRow(tr) {
 
 // Event listeners
 let clickedRow
-
 const contextMenuListener = (event) => {
     clickedRow = event.target.closest("tr"); // get the closest <tr> ancestor
 }
 
+let rowWithMouseOver
 const mouseOverListener = (e) => {
     var enabled = false
 
@@ -30,9 +30,11 @@ const mouseOverListener = (e) => {
         // console.debug(`playerLink: `, playerLink)
         if (playerLink) {
             enabled = true
+            rowWithMouseOver = row
         }
     } else {
         // console.debug(`it's NOT a row`)
+        rowWithMouseOver = undefined
     }
 
     browser.runtime.sendMessage({ type: "contextMenuConfig", enabled });
@@ -79,23 +81,7 @@ const onMessageListener = async (message) => {
         const position = message.action.slice(prefix.length, -suffix.length)
         const tr = clickedRow
         if (tr) {
-            tr.classList.forEach(cls => {
-                if (cls.includes("_playerBackground")) {
-                    tr.classList.remove(cls);
-                }
-            });
-
-            const playerID = getPlayerIDFromRow(tr)
-            if (!playerID) {
-                console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
-                return
-            }
-            clearRowHighlight(playerID)
-            if (position !== "Clear") {
-                const highlightClass = pluginNodeClass + "_playerBackground" + position
-                tr.classList.add(highlightClass)
-                storeRowHighlightClass(highlightClass, playerID)
-            }
+            setRowColoringForPosition(tr, position)
         }
         return
     }
@@ -120,6 +106,92 @@ const onMessageListener = async (message) => {
             processTableRows(tableNode)
         }
         return
+    }
+}
+
+function setRowColoringForPosition(tr, position) {
+    tr.classList.forEach(cls => {
+        if (cls.includes("_playerBackground")) {
+            tr.classList.remove(cls);
+        }
+    });
+
+    const playerID = getPlayerIDFromRow(tr)
+    if (!playerID) {
+        console.error("Tried to extract player ID from tr ", tr, " but there are no matches")
+        return
+    }
+    clearRowHighlight(playerID)
+    if (position !== "Clear") {
+        const highlightClass = pluginNodeClass + "_playerBackground" + position
+        tr.classList.add(highlightClass)
+        storeRowHighlightClass(highlightClass, playerID)
+    }
+}
+
+function handleKeyboardShortcutForPosition(rowWithMouseOver, position) {
+    let alreadyLabeledWithPosition = false
+    rowWithMouseOver.classList.forEach(cls => {
+        if (cls.includes("_playerBackground" + position)) {
+            rowWithMouseOver.classList.remove(cls);
+            alreadyLabeledWithPosition = true
+        }
+    });
+    if (alreadyLabeledWithPosition) {
+        const playerID = getPlayerIDFromRow(rowWithMouseOver)
+        if (!playerID) {
+            console.error("Tried to extract player ID from rowWithMouseOver ", rowWithMouseOver, " but there are no matches")
+            return
+        }
+        clearRowHighlight(playerID)
+    } else {
+        setRowColoringForPosition(rowWithMouseOver, position)
+    }
+}
+
+function getShortcutCallback(position) {
+    return () => {
+        console.debug("⚡ Keyboard shortcut called on", rowWithMouseOver)
+
+        if (!rowWithMouseOver) {
+            console.debug("keyDownListener invoked but the mouse is not pointing to a player row but to", rowWithMouseOver)
+            return
+        } else {
+            handleKeyboardShortcutForPosition(rowWithMouseOver, position)
+        }
+    }
+}
+
+let shortcutsMap = {
+    "q": getShortcutCallback("LW"),
+    "w": getShortcutCallback("FW"),
+    "shift+w": getShortcutCallback("OM"),
+    "e": getShortcutCallback("RW"),
+    "a": getShortcutCallback("LM"),
+    "s": getShortcutCallback("CM"),
+    "shift+s": getShortcutCallback("DM"),
+    "d": getShortcutCallback("RM"),
+    "z": getShortcutCallback("LB"),
+    "shift+z": getShortcutCallback("LWB"),
+    "x": getShortcutCallback("CB"),
+    "c": getShortcutCallback("RB"),
+    "shift+c": getShortcutCallback("RWB")
+}
+const keyDownListener = (event) => {
+    const parts = [];
+
+    if (event.ctrlKey) parts.push("ctrl");
+    if (event.shiftKey) parts.push("shift");
+    if (event.altKey) parts.push("alt");
+
+    parts.push(event.key.toLowerCase());
+
+    const combo = parts.join("+");
+    // console.info("combo:",combo)
+
+    if (shortcutsMap[combo]) {
+        // event.preventDefault();
+        shortcutsMap[combo](event);
     }
 }
 
@@ -156,14 +228,18 @@ async function processTableRows(tableNode, config = {
                     }
                 });
             }
-            document.addEventListener("mouseover", mouseOverListener);
-            document.addEventListener("contextmenu", contextMenuListener);
-            browser.runtime.onMessage.addListener(onMessageListener);
-        } else {
-            document.removeEventListener("mouseover", mouseOverListener);
-            document.removeEventListener("contextmenu", contextMenuListener);
-            browser.runtime.onMessage.removeListener(onMessageListener);
         }
+    }
+    if (config.persistentHighlight) {
+        document.addEventListener("mouseover", mouseOverListener);
+        document.addEventListener("keydown", keyDownListener);
+        document.addEventListener("contextmenu", contextMenuListener);
+        browser.runtime.onMessage.addListener(onMessageListener);
+    } else {
+        document.removeEventListener("mouseover", mouseOverListener);
+        document.removeEventListener("keydown", keyDownListener);
+        document.removeEventListener("contextmenu", contextMenuListener);
+        browser.runtime.onMessage.removeListener(onMessageListener);
     }
 }
 
