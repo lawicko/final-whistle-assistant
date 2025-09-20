@@ -7,6 +7,7 @@ import {
 
 import {
     applySportsmanship,
+    applyComposure,
     hasActiveSetPieces,
     removeNoDataSymbol,
     personalitiesSymbols
@@ -538,7 +539,7 @@ async function processLineup() {
 
                 if (isInAttackZone || isInMidfieldZone || (isSub && reasonablePenaltyKick)) {
                     console.debug(`applying composure: ${composure} to ${name}`)
-                    applyComposure(pLinks[i], composure)
+                    applyComposure(pLinks[i].parentNode.parentNode.parentNode, composure)
                 } else {
                     console.debug('Has composure in profile, but not in the attack or midfield zone or penaltyKick under reasonable level, removing symbol if necessary');
                     const composureSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
@@ -607,7 +608,7 @@ async function processLineup() {
         }
 
         if (sportsmanship) {
-            applySportsmanship(pLinks[i], sportsmanship)
+            applySportsmanship(pLinks[i].parentNode.parentNode.parentNode, sportsmanship)
         }
 
         // calculate the cross skill and use AE for anchors
@@ -706,41 +707,6 @@ function applyArrogance(element, arrogance) {
         }
 
         element.parentNode.parentNode.parentNode.appendChild(arroganceSpan)
-    }
-}
-
-function applyComposure(element, composure) {
-    const hasComposureSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === personalitiesSymbols["composure"]
-    );
-    if (!hasComposureSymbol) {
-        console.debug(`Applying composure: ${composure}`)
-
-        const composureSpan = document.createElement("span");
-        composureSpan.classList.add('composure')
-        composureSpan.textContent = " " + personalitiesSymbols["composure"]
-        switch (composure) {
-            case -2:
-                composureSpan.classList.add('doubleNegative');
-                composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
-                break;
-            case -1:
-                composureSpan.classList.add('negative');
-                composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
-                break;
-            case 1:
-                composureSpan.classList.add('positive');
-                composureSpan.title = "This player has good composure, consider using him as penalty taker";
-                break;
-            case 2:
-                composureSpan.classList.add('doublePositive');
-                composureSpan.title = "This player has excellent composure, use him as penalty taker";
-                break;
-            default:
-                console.warn("Value of composure is unexpected: ", composure);
-        }
-
-        element.parentNode.parentNode.parentNode.appendChild(composureSpan)
     }
 }
 

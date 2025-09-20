@@ -1,14 +1,15 @@
-import { debounceAsync, FeatureFlagsKeys, isFeatureEnabled } from './utils.js';
+import { debounceAsync, FeatureFlagsKeys, isFeatureEnabled } from './utils.js'
 import { alwaysPresentNode } from './ui_utils.js'
-import { processTags } from './tags.js';
-import { processAcademyButtons } from './academy_buttons.js';
-import { processFixturesPage } from './calendar.js';
-import { processMatch } from './match.js';
-import { processPlayersPage } from './players.js';
-import { processLineupPage } from './lineup.js';
-import { processPlayerPage } from './player.js';
-import { addTableRowsHighlighting } from './row_highlight.js';
-import { processLeaguePage } from './league.js';
+import { processTags } from './tags.js'
+import { processAcademyButtons } from './academy_buttons.js'
+import { processFixturesPage } from './calendar.js'
+import { processMatch } from './match.js'
+import { processPlayersPage } from './players.js'
+import { processLineupPage } from './lineup.js'
+import { processPlayerPage } from './player.js'
+import { addTableRowsHighlighting } from './row_highlight.js'
+import { processLeaguePage } from './pages/league/league.js'
+import { processTransferPage } from './pages/transfer/transfer.js'
 
 // How long to wait after the last mutation before processing the DOM (in ms)
 const DEBOUNCE_WAIT_MS = 0;
@@ -239,5 +240,6 @@ const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
         if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
+        await processTransferPage()
     }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
 );

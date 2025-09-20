@@ -7,6 +7,7 @@ import {
 import { 
     addNoDataSymbol,
     applySportsmanship,
+    applyTeamwork,
     calculateAssistance,
     calculateDefensiveAssistanceGK,
     denomination,
@@ -116,7 +117,7 @@ function appendAdditionalInfo(storedPlayerData) {
             var teamwork = playerPersonalities['teamwork']
             if (teamwork) {
                 if (showTeamwork) {
-                    applyTeamwork(playerLink, teamwork)
+                    applyTeamwork(playerLink.parentNode.parentNode.parentNode, teamwork)
                 } else {
                     clearTeamwork(container)
                 }
@@ -124,7 +125,7 @@ function appendAdditionalInfo(storedPlayerData) {
             const sportsmanship = playerPersonalities['sportsmanship']
             if (sportsmanship) {
                 if (showSportsmanship) {
-                    applySportsmanship(playerLink, sportsmanship)
+                    applySportsmanship(playerLink.parentNode.parentNode.parentNode, sportsmanship)
                 } else {
                     clearSportsmanship(container)
                 }
@@ -222,41 +223,6 @@ function clearSportsmanship(element) {
             span.remove();
         }
     });
-}
-
-function applyTeamwork(element, teamwork) {
-    const hasTeamworkSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === personalitiesSymbols["teamwork"]
-    );
-    if (!hasTeamworkSymbol) {
-        console.debug(`Applying Teamwork: ${teamwork}`)
-
-        const teamworkSpan = document.createElement("span");
-        teamworkSpan.classList.add('teamwork')
-        teamworkSpan.textContent = " " + personalitiesSymbols["teamwork"]
-        switch (teamwork) {
-            case -2:
-                teamworkSpan.classList.add('doubleNegative');
-                teamworkSpan.title = "This player is a terrible team player, he will not assist his team mates as much as his skills would indicate (assistance decreased by 25%)";
-                break;
-            case -1:
-                teamworkSpan.classList.add('negative');
-                teamworkSpan.title = "This player is not a team player, he will not assist his team mates as much as his skills would indicate (assistance decreased by 15%)";
-                break;
-            case 1:
-                teamworkSpan.classList.add('positive');
-                teamworkSpan.title = "This player is a team player, he will assist his team mates more than his skills would indicate (assistance increased by 15%)";
-                break;
-            case 2:
-                teamworkSpan.classList.add('doublePositive');
-                teamworkSpan.title = "This player is a fantastic team player, he will assist his team mates much more than his skills would indicate (assistance increased by 25%)";
-                break;
-            default:
-                console.warn("Value of teamwork is unexpected: ", teamwork);
-        }
-
-        element.parentNode.parentNode.parentNode.appendChild(teamworkSpan)
-    }
 }
 
 function cleanUpNodeForPlayers(tableNode) {

@@ -1,4 +1,4 @@
-import { processPlayedMatches } from './match_data_gathering_indicators.js'
+import { processPlayedMatches } from '../../match_data_gathering_indicators.js'
 
 export async function processLeaguePage() {
     console.info("⚽📊 Processing league page")

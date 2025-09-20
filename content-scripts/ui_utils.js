@@ -215,7 +215,7 @@ export function addNoDataSymbol(container) {
 }
 
 export function applySportsmanship(element, sportsmanship) {
-    const hasSportsmanshipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
+    const hasSportsmanshipSymbol = Array.from(element.children).some(
         child => child.textContent.trim() === personalitiesSymbols["sportsmanship"]
     );
     if (!hasSportsmanshipSymbol) {
@@ -245,7 +245,42 @@ export function applySportsmanship(element, sportsmanship) {
                 console.warn("Value of sportsmanship is unexpected: ", sportsmanship);
         }
 
-        element.parentNode.parentNode.parentNode.appendChild(sportsmanshipSpan)
+        element.appendChild(sportsmanshipSpan)
+    }
+}
+
+export function applyComposure(element, composure) {
+    const hasComposureSymbol = Array.from(element.children).some(
+        child => child.textContent.trim() === personalitiesSymbols["composure"]
+    );
+    if (!hasComposureSymbol) {
+        console.debug(`Applying composure: ${composure}`)
+
+        const composureSpan = document.createElement("span");
+        composureSpan.classList.add('composure')
+        composureSpan.textContent = " " + personalitiesSymbols["composure"]
+        switch (composure) {
+            case -2:
+                composureSpan.classList.add('doubleNegative');
+                composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
+                break;
+            case -1:
+                composureSpan.classList.add('negative');
+                composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
+                break;
+            case 1:
+                composureSpan.classList.add('positive');
+                composureSpan.title = "This player has good composure, consider using him as penalty taker";
+                break;
+            case 2:
+                composureSpan.classList.add('doublePositive');
+                composureSpan.title = "This player has excellent composure, use him as penalty taker";
+                break;
+            default:
+                console.warn("Value of composure is unexpected: ", composure);
+        }
+
+        element.appendChild(composureSpan)
     }
 }
 
@@ -259,6 +294,41 @@ export function hasActiveSetPieces() {
     }
 
     return link && link.textContent.trim() === "Set Pieces";
+}
+
+export function applyTeamwork(element, teamwork) {
+    const hasTeamworkSymbol = Array.from(element.children).some(
+        child => child.textContent.trim() === personalitiesSymbols["teamwork"]
+    );
+    if (!hasTeamworkSymbol) {
+        console.debug(`Applying Teamwork: ${teamwork}`)
+
+        const teamworkSpan = document.createElement("span");
+        teamworkSpan.classList.add('teamwork')
+        teamworkSpan.textContent = " " + personalitiesSymbols["teamwork"]
+        switch (teamwork) {
+            case -2:
+                teamworkSpan.classList.add('doubleNegative');
+                teamworkSpan.title = "This player is a terrible team player, he will not assist his team mates as much as his skills would indicate (assistance decreased by 25%)";
+                break;
+            case -1:
+                teamworkSpan.classList.add('negative');
+                teamworkSpan.title = "This player is not a team player, he will not assist his team mates as much as his skills would indicate (assistance decreased by 15%)";
+                break;
+            case 1:
+                teamworkSpan.classList.add('positive');
+                teamworkSpan.title = "This player is a team player, he will assist his team mates more than his skills would indicate (assistance increased by 15%)";
+                break;
+            case 2:
+                teamworkSpan.classList.add('doublePositive');
+                teamworkSpan.title = "This player is a fantastic team player, he will assist his team mates much more than his skills would indicate (assistance increased by 25%)";
+                break;
+            default:
+                console.warn("Value of teamwork is unexpected: ", teamwork);
+        }
+
+        element.appendChild(teamworkSpan)
+    }
 }
 
 async function applyCustomColorsLineupSymbols() {
