@@ -60,7 +60,7 @@ async function dispatchWork(currentMessage) {
         await debouncedProcessAcademyPage();
     }
 
-    if (currentMessage.url.endsWith("fixtures")) {
+    if (currentMessage.url.endsWith("fixtures") || currentMessage.url.endsWith("#Fixtures")) {
         await debouncedProcessFixturesPage();
     }
 
