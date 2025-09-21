@@ -11,8 +11,9 @@ import { calculateAssistance, denomination } from "./ui_utils.js"
 import { specialTalentDescription } from "./special_talents_utils.js"
 import { personalityDescription } from "./personalities_utils.js"
 import {
-    parseNumbersInHiddenSkillsTable,
-    getSeasonStartDate
+    getSeasonStartDate,
+    parseNumbersOnPlayerPage,
+    parseScoutReport
 } from "./player_utils.js"
 import { processPlayedMatches } from './match_data_gathering_indicators.js'
 import { addYAndSLabelsForMatchBadges } from './y_and_s_labels_for_match_badges.js'
@@ -615,7 +616,7 @@ function getHiddenSkillsData(hiddenSkillsTable) {
         const skillLabelText = skillLabelElement.textContent.trim()
         const skillValueElement = skillLabelElement.nextElementSibling
 
-        result[toCamelCase(skillLabelText)] = parseNumbersInHiddenSkillsTable(skillValueElement)
+        result[toCamelCase(skillLabelText)] = parseNumbersOnPlayerPage(skillValueElement)
     });
 
     return result
@@ -939,6 +940,35 @@ export async function processPlayerPage() {
         }
     }
 
+    if (isShowingReports()) {
+        const reportElements = document.querySelectorAll('div.report')
+        if (reportElements.length) {
+
+            const reports = new Map()
+            for (const reportElement of [...reportElements]) {
+                const rows = reportElement.querySelectorAll("table.table tr:has(td)")
+                const accuracyLabelCell = Array.from(rows)
+                    .map(tr => Array.from(tr.querySelectorAll("td"))
+                        .find(td => td.textContent.trim() === "Report Accuracy")
+                    )
+                    .find(td => td !== undefined)
+                const accuracyValueCell = accuracyLabelCell.nextElementSibling
+                const reportAccuracy = parseFloat(accuracyValueCell.textContent.trim())
+                reports.set(reportAccuracy, reportElement)
+            }
+
+            // Sort by key
+            const sortedEntries = [...reports.entries()].sort(([a], [b]) => b - a)
+            const bestReport = sortedEntries[0]
+            const bestReportElement = bestReport[1]
+            let parsedScoutReport = parseScoutReport(bestReportElement)
+            console.debug("Parsed scout report:", parsedScoutReport)
+
+            const playerDataAugmentedWithScoutReport = mergeObjects(playerData, parsedScoutReport)
+            await savePlayerDataToStorage(playerDataAugmentedWithScoutReport)
+        }
+    }
+
     // TODO: develop this further
     try {
         const now = new Date(); // current date/time
@@ -958,4 +988,9 @@ function getCoreSkillsTable() {
 function isShowingStatistics() {
     const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
     return activeTab && activeTab.textContent.trim() === "Stats"
+}
+
+function isShowingReports() {
+    const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
+    return activeTab && activeTab.textContent.trim() === "Reports"
 }

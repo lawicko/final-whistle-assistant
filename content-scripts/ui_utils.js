@@ -1,4 +1,4 @@
-import { addCSS, optionsStorage } from "./utils"
+import { addCSS, optionsStorage, pluginNodeClass } from "./utils"
 
 // The node that will be observed for mutations
 export const alwaysPresentNode = document.querySelector("div.wrapper");
@@ -314,6 +314,37 @@ export function applyArrogance(element, arrogance) {
         }
 
         element.appendChild(arroganceSpan)
+    }
+}
+
+export function applyDetailedProperty(element, propertyValue, propertyDescription, config) {
+    const normalizedDescription = pluginNodeClass + propertyDescription.replace(/\s+/g, "_")
+    const containerClass = pluginNodeClass + "_detailedPropertyContainer"
+    const hasContainer = Array.from(element.children).some(
+        child => child.classList.contains(containerClass) && child.classList.contains(normalizedDescription)
+    )
+    if (!hasContainer) {
+        const container = document.createElement("span")
+        container.classList.add(containerClass)
+        container.classList.add(normalizedDescription)
+
+        const topSpan = document.createElement("span")
+        topSpan.classList.add("top")
+        if (config && config.valueElementClass) {
+            topSpan.classList.add(config.valueElementClass)
+        }
+        topSpan.textContent = propertyValue
+        container.appendChild(topSpan)
+
+        const bottomSpan = document.createElement("span")
+        bottomSpan.classList.add("bottom")
+        bottomSpan.textContent = propertyDescription
+        container.appendChild(bottomSpan)
+
+        if (config && config.tooltip) {
+            container.title = config.tooltip
+        }
+        element.appendChild(container)
     }
 }
 

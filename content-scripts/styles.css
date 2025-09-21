@@ -1,22 +1,38 @@
 /* Lineup */
 span.leadership {
-    font-size: 1.4em;
+    display: inline-block; /* ✅ makes top/transform effective */
+    font-size: 1.35em;
     cursor: help;
+    position: relative;    /* relative to the container */
+    transform: translateY(4%);
+    margin-left: 4px;
 }
 
 span.composure {
+    display: inline-block; /* ✅ makes top/transform effective */
     font-size: 1.2em;
     cursor: help;
+    position: relative;    /* relative to the container */
+    /*transform: translateY(5%);  pull back by half of own height */
+    margin-left: 4px;
 }
 
 span.arrogance {
+    display: inline-block; /* ✅ makes top/transform effective */
     font-size: 1.2em;
     cursor: help;
+    position: relative;    /* relative to the container */
+    transform: translateY(3%);
+    margin-left: 4px;
 }
 
 span.sportsmanship {
-    font-size: 1.4em;
+    display: inline-block; /* ✅ makes top/transform effective */
+    font-size: 1.35em;
     cursor: help;
+    position: relative;    /* relative to the container */
+    transform: translateY(3%);
+    margin-left: 4px;
 }
 
 ol#proposed-penalty-takers, ol#proposed-corner-takers, ol#proposed-anchors {
@@ -154,8 +170,13 @@ ol#FinalWhistlePlugin-buying-guide {
     bottom: 100%;
 }
 span.teamwork {
+    display: inline-block; /* ✅ makes top/transform effective */
     font-size: 1.4em;
     cursor: help;
+    position: relative;    /* relative to the container */
+    /* top: 75%;              push down 50% of container height */
+    transform: translateY(5%); /* pull back by half of own height */
+    margin-left: 4px;
 }
 fw-players div.card-header > div.row > input, fw-players div.card-header > div.row > label {
     margin-left: auto;    /* push to the right */
@@ -294,4 +315,29 @@ i.fa-tag::before {
 }
 .badge i.fa-tag {
   font: 14px/1 FontAwesome;
+}
+
+/* Transfer page */
+.FinalWhistlePlugin_detailedPropertyContainer {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;        /* keeps it tight */
+  /*font-size: 0.6em;       shrink if needed */
+  text-align: center;    /* or left/right */
+  position: relative;
+  top: 50%;              /* move down by half the cell height */
+  transform: translateY(-34%); /* pull back up by half own height */
+  margin-left: 4px;
+  cursor: help;
+}
+
+.FinalWhistlePlugin_detailedPropertyContainer .top {
+  font-weight: 600;
+  font-size: 0.7em;
+  margin-bottom: -0.1em; /* fine-tune vertical spacing */
+}
+
+.FinalWhistlePlugin_detailedPropertyContainer .bottom {
+  font-size: 0.5em;
+  margin-top: -0.1em;    /* fine-tune vertical spacing */
 }

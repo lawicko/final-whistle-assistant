@@ -27,6 +27,72 @@ export function toCamelCase(str) {
         .join('');
 }
 
+export function classFromTalent(talent, advancedDevelopmentFromScout) {
+    switch (talent) {
+        case 2:
+        case 3:
+        case 4:
+            if (normalizeAdvancedDevelopment(talent, advancedDevelopmentFromScout) === 18) {
+                return "good"
+            } else {
+                return "bad"
+            }
+        case 5:
+        case 6:
+            if (normalizeAdvancedDevelopment(talent, advancedDevelopmentFromScout) === 19) {
+                return "good"
+            } else {
+                return "bad"
+            }
+        case 7:
+        case 8:
+        case 9:
+            switch (normalizeAdvancedDevelopment(talent, advancedDevelopmentFromScout)) {
+                case 19:
+                    return "very_good"
+                case 20:
+                    return "good"
+                case 21:
+                    return "bad"
+                case 22:
+                    return "very_bad"
+            }
+    }
+}
+
+export function normalizeAdvancedDevelopment(talent, advancedDevelopmentFromScout) {
+    switch (talent) {
+        case 2:
+        case 3:
+        case 4:
+            if ([18, 19].includes(advancedDevelopmentFromScout)) {
+                return advancedDevelopmentFromScout
+            } else {
+                if (advancedDevelopmentFromScout < 18) return 18
+                if (advancedDevelopmentFromScout > 19) return 19
+            }
+        case 5:
+        case 6:
+            if ([19, 20].includes(advancedDevelopmentFromScout)) {
+                return advancedDevelopmentFromScout
+            } else {
+                if (advancedDevelopmentFromScout < 19) return 19
+                if (advancedDevelopmentFromScout > 20) return 20
+            }
+        case 7:
+        case 8:
+        case 9:
+            if ([19, 20, 21, 22].includes(advancedDevelopmentFromScout)) {
+                return advancedDevelopmentFromScout
+            } else {
+                if (advancedDevelopmentFromScout < 19) return 19
+                if (advancedDevelopmentFromScout > 22) return 22
+            }
+        default:
+            throw new Error(`Invalid input for normalizeAdvancedDevelopment: talent: ${talent}, advancedDevelopmentFromScout: ${advancedDevelopmentFromScout}`)
+    }
+}
+
 export async function getStoredString(key, defaultValue = undefined) {
     const result = await storage.get(key);
     const value = result[key];

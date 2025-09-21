@@ -34,8 +34,9 @@ export default [
             copy({
                 targets: copyCommonFiles,
                 hook: 'writeBundle'
-            },
-        )
+            }),
+            watchStylesheet(),
+            watchOptions()
         ]
     },
 
@@ -54,7 +55,9 @@ export default [
             copy({
                 targets: copyCommonFiles,
                 hook: 'writeBundle'
-            })
+            }),
+            watchStylesheet(),
+            watchOptions()
         ]
     },
 
@@ -135,6 +138,27 @@ function watchManifest() {
         name: 'watch-manifest',
         buildStart() {
             this.addWatchFile(path.resolve('src/manifest.template.json'));
+        }
+    };
+}
+
+function watchStylesheet() {
+    return {
+        name: 'watch-stylesheet',
+        buildStart() {
+            this.addWatchFile(path.resolve('content-scripts/styles.css'));
+        }
+    };
+}
+
+// TODO: When we have a separate config entry for options call this method only there instead of listening to options changes on the other two configs
+function watchOptions() {
+    return {
+        name: 'watch-options',
+        buildStart() {
+            this.addWatchFile(path.resolve('options/options.css'));
+            this.addWatchFile(path.resolve('options/options.html'));
+            this.addWatchFile(path.resolve('options/options.js'));
         }
     };
 }

@@ -120,3 +120,32 @@ button {
 .confirm-btn:hover {
   background-color: #43a047;
 }
+
+/* Transfer page */
+.FinalWhistlePlugin_detailedPropertyContainer {
+  display: flex;              /* make container a flex container */
+  flex-direction: column;     /* stack children vertically */
+  align-items: center;        /* horizontally center children */
+  justify-content: center;    /* vertically center if needed */
+  line-height: 1;             /* tighten spacing */
+  cursor: help;
+}
+
+.FinalWhistlePlugin_detailedPropertyContainer .top,
+.FinalWhistlePlugin_detailedPropertyContainer .bottom {
+  text-align: center;         /* center text inside each span */
+  display: inline-block;      /* make sure top/bottom respects text-align */
+}
+
+.FinalWhistlePlugin_detailedPropertyContainer .top {
+  font-weight: 600;
+  font-size: 0.7em;
+  margin-bottom: 0;  /* remove negative margin */
+}
+
+.FinalWhistlePlugin_detailedPropertyContainer .bottom {
+  font-size: 0.5em;
+  margin-top: 0;    /* remove negative margin */
+}
+
+

@@ -261,7 +261,6 @@ async function restoreOptions() {
             const descriptionLabel = failedDialog.querySelector("#localDataSaveFailedDialogDescription");
             descriptionLabel.textContent = formatError(e)
             openDialogAbove(saveBtn, failedDialog)
-            // alert("Invalid JSON, please fix it before saving.");
         }
     })
 

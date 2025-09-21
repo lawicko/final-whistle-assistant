@@ -219,7 +219,11 @@ async function handleInstalled(details) {
             "color-setting-teamwork+": "#4CBB17",
             "color-setting-teamwork++": "#228B22",
             "color-setting-teamwork-": "#FFD700",
-            "color-setting-teamwork--": "#FF4500"
+            "color-setting-teamwork--": "#FF4500",
+            "color-setting-advanced-development-very-good": "#228B22",
+            "color-setting-advanced-development-good": "#4CBB17",
+            "color-setting-advanced-development-bad": "#FFD700",
+            "color-setting-advanced-development-very-bad": "#FF4500"
         },
         tresholds: {
             composure_treshold: 50,
