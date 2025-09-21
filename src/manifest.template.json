@@ -29,7 +29,6 @@
         "clipboardWrite",
         "contextMenus",
         "storage",
-        "tabs",
         "webNavigation"
     ],
     "options_ui": {
