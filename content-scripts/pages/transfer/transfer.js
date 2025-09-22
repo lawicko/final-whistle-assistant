@@ -41,7 +41,8 @@ export async function processTransferPage() {
             uiUtils.PositionsKeys.RB,
             uiUtils.PositionsKeys.RWB
         ]
-        if (arrogance && DEFENSIVE_POSITIONS.includes(position)) {
+        // Only negative arrogance is important here
+        if (arrogance && arrogance < 0 && DEFENSIVE_POSITIONS.includes(position)) {
             uiUtils.applyArrogance(insertionPoint, arrogance)
         }
 

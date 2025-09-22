@@ -285,6 +285,10 @@ export function applyComposure(element, composure) {
 }
 
 export function applyArrogance(element, arrogance) {
+    if (arrogance > 0) {
+        console.warn("Tried to apply positive arrogance - currently positive arrogance is not supported")
+        return
+    }
     const hasArroganceSymbol = Array.from(element.children).some(
         child => child.textContent.trim() === personalitiesSymbols["arrogance"]
     );
