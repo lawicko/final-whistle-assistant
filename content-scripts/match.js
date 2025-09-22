@@ -15,7 +15,8 @@ export async function processMatch() {
     const competitionSymbol = document.querySelector('div[touranchor="match.header"] div.card-body small > i.bi-trophy')
     const competitionNameTextValue = competitionSymbol.parentNode.nextElementSibling.textContent
     const competitionName = competitionNameTextValue.replace(/^[A-Za-z]\s*/, "").trim();
-    if (competitionName == "Friendly" || competitionName == "Quick match") {
+    const ignoredMatchTypes = ["Friendly", "Quick match", "Custom competition"]
+    if (ignoredMatchTypes.includes(competitionName)) {
         console.info(`⏩ Match processing finished, skipping the ${competitionName}`);
         return
     }
