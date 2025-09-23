@@ -65,23 +65,25 @@ export async function processTransferPage() {
                 advancedDevelopmentConfig
             )
 
-            const denom = "denom" + hiddenSkills["estimatedPotential"]
-            const estimatedPotentialConfig = {
-                valueElementClass: denom,
-                tooltip: "Estimated potential that your scout sees. If you want to filter by exact potential use the controls at the top."
+            if (ageFromListing < 21) {
+                const denom = "denom" + hiddenSkills["estimatedPotential"]
+                const estimatedPotentialConfig = {
+                    valueElementClass: denom,
+                    tooltip: "Estimated potential that your scout sees. If you want to filter by exact potential use the controls at the top."
+                }
+                uiUtils.applyDetailedProperty(
+                    insertionPoint,
+                    normalizedEstimatedPotential,
+                    "EP",
+                    estimatedPotentialConfig
+                )
             }
-            uiUtils.applyDetailedProperty(
-                insertionPoint,
-                normalizedEstimatedPotential,
-                "EP",
-                estimatedPotentialConfig
-            )
         }
     }
 }
 
 async function applyCustomColorsForTLDetails() {
-    console.info(`Applying custom colors for transfer list details...`);
+    console.debug(`Applying custom colors for transfer list details...`);
     try {
         // Load colors from storage (with defaults)
         const { colors = {} } = await utils.optionsStorage.get("colors");
