@@ -342,12 +342,7 @@ function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
 /**
  * Adds injuries table to the player page if there is injury information in the storage
  */
-async function showInjuries() {
-    const playerID = lastPathComponent(window.location.pathname)
-    const playerDataFromStorage = await storage.get('player-data');
-    var loadedPlayerData = playerDataFromStorage['player-data'] || {};
-    console.debug('loadedPlayerData = ', loadedPlayerData)
-    var currentPlayerData = loadedPlayerData[playerID] || {};
+async function showInjuries(currentPlayerData) {
     console.debug('currentPlayerData = ', currentPlayerData)
     const injuries = currentPlayerData['injuries']
     //    const injuries = ["29 Aug 2025, 12:00", "27 Aug 2025, 12:00", "15 Aug 2025, 12:00"]
@@ -665,24 +660,6 @@ async function saveClubDataToStorage(clubData) {
     console.debug(`Done`);
 }
 
-async function savePlayerDataToStorage(playerData) {
-    console.debug(`Will save player data to storage`, playerData);
-
-    const { "player-data": playersDictFromStorage = {} } = await storage.get('player-data');
-    console.debug('playersDictFromStorage = ', playersDictFromStorage)
-
-    var currentPlayerRepresentationInStorage = playersDictFromStorage[playerData.playerID] || {};
-    console.debug('currentPlayerRepresentationInStorage = ', currentPlayerRepresentationInStorage)
-
-    const newPlayerRepresentation = mergeObjects(currentPlayerRepresentationInStorage, playerData)
-    console.debug(`Will overwrite player data with`, newPlayerRepresentation);
-
-    playersDictFromStorage[playerData.playerID] = newPlayerRepresentation
-    await storage.set({ "player-data": playersDictFromStorage })
-
-    console.info(`📥 Saved player data to storage (${playerData.playerID} ${playerData.name})`)
-}
-
 function getBidButton() {
     return document.querySelector("button:has(> i.fa-gavel)")
 }
@@ -902,14 +879,18 @@ export async function processPlayerPage() {
         clubData = getPlayerClubData()
         await saveClubDataToStorage(clubData)
     }
-    const playerData = getPlayerData()
-    await savePlayerDataToStorage(playerData)
+    let playerDataFromPage = getPlayerData()
+    const { "player-data": playersDictFromStorage = {} } = await storage.get('player-data');
+    console.debug('playersDictFromStorage = ', playersDictFromStorage)
 
-    await showInjuries()
+    let currentPlayerRepresentationInStorage = playersDictFromStorage[playerDataFromPage.playerID] || {};
+    console.debug('currentPlayerRepresentationInStorage = ', currentPlayerRepresentationInStorage)
+
+    await showInjuries(currentPlayerRepresentationInStorage)
 
     // If the player is on sale, add buying summary
     if (isPendingSale()) {
-        showBuyingGuide(playerData)
+        showBuyingGuide(playerDataFromPage)
     }
 
     const coreSkillsTable = getCoreSkillsTable()
@@ -964,9 +945,17 @@ export async function processPlayerPage() {
             let parsedScoutReport = parseScoutReport(bestReportElement)
             console.debug("Parsed scout report:", parsedScoutReport)
 
-            const playerDataAugmentedWithScoutReport = mergeObjects(playerData, parsedScoutReport)
-            await savePlayerDataToStorage(playerDataAugmentedWithScoutReport)
+            currentPlayerRepresentationInStorage = mergeObjects(currentPlayerRepresentationInStorage, parsedScoutReport)
         }
+    }
+
+    if (isShowingOverview() || isShowingReports()) { // only save for Overview or Reports
+        console.debug(`Will save player data to storage`, currentPlayerRepresentationInStorage);
+
+        playersDictFromStorage[currentPlayerRepresentationInStorage.playerID] = currentPlayerRepresentationInStorage
+        await storage.set({ "player-data": playersDictFromStorage })
+
+        console.info(`📥 Saved player data to storage (${currentPlayerRepresentationInStorage.playerID} ${currentPlayerRepresentationInStorage.name})`)
     }
 
     // TODO: develop this further
@@ -983,6 +972,11 @@ export async function processPlayerPage() {
 
 function getCoreSkillsTable() {
     return document.querySelector("table.table:has(tr th span[ngbpopover='Core Skills'])")
+}
+
+function isShowingOverview() {
+    const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
+    return activeTab && activeTab.textContent.trim() === "Overview"
 }
 
 function isShowingStatistics() {
