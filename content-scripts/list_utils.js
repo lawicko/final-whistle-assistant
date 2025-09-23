@@ -66,7 +66,7 @@ export function updateHiddenSkillsDetails({
         const denom = "denom" + hiddenSkills["estimatedPotential"]
         const estimatedPotentialConfig = {
             valueElementClass: denom,
-            tooltip: "Estimated potential that your scout sees. If you want to filter by exact potential use the controls at the top."
+            tooltip: "Estimated potential that your scout sees.."
         }
         uiUtils.updateDetailedProperty(
             insertionPoint,
