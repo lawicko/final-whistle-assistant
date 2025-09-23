@@ -52,7 +52,7 @@ function createHeaders() {
 }
 
 // Calculates and adds the cells with the midfield dominance values for each player
-function appendAdditionalInfo(storedPlayerData) {
+function appendAdditionalInfo(storedPlayerData, checkboxesData) {
     console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
@@ -101,6 +101,7 @@ function appendAdditionalInfo(storedPlayerData) {
             uiUtils.removeNoDataSymbol(insertionPoint)
 
             var teamwork = playerPersonalities['teamwork']
+            const showTeamwork = checkboxesData['teamwork'] ?? false
             if (teamwork) {
                 if (showTeamwork) {
                     uiUtils.applyTeamwork(insertionPoint, teamwork)
@@ -109,6 +110,7 @@ function appendAdditionalInfo(storedPlayerData) {
                 }
             }
             const sportsmanship = playerPersonalities['sportsmanship']
+            const showSportsmanship = checkboxesData['sportsmanship'] ?? false
             if (sportsmanship) {
                 if (showSportsmanship) {
                     uiUtils.applySportsmanship(insertionPoint, sportsmanship)
@@ -119,15 +121,17 @@ function appendAdditionalInfo(storedPlayerData) {
         }
 
         const ageFromListing = listUtils.age(row)
+        const showAD = checkboxesData['advancedDevelopment'] ?? false
+        const showEP = checkboxesData['estimatedPotential'] ?? false
         // Hidden skills
         const hiddenSkills = playerData["hiddenSkills"]
         if (hiddenSkills) {
-            listUtils.addHiddenSkillsDetails({
+            listUtils.updateHiddenSkillsDetails({
                 insertionPoint: insertionPoint,
                 hiddenSkills: hiddenSkills,
                 config: {
-                    showAdvancedDevelopment: ageFromListing < 25,
-                    showEstimatedPotential: ageFromListing < 21
+                    showAdvancedDevelopment: showAD && ageFromListing < 25,
+                    showEstimatedPotential: showEP && ageFromListing < 21
                 }
             })
         }
@@ -252,77 +256,8 @@ function isShowingGoalkeepers() {
     return (goalkeeperFilter && goalkeeperFilter.textContent.trim() != "-")
 }
 
-// Boolean variables to track checkbox state
-let showTeamwork = true;
-let showSportsmanship = true;
-
-function addPersonalityCheckboxes(checkboxesDataFromStorage) {
-    const cardHeader = document.querySelector("fw-players div.card-header > div.row");
-    if (!cardHeader) return;
-
-    // Avoid adding duplicates
-    if (document.getElementById("teamworkCheckbox")) return;
-
-    const checkboxesData = [
-        { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork`, variable: "showTeamwork" },
-        { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship`, variable: "showSportsmanship" }
-    ];
-    const rightItems = document.createElement("div")
-    rightItems.classList.add("right-items")
-
-    checkboxesData.forEach(item => {
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.id = item.id;
-
-        const suffix = "Checkbox";
-        const checkboxKey = item.id.slice(0, -suffix.length);
-        if (checkboxesDataFromStorage[checkboxKey] === undefined) {
-            checkbox.checked = true; // default to checked
-        } else {
-            checkbox.checked = !!checkboxesDataFromStorage[checkboxKey];
-        }
-        if (item.variable === "showTeamwork") showTeamwork = checkbox.checked;
-        if (item.variable === "showSportsmanship") showSportsmanship = checkbox.checked;
-
-        const label = document.createElement("label");
-        label.textContent = item.label;
-        label.htmlFor = item.id;
-
-        // Update the corresponding boolean variable on change
-        checkbox.addEventListener("change", async () => {
-            if (item.variable === "showTeamwork") showTeamwork = checkbox.checked;
-            if (item.variable === "showSportsmanship") showSportsmanship = checkbox.checked;
-
-            console.log(`${item.label}:`, checkbox.checked);
-            const {
-                checkboxes: cd = {},
-                "player-data": storedPlayerData = {}
-            } = await utils.storage.get(["player-data", "checkboxes"]);
-            if (showTeamwork) {
-                cd["teamwork"] = "true"
-            } else {
-                delete cd["teamwork"]
-            }
-            if (showSportsmanship) {
-                cd["sportsmanship"] = "true"
-            } else {
-                delete cd["sportsmanship"]
-            }
-            await utils.storage.set({ checkboxes: cd })
-            appendAdditionalInfo(storedPlayerData)
-        });
-
-
-        rightItems.appendChild(checkbox);
-        rightItems.appendChild(label);
-        rightItems.appendChild(document.createTextNode(" ")); // spacing
-    });
-    cardHeader.appendChild(rightItems)
-}
-
 export async function processPlayersPage() {
-    console.info(`${utils.version} Processing players page...`);
+    console.info(`${utils.version} Processing players page...`)
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
 
@@ -330,13 +265,23 @@ export async function processPlayersPage() {
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
 
         const result = await utils.storage.get(["player-data", "checkboxes"])
-        const checkboxesData = result["checkboxes"] || {};
-        const storedPlayerData = result["player-data"] || {};
+        const checkboxesDefault = {
+            teamwork: "true",
+            sportsmanship: "true",
+            advancedDevelopment: "true",
+            estimatedPotential: "true"
+        }
+        const checkboxesData = result["checkboxes"] || checkboxesDefault
+        const storedPlayerData = result["player-data"] || {}
 
         cleanUpNodeForPlayers(tableNode)
 
-        addPersonalityCheckboxes(checkboxesData)
+        listUtils.addControlCheckboxes(
+            document.querySelector("fw-players div.card-header > div.row"),
+            checkboxesData,
+            (pData, cData) => { appendAdditionalInfo(pData, cData) }
+        )
         createHeaders()
-        appendAdditionalInfo(storedPlayerData)
+        appendAdditionalInfo(storedPlayerData, checkboxesData)
     }
 }

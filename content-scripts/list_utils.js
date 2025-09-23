@@ -25,7 +25,7 @@ export function id(row) {
  * @param {Object} hiddenSkills object that contains the hidden skills definitions
  * @param {Object} config defines which skills are added
  */
-export function addHiddenSkillsDetails({
+export function updateHiddenSkillsDetails({
     insertionPoint = undefined,
     hiddenSkills = undefined,
     config = {
@@ -34,10 +34,10 @@ export function addHiddenSkillsDetails({
     }
 } = {}) {
     if (!insertionPoint) {
-        throw new Error("addHiddenSkillsDetails called with undefined insertionPoint")
+        throw new Error("updateHiddenSkillsDetails called with undefined insertionPoint")
     }
     if (!hiddenSkills) {
-        throw new Error("addHiddenSkillsDetails called with undefined hiddenSkills argument")
+        throw new Error("updateHiddenSkillsDetails called with undefined hiddenSkills argument")
     }
 
     const normalizedEstimatedPotential = Number(hiddenSkills["estimatedPotential"])
@@ -49,11 +49,16 @@ export function addHiddenSkillsDetails({
             valueElementClass: advancedDevelopmentClass,
             tooltip: "Advanced development as seen by your scout, normalized by eliminating impossible values like 21 for potentials 5 and 6. Possible values:\n3,4: 18 or 19\n5,6: 19 or 20\n7,8,9: 19, 20, 21 or 22"
         }
-        uiUtils.applyDetailedProperty(
+        uiUtils.updateDetailedProperty(
             insertionPoint,
-            normalizedAdvancedDevelopemnt,
             "AD",
+            normalizedAdvancedDevelopemnt,
             advancedDevelopmentConfig
+        )
+    } else {
+        uiUtils.updateDetailedProperty(
+            insertionPoint,
+            "AD"
         )
     }
 
@@ -63,11 +68,79 @@ export function addHiddenSkillsDetails({
             valueElementClass: denom,
             tooltip: "Estimated potential that your scout sees. If you want to filter by exact potential use the controls at the top."
         }
-        uiUtils.applyDetailedProperty(
+        uiUtils.updateDetailedProperty(
             insertionPoint,
-            normalizedEstimatedPotential,
             "EP",
+            normalizedEstimatedPotential,
             estimatedPotentialConfig
         )
+    } else {
+        uiUtils.updateDetailedProperty(
+            insertionPoint,
+            "EP"
+        )
     }
+}
+
+/**
+ * Adds the control checkboxes to the desired node
+ * @param {Node} insertionPoint the insertion point to which the checkboxes will be appended
+ * @param {Object} checkboxesDataFromStorage the object containing information on the saved selection state
+ */
+export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, afterCheckboxDataSetCallback) {
+    if (!insertionPoint) {
+        throw new Error("addControlCheckboxes called with undefined insertionPoint")
+    }
+
+    if (!checkboxesDataFromStorage) {
+        throw new Error("addControlCheckboxes called with undefined checkboxesDataFromStorage")
+    }
+
+    // If there already exists any of the chekboxes then we don't need to add anything because it's already there
+    if (document.getElementById("teamworkCheckbox")) return
+
+    const checkboxesData = [
+        { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork` },
+        { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship` },
+        { id: "advancedDevelopmentCheckbox", label: `AD` },
+        { id: "estimatedPotentialCheckbox", label: `EP` }
+    ];
+    const rightItems = document.createElement("div")
+    rightItems.classList.add("right-items")
+
+    checkboxesData.forEach(item => {
+        const checkbox = document.createElement("input")
+        checkbox.type = "checkbox"
+        checkbox.id = item.id
+
+        const suffix = "Checkbox";
+        const checkboxKey = item.id.slice(0, -suffix.length);
+        checkbox.checked = !!checkboxesDataFromStorage[checkboxKey]
+
+        const label = document.createElement("label")
+        label.textContent = item.label
+        label.htmlFor = item.id
+
+        // Update the corresponding boolean variable on change
+        checkbox.addEventListener("change", async (event) => {
+            const isChecked = event.target.checked
+            console.debug(`${item.label}:`, checkbox.checked)
+            const {
+                checkboxes: cd = checkboxesDataFromStorage,
+                "player-data": storedPlayerData = {}
+            } = await utils.storage.get(["player-data", "checkboxes"])
+            if (isChecked) {
+                cd[checkboxKey] = "true"
+            } else {
+                delete cd[checkboxKey]
+            }
+            await utils.storage.set({ checkboxes: cd })
+            afterCheckboxDataSetCallback(storedPlayerData, cd)
+        })
+
+        rightItems.appendChild(checkbox)
+        rightItems.appendChild(label)
+        rightItems.appendChild(document.createTextNode(" ")) // spacing
+    })
+    insertionPoint.appendChild(rightItems)
 }

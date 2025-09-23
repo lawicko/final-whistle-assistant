@@ -321,34 +321,40 @@ export function applyArrogance(element, arrogance) {
     }
 }
 
-export function applyDetailedProperty(element, propertyValue, propertyDescription, config) {
+export function updateDetailedProperty(element, propertyDescription, propertyValue, config) {
     const normalizedDescription = pluginNodeClass + propertyDescription.replace(/\s+/g, "_")
     const containerClass = pluginNodeClass + "_detailedPropertyContainer"
-    const hasContainer = Array.from(element.children).some(
-        child => child.classList.contains(containerClass) && child.classList.contains(normalizedDescription)
+    const container = Array.from(element.children).find(
+        child =>
+            child.classList.contains(containerClass) &&
+            child.classList.contains(normalizedDescription)
     )
-    if (!hasContainer) {
-        const container = document.createElement("span")
-        container.classList.add(containerClass)
-        container.classList.add(normalizedDescription)
+    if (propertyValue && config) {
+        if (!container) {
+            const container = document.createElement("span")
+            container.classList.add(containerClass)
+            container.classList.add(normalizedDescription)
 
-        const topSpan = document.createElement("span")
-        topSpan.classList.add("top")
-        if (config && config.valueElementClass) {
-            topSpan.classList.add(config.valueElementClass)
+            const topSpan = document.createElement("span")
+            topSpan.classList.add("top")
+            if (config && config.valueElementClass) {
+                topSpan.classList.add(config.valueElementClass)
+            }
+            topSpan.textContent = propertyValue
+            container.appendChild(topSpan)
+
+            const bottomSpan = document.createElement("span")
+            bottomSpan.classList.add("bottom")
+            bottomSpan.textContent = propertyDescription
+            container.appendChild(bottomSpan)
+
+            if (config && config.tooltip) {
+                container.title = config.tooltip
+            }
+            element.appendChild(container)
         }
-        topSpan.textContent = propertyValue
-        container.appendChild(topSpan)
-
-        const bottomSpan = document.createElement("span")
-        bottomSpan.classList.add("bottom")
-        bottomSpan.textContent = propertyDescription
-        container.appendChild(bottomSpan)
-
-        if (config && config.tooltip) {
-            container.title = config.tooltip
-        }
-        element.appendChild(container)
+    } else if (container) {
+        container.remove()
     }
 }
 

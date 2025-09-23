@@ -50,7 +50,7 @@ export async function processTransferPage() {
         // Hidden skills
         const hiddenSkills = loadedPlayerData["hiddenSkills"]
         if (hiddenSkills) {
-            listUtils.addHiddenSkillsDetails({
+            listUtils.updateHiddenSkillsDetails({
                 insertionPoint: insertionPoint,
                 hiddenSkills: hiddenSkills,
                 config: {
@@ -66,8 +66,7 @@ async function applyCustomColorsForTLDetails() {
     console.debug(`Applying custom colors for transfer list details...`);
     try {
         // Load colors from storage (with defaults)
-        const { colors = {} } = await utils.optionsStorage.get("colors");
-        console.log("good", colors["color-setting-advanced-development-good"])
+        const { colors = {} } = await utils.optionsStorage.get("colors")
 
         // Inject CSS rule so future elements are styled too
         utils.addCSS(`
