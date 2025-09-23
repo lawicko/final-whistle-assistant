@@ -12,7 +12,7 @@ import { processLeaguePage } from './pages/league/league.js'
 import { processTransferPage } from './pages/transfer/transfer.js'
 
 // How long to wait after the last mutation before processing the DOM (in ms)
-const DEBOUNCE_WAIT_MS = 0;
+const DEBOUNCE_WAIT_MS = 150;
 
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
