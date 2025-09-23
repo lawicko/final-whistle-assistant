@@ -1,17 +1,18 @@
 import * as utils from "../../utils.js"
 import * as uiUtils from "../../ui_utils.js"
+import * as listUtils from "../../list_utils.js"
 
 export async function processTransferPage() {
     console.info("💸 Processing transfer page")
     const rows = document.querySelectorAll("table.table > tbody> tr")
+    const { ['player-data']: playersDataFromStorage = {} } = await utils.storage.get('player-data')
     for (const row of [...rows]) {
-        const playerID = utils.lastPathComponent(row.querySelector("fw-player-hover div.hovercard a").href)
+        const playerID = listUtils.id(row)
         const playerName = row
             .querySelector('fw-player-hover div.hovercard a span')
             .textContent
             .trim()
-        const ageFromListing = Number(row.querySelector("fw-player-age > span > span").textContent.trim())
-        const { ['player-data']: playersDataFromStorage = {} } = await utils.storage.get('player-data')
+        const ageFromListing = listUtils.age(row)
         let loadedPlayerData = playersDataFromStorage[playerID]
         if (!loadedPlayerData) continue
 
@@ -48,36 +49,15 @@ export async function processTransferPage() {
 
         // Hidden skills
         const hiddenSkills = loadedPlayerData["hiddenSkills"]
-        if (ageFromListing < 25 && hiddenSkills) {
-            const normalizedEstimatedPotential = Number(hiddenSkills["estimatedPotential"])
-
-            const normalizedAdvancedDevelopemnt = utils.normalizeAdvancedDevelopment(normalizedEstimatedPotential, Number(hiddenSkills["advancedDev"]))
-
-            let advancedDevelopmentClass = utils.classFromTalent(normalizedEstimatedPotential, normalizedAdvancedDevelopemnt)
-            const advancedDevelopmentConfig = {
-                valueElementClass: advancedDevelopmentClass,
-                tooltip: "Advanced development as seen by your scout, normalized by eliminating impossible values like 21 for potentials 5 and 6. Possible values:\n3,4: 18 or 19\n5,6: 19 or 20\n7,8,9: 19, 20, 21 or 22"
-            }
-            uiUtils.applyDetailedProperty(
-                insertionPoint,
-                normalizedAdvancedDevelopemnt,
-                "AD",
-                advancedDevelopmentConfig
-            )
-
-            if (ageFromListing < 21) {
-                const denom = "denom" + hiddenSkills["estimatedPotential"]
-                const estimatedPotentialConfig = {
-                    valueElementClass: denom,
-                    tooltip: "Estimated potential that your scout sees. If you want to filter by exact potential use the controls at the top."
+        if (hiddenSkills) {
+            listUtils.addHiddenSkillsDetails({
+                insertionPoint: insertionPoint,
+                hiddenSkills: hiddenSkills,
+                config: {
+                    showAdvancedDevelopment: ageFromListing < 25,
+                    showEstimatedPotential: ageFromListing < 21
                 }
-                uiUtils.applyDetailedProperty(
-                    insertionPoint,
-                    normalizedEstimatedPotential,
-                    "EP",
-                    estimatedPotentialConfig
-                )
-            }
+            })
         }
     }
 }

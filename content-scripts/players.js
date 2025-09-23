@@ -1,19 +1,6 @@
-import {
-    storage,
-    pluginNodeClass,
-    version
-} from './utils.js';
-
-import { 
-    addNoDataSymbol,
-    applySportsmanship,
-    applyTeamwork,
-    calculateAssistance,
-    calculateDefensiveAssistanceGK,
-    denomination,
-    personalitiesSymbols,
-    removeNoDataSymbol
-} from './ui_utils.js';
+import * as utils from "./utils.js"
+import * as uiUtils from "./ui_utils.js"
+import * as listUtils from "./list_utils.js"
 
 /**
  * Creates a <td> or <th> element with a hover-card.
@@ -26,7 +13,7 @@ import {
  */
 function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
     const cell = document.createElement(tag);
-    cell.classList.add(pluginNodeClass)
+    cell.classList.add(utils.pluginNodeClass)
     cell.setAttribute("data-tooltip", hoverContent);
 
     // span with text
@@ -71,17 +58,16 @@ function appendAdditionalInfo(storedPlayerData) {
 
     let rows = document.querySelectorAll("table > tr");
     for (let i = 1; i < rows.length; i++) {
+        const row = rows[i]
         // Select the first <a> inside a <td> whose href contains "/player/"
-        const playerLink = rows[i].querySelector('td a[href*="/player/"]');
+        const playerLink = row.querySelector('td a[href*="/player/"]');
         // Match the number after /player/
         if (!playerLink) { // When the user hovers over the player name, the hover card shows up
             return
         }
-        const match = playerLink.href.match(/\/player\/(\d+)/);
-        const playerID = match ? match[1] : null;
-        if (!playerID) {
-            console.error("Tried to extract player ID from href ", playerLink.href, " but there are no matches")
-        }
+
+        const playerID = listUtils.id(row)
+
         // Select the first span child
         const firstSpan = Array.from(playerLink.children).find(
             child => child.tagName === 'SPAN' && child.textContent.trim() !== ''
@@ -97,12 +83,12 @@ function appendAdditionalInfo(storedPlayerData) {
         let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
 
         const playerData = storedPlayerData[playerID]
-        const container = playerLink.parentNode.parentNode.parentNode
+        const insertionPoint = rows[i].querySelector("td:has(fw-player-hover)")
         if (playerData) {
             console.debug(`Found stored player data for: ${playerName}`, playerData)
         } else {
             console.debug(`Player ${playerName} has no saved profile.`)
-            addNoDataSymbol(container)
+            uiUtils.addNoDataSymbol(insertionPoint)
         }
         var playerPersonalities = undefined
         if (playerData && playerData["personalities"]) {
@@ -110,27 +96,42 @@ function appendAdditionalInfo(storedPlayerData) {
         }
         if (!playerPersonalities) {
             console.debug(`No personalities in player profile for ${playerName}.`)
-            addNoDataSymbol(container)
+            uiUtils.addNoDataSymbol(insertionPoint)
         } else {
-            removeNoDataSymbol(container)
+            uiUtils.removeNoDataSymbol(insertionPoint)
 
             var teamwork = playerPersonalities['teamwork']
             if (teamwork) {
                 if (showTeamwork) {
-                    applyTeamwork(playerLink.parentNode.parentNode.parentNode, teamwork)
+                    uiUtils.applyTeamwork(insertionPoint, teamwork)
                 } else {
-                    clearTeamwork(container)
+                    clearTeamwork(insertionPoint)
                 }
             }
             const sportsmanship = playerPersonalities['sportsmanship']
             if (sportsmanship) {
                 if (showSportsmanship) {
-                    applySportsmanship(playerLink.parentNode.parentNode.parentNode, sportsmanship)
+                    uiUtils.applySportsmanship(insertionPoint, sportsmanship)
                 } else {
-                    clearSportsmanship(container)
+                    clearSportsmanship(insertionPoint)
                 }
             }
         }
+
+        const ageFromListing = listUtils.age(row)
+        // Hidden skills
+        const hiddenSkills = playerData["hiddenSkills"]
+        if (hiddenSkills) {
+            listUtils.addHiddenSkillsDetails({
+                insertionPoint: insertionPoint,
+                hiddenSkills: hiddenSkills,
+                config: {
+                    showAdvancedDevelopment: ageFromListing < 25,
+                    showEstimatedPotential: ageFromListing < 21
+                }
+            })
+        }
+
         const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
         if (valueNodes.length < 8) { // Goalkeepers
             let RE = parseNumber(valueNodes[0]);
@@ -140,8 +141,8 @@ function appendAdditionalInfo(storedPlayerData) {
             let OR = parseNumber(valueNodes[4]);
 
             console.debug(`RE=${RE} GP=${GP} IN=${IN} CT=${CT} OR=${OR}`)
-            const assistanceCalculations = calculateDefensiveAssistanceGK({ OR: OR, teamwork: teamwork });
-            
+            const assistanceCalculations = uiUtils.calculateDefensiveAssistanceGK({ OR: OR, teamwork: teamwork });
+
             const tdDA = createHoverCardCell(
                 "td",
                 assistanceCalculations.defensiveAssistance,
@@ -162,15 +163,15 @@ function appendAdditionalInfo(storedPlayerData) {
             let longShot = (SC + Math.min(2 * SC, PA)) / 2
             let longShotMax = (100 + Math.min(2 * 100, 100)) / 2
             let longShotDenomination = longShot / longShotMax
-            let longShotDenominationNormalized = denomination(longShotDenomination * 100)
+            let longShotDenominationNormalized = uiUtils.denomination(longShotDenomination * 100)
 
             let constitutionTreshold = 50
             let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
             let midfieldDominanceMax = 100 + 200
             let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
-            let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
-            
-            const assistanceCalculations = calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: teamwork });
+            let midfieldDominanceDenominationNormalized = uiUtils.denomination(midfieldDominanceDenomination * 100)
+
+            const assistanceCalculations = uiUtils.calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: teamwork });
 
             if (!isShowingGoalkeepers()) {
                 const tdLS = createHoverCardCell(
@@ -210,7 +211,7 @@ function appendAdditionalInfo(storedPlayerData) {
 function clearTeamwork(element) {
     const spans = element.querySelectorAll("span");
     spans.forEach(span => {
-        if (span.textContent.trim() === personalitiesSymbols["teamwork"]) {
+        if (span.textContent.trim() === uiUtils.personalitiesSymbols["teamwork"]) {
             span.remove();
         }
     });
@@ -219,7 +220,7 @@ function clearTeamwork(element) {
 function clearSportsmanship(element) {
     const spans = element.querySelectorAll("span");
     spans.forEach(span => {
-        if (span.textContent.trim() === personalitiesSymbols["sportsmanship"]) {
+        if (span.textContent.trim() === uiUtils.personalitiesSymbols["sportsmanship"]) {
             span.remove();
         }
     });
@@ -227,8 +228,8 @@ function clearSportsmanship(element) {
 
 function cleanUpNodeForPlayers(tableNode) {
     console.debug(`removing the old cells...`)
-    tableNode.querySelectorAll(`td.${pluginNodeClass}`).forEach(el => el.remove());
-    tableNode.querySelectorAll(`th.${pluginNodeClass}`).forEach(el => el.remove());
+    tableNode.querySelectorAll(`td.${utils.pluginNodeClass}`).forEach(el => el.remove());
+    tableNode.querySelectorAll(`th.${utils.pluginNodeClass}`).forEach(el => el.remove());
 }
 
 function isShowingAttackers() {
@@ -263,8 +264,8 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
     if (document.getElementById("teamworkCheckbox")) return;
 
     const checkboxesData = [
-        { id: "teamworkCheckbox", label: `${personalitiesSymbols["teamwork"]} Teamwork`, variable: "showTeamwork" },
-        { id: "sportsmanshipCheckbox", label: `${personalitiesSymbols["sportsmanship"]} Sportsmanship`, variable: "showSportsmanship" }
+        { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork`, variable: "showTeamwork" },
+        { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship`, variable: "showSportsmanship" }
     ];
     const rightItems = document.createElement("div")
     rightItems.classList.add("right-items")
@@ -297,7 +298,7 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
             const {
                 checkboxes: cd = {},
                 "player-data": storedPlayerData = {}
-            } = await storage.get(["player-data", "checkboxes"]);
+            } = await utils.storage.get(["player-data", "checkboxes"]);
             if (showTeamwork) {
                 cd["teamwork"] = "true"
             } else {
@@ -308,7 +309,7 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
             } else {
                 delete cd["sportsmanship"]
             }
-            await storage.set({ checkboxes: cd })
+            await utils.storage.set({ checkboxes: cd })
             appendAdditionalInfo(storedPlayerData)
         });
 
@@ -321,14 +322,14 @@ function addPersonalityCheckboxes(checkboxesDataFromStorage) {
 }
 
 export async function processPlayersPage() {
-    console.info(`${version} Processing players page...`);
+    console.info(`${utils.version} Processing players page...`);
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
 
         console.debug(`Found the following table: `, tableNode)
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
 
-        const result = await storage.get(["player-data", "checkboxes"])
+        const result = await utils.storage.get(["player-data", "checkboxes"])
         const checkboxesData = result["checkboxes"] || {};
         const storedPlayerData = result["player-data"] || {};
 
