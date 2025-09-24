@@ -3,8 +3,16 @@ import * as uiUtils from "../../ui_utils.js"
 import * as listUtils from "../../list_utils.js"
 
 export async function processTransferPage() {
-    console.info("💸 Processing transfer page")
-    const rows = document.querySelectorAll("table.table > tbody> tr")
+    console.info(`💸 Processing transfer page`)
+    let rows = document.querySelectorAll("table.table > tbody> tr") // main /transfer
+    const fromBidsTab = document.querySelectorAll("fw-transfer-bids table.table > tr:has(fw-player-hover)")
+    if (fromBidsTab.length > 0) {
+        rows = [...rows, ...fromBidsTab]
+    }
+    const fromWatchlist = document.querySelectorAll("fw-transfer-watchlist table.table > tr:has(fw-player-hover)")
+    if (fromWatchlist.length > 0) {
+        rows = [...rows, ...fromWatchlist]
+    }
     const { ['player-data']: playersDataFromStorage = {} } = await utils.storage.get('player-data')
     for (const row of [...rows]) {
         const playerID = listUtils.id(row)

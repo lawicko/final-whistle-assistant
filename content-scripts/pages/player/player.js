@@ -1,22 +1,10 @@
-import {
-    lastPathComponent,
-    mergeObjects,
-    pluginNodeClass,
-    storage,
-    sumMinutes,
-    toCamelCase,
-    version
-} from "./utils.js"
-import { calculateAssistance, denomination } from "./ui_utils.js"
-import { specialTalentDescription } from "./special_talents_utils.js"
-import { personalityDescription } from "./personalities_utils.js"
-import {
-    getSeasonStartDate,
-    parseNumbersOnPlayerPage,
-    parseScoutReport
-} from "./player_utils.js"
-import { processPlayedMatches } from './match_data_gathering_indicators.js'
-import { addYAndSLabelsForMatchBadges } from './y_and_s_labels_for_match_badges.js'
+import * as utils from "../../utils.js"
+import * as uiUtils from "../../ui_utils.js"
+import * as specialTalentsUtils from "../../special_talents_utils.js"
+import * as personalitiesUtils from "../../personalities_utils.js"
+import * as playerUtils from "./player_utils.js"
+import { processPlayedMatches } from '../../match_data_gathering_indicators.js'
+import { addYAndSLabelsForMatchBadges } from '../../y_and_s_labels_for_match_badges.js'
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -140,18 +128,18 @@ function appendComputedSkills(tableNode) {
 
     let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
     let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
-    let midfieldDominanceDenominationNormalized = denomination(midfieldDominanceDenomination * 100)
+    let midfieldDominanceDenominationNormalized = utils.denomination(midfieldDominanceDenomination * 100)
 
     let midfieldDominanceContributionPotential = PA_POT + Math.min(OP_POT + BC_POT, TA_POT + DP_POT) + Math.max(0, CO_POT - constitutionTreshold)
     let midfieldDominanceDenominationPotential = midfieldDominanceContributionPotential / midfieldDominanceMax
-    let midfieldDominanceDenominationNormalizedPotential = denomination(midfieldDominanceDenominationPotential * 100)
+    let midfieldDominanceDenominationNormalizedPotential = utils.denomination(midfieldDominanceDenominationPotential * 100)
 
     console.debug("contribution = ", midfieldDominanceContribution, "denomination = ", midfieldDominanceDenomination, " normalized: ", midfieldDominanceDenominationNormalized)
     console.debug("contribution (potential)= ", midfieldDominanceContributionPotential, "denomination = ", midfieldDominanceDenominationPotential, " normalized: ", midfieldDominanceDenominationNormalizedPotential)
 
     // Midfield Dominance
     var trMD = document.createElement("tr")
-    trMD.className = pluginNodeClass
+    trMD.className = utils.pluginNodeClass
 
     var tdMDLabel = document.createElement("td")
     tdMDLabel.className = "opacity-06"
@@ -181,12 +169,12 @@ function appendComputedSkills(tableNode) {
         personalities = getPersonalitiesData(personalitiesTable)
     }
     console.debug("personalities:", personalities)
-    const resultCurrents = calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: personalities["teamwork"] });
-    const resultPotential = calculateAssistance({ OP: OP_POT, BC: BC_POT, TA: TA_POT, DP: DP_POT, teamwork: personalities["teamwork"] });
+    const resultCurrents = uiUtils.calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: personalities["teamwork"] });
+    const resultPotential = uiUtils.calculateAssistance({ OP: OP_POT, BC: BC_POT, TA: TA_POT, DP: DP_POT, teamwork: personalities["teamwork"] });
 
     // Offensive Assistance
     var trOA = document.createElement("tr")
-    trOA.className = pluginNodeClass
+    trOA.className = utils.pluginNodeClass
 
     var tdOALabel = document.createElement("td")
     tdOALabel.className = "opacity-06"
@@ -211,7 +199,7 @@ function appendComputedSkills(tableNode) {
 
     // Defensive Assistance
     var trDA = document.createElement("tr")
-    trDA.className = pluginNodeClass
+    trDA.className = utils.pluginNodeClass
 
     var tdDALabel = document.createElement("td")
     tdDALabel.className = "opacity-06"
@@ -444,7 +432,7 @@ async function showInjuries(currentPlayerData) {
     } else {
         var minutesWithoutInjury = 0
         if (minutesPlayed) {
-            minutesWithoutInjury = sumMinutes(minutesPlayed)
+            minutesWithoutInjury = utils.sumMinutes(minutesPlayed)
         }
         if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
             const span = document.createElement('span')
@@ -478,7 +466,7 @@ function isOwnPlayer() {
  */
 function getPlayerClubData() {
     const link = document.querySelector('table span fw-club-hover a')
-    const clubID = lastPathComponent(link.href)
+    const clubID = utils.lastPathComponent(link.href)
     const clubName = link.querySelector('span.club-name').textContent
     const clubData = {
         id: clubID,
@@ -611,7 +599,7 @@ function getHiddenSkillsData(hiddenSkillsTable) {
         const skillLabelText = skillLabelElement.textContent.trim()
         const skillValueElement = skillLabelElement.nextElementSibling
 
-        result[toCamelCase(skillLabelText)] = parseNumbersOnPlayerPage(skillValueElement)
+        result[utils.toCamelCase(skillLabelText)] = playerUtils.parseNumbersOnPlayerPage(skillValueElement)
     });
 
     return result
@@ -642,7 +630,7 @@ function getPlayerData() {
     }
     console.debug("hiddenSkillsData", hiddenSkillsData)
 
-    const playerID = lastPathComponent(window.location.pathname)
+    const playerID = utils.lastPathComponent(window.location.pathname)
 
     return {
         playerID: playerID,
@@ -656,7 +644,7 @@ function getPlayerData() {
 
 async function saveClubDataToStorage(clubData) {
     console.debug(`Will save club data to storage`, clubData);
-    await storage.set({ club: clubData })
+    await utils.storage.set({ club: clubData })
     console.debug(`Done`);
 }
 
@@ -675,7 +663,7 @@ function isPendingSale() {
 function showBuyingGuide(playerData) {
     const bidButton = getBidButton()
 
-    const buyingGuideIdentifier = `${pluginNodeClass}-buying-guide`
+    const buyingGuideIdentifier = `${utils.pluginNodeClass}-buying-guide`
     if (document.getElementById(buyingGuideIdentifier)) {
         console.info("Buing guide already present")
         return
@@ -703,7 +691,7 @@ function assembleBuyingGuide(identifier, playerData) {
         console.info("Appending personalities info to buying guide")
         Object.entries(personalitiesData).forEach(([personality, value]) => {
             try {
-                const description = personalityDescription(personality, value, position)
+                const description = personalitiesUtils.personalityDescription(personality, value, position)
                 if (!description) return
                 buyingGuideDescriptions.push(description)
             } catch (e) {
@@ -716,7 +704,7 @@ function assembleBuyingGuide(identifier, playerData) {
     if (specialTalentsData) {
         console.info("Appending special talents info to buying guide")
         for (const talent of specialTalentsData) {
-            const description = specialTalentDescription(talent, position)
+            const description = specialTalentsUtils.specialTalentDescription(talent, position)
             buyingGuideDescriptions.push(description)
         }
     }
@@ -860,11 +848,11 @@ function checkSiteLoaded() {
 
 function cleanUpNodeForPlayer(tableNode) {
     console.debug(`removing the old cells...`)
-    tableNode.querySelectorAll(`tr.${pluginNodeClass}`).forEach(el => el.remove())
+    tableNode.querySelectorAll(`tr.${utils.pluginNodeClass}`).forEach(el => el.remove())
 }
 
 export async function processPlayerPage() {
-    console.info(`⏳ ${version} Processing player page for ${lastPathComponent(window.location.pathname)}...`)
+    console.info(`⏳ ${utils.version} Processing player page for ${utils.lastPathComponent(window.location.pathname)}...`)
 
     const siteLoaded = checkSiteLoaded()
     if (siteLoaded) {
@@ -880,8 +868,8 @@ export async function processPlayerPage() {
         await saveClubDataToStorage(clubData)
     }
     let playerDataFromPage = getPlayerData()
-    console.debug("playerDataFromPage",playerDataFromPage)
-    const { "player-data": playersDictFromStorage = {} } = await storage.get('player-data');
+    console.debug("playerDataFromPage", playerDataFromPage)
+    const { "player-data": playersDictFromStorage = {} } = await utils.storage.get('player-data');
     console.debug('playersDictFromStorage = ', playersDictFromStorage)
 
     let currentPlayerRepresentationInStorage = playersDictFromStorage[playerDataFromPage.playerID] || {};
@@ -943,32 +931,54 @@ export async function processPlayerPage() {
             const sortedEntries = [...reports.entries()].sort(([a], [b]) => b - a)
             const bestReport = sortedEntries[0]
             const bestReportElement = bestReport[1]
-            let parsedScoutReport = parseScoutReport(bestReportElement)
+            let parsedScoutReport = playerUtils.parseScoutReport(bestReportElement)
             console.debug("Parsed scout report:", parsedScoutReport)
 
-            currentPlayerRepresentationInStorage = mergeObjects(currentPlayerRepresentationInStorage, parsedScoutReport)
+            currentPlayerRepresentationInStorage = utils.mergeObjects(currentPlayerRepresentationInStorage, parsedScoutReport)
         }
     }
 
     if (isShowingOverview() || isShowingReports()) { // only save for Overview or Reports
-        currentPlayerRepresentationInStorage = mergeObjects(currentPlayerRepresentationInStorage, playerDataFromPage)
+        currentPlayerRepresentationInStorage = utils.mergeObjects(currentPlayerRepresentationInStorage, playerDataFromPage)
         console.debug(`Will save player data to storage`, currentPlayerRepresentationInStorage);
 
         playersDictFromStorage[playerDataFromPage.playerID] = currentPlayerRepresentationInStorage
-        await storage.set({ "player-data": playersDictFromStorage })
+        await utils.storage.set({ "player-data": playersDictFromStorage })
 
         console.info(`📥 Saved player data to storage (${playerDataFromPage.playerID} ${currentPlayerRepresentationInStorage.name})`)
     }
 
     // TODO: develop this further
-    try {
-        const now = new Date(); // current date/time
-        const currentWeek = 6;  // example: week 5 of the season
-        const seasonsAhead = 2; // e.g., season after next
-        const targetSeasonStart = getSeasonStartDate(now, currentWeek, seasonsAhead);
-        console.info(`Season ${seasonsAhead} ahead starts on:`, targetSeasonStart.toString());
-    } catch (error) {
-        console.error(error);
+    const currentWeek = uiUtils.getCurrentWeekNumber()
+    if (currentWeek) {
+        try {
+            const formatter = new Intl.DateTimeFormat("ch-DE", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZoneName: "short"
+            })
+            const currentSeasonNumber = uiUtils.getCurrentSeasonNumber()
+            const now = new Date() // current date/time
+            
+            const playerAge = playerUtils.getPlayerAge()
+            const lookAheadBy = 21 - playerAge.years
+            const birthdaysArray = playerUtils.getFutureBirthdays(now, playerAge.years, playerAge.months, playerAge.days, lookAheadBy)
+
+            const seasonStartDates = utils.getSeasonStartDates(now, currentWeek, lookAheadBy)
+            // console.info(`Current season: ${currentSeasonNumber}, season ${currentSeasonNumber + seasonsAhead} starts on:`, formatter.format(targetSeasonStart), `(${targetSeasonStart.toUTCString()})`)
+
+            // console.info(`Player age: ${playerAge.years}y ${playerAge.months}m ${playerAge.days}d, seasons left as youth: ${playerUtils.getSeasonsLeftAsYouth()}, next birthday: `, formatter.format(birthdaysArray[0].date), `(${birthdaysArray[0].date.toUTCString()})`)
+            for (let i=0; i < birthdaysArray.length; i++) {
+                const birthday = birthdaysArray[i]
+                const seasonStartDate = seasonStartDates[i]
+                console.info(`Birthday ${birthday.age} on ${formatter.format(birthday.date)} (${birthday.date.toUTCString()}) is ${utils.diffInDaysUTC(seasonStartDate, birthday.date)} days after season ${currentSeasonNumber + i + 1} starts (${seasonStartDate})`)
+            }
+        } catch (error) {
+            console.error(error)
+        }
     }
 }
 

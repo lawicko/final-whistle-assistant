@@ -199,7 +199,7 @@ async function processTableRows(tableNode, config = {
     basicHighlight: true,
     persistentHighlight: true
 }) {
-    console.info(`${version} Adding row highlighting...`)
+    console.info(`${version} ✨ Adding row highlighting`)
     const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
     for (let i = 1; i < tableNode.rows.length; i++) {
         const tr = tableNode.rows[i]

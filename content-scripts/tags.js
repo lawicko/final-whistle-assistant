@@ -45,7 +45,7 @@ async function applyCustomColorsForTags() {
 applyCustomColorsForTags();
 
 export async function processTags() {
-    console.info(`${version} Processing tags...`)
+    console.info(`${version} 🏷️ Processing tags`)
 
     let tableNodes = document.querySelectorAll("table.table")
     for (let tableNode of tableNodes) {

@@ -1,4 +1,4 @@
-import { addCSS, optionsStorage, pluginNodeClass } from "./utils"
+import * as utils from "./utils.js"
 
 // The node that will be observed for mutations
 export const alwaysPresentNode = document.querySelector("div.wrapper");
@@ -53,23 +53,15 @@ export function toggleClass(el, className) {
     }
 }
 
-/**
- * Recreates the denomination used on the website, used for coloring the numbers
- * @param {number} value The value to get the denomination for (1-99)
- * @returns {number} The denomination (1-9)
- */
-export function denomination(value) {
-    let den = 0
-    if (value > 29) {
-        den = Math.trunc(value / 10)
-    } else {
-        if (value > 15) {
-            den = 2
-        } else {
-            den = 1
-        }
-    }
-    return den
+export function getCurrentSeasonNumber() {
+    const seasonElement = document.querySelector("div.nav-item.season > span.status-value")
+    return parseInt(seasonElement.textContent.trim())
+}
+
+export function getCurrentWeekNumber() {
+    const weekElement = document.querySelector("div.popover-body > div.popover-content span.week-value")
+    if (!weekElement) return undefined
+    return parseInt(weekElement.textContent.trim())
 }
 
 export function removeNoDataSymbol(container) {
@@ -124,8 +116,8 @@ export function calculateAssistance({ OP, BC, TA, DP, teamwork = 0 }) {
     const defensiveAssistance = Math.floor(defensiveAssistanceNoModifiers * (1 + twp));
 
     // Denominations
-    const offensiveAssistanceDenominationNormalized = denomination((offensiveAssistance / offensiveAssistanceMax) * 100);
-    const defensiveAssistanceDenominationNormalized = denomination((defensiveAssistance / defensiveAssistanceMax) * 100);
+    const offensiveAssistanceDenominationNormalized = utils.denomination((offensiveAssistance / offensiveAssistanceMax) * 100);
+    const defensiveAssistanceDenominationNormalized = utils.denomination((defensiveAssistance / defensiveAssistanceMax) * 100);
 
     // Offensive assistance details
     const offensiveAssistanceModifierDifference = offensiveAssistance - offensiveAssistanceNoModifiers
@@ -184,7 +176,7 @@ export function calculateDefensiveAssistanceGK({ OR, teamwork = 0 }) {
         defensiveAssistance = Math.floor(defensiveAssistanceNoModifiers + defensiveAssistanceNoModifiers * twp)
     }
     let defensiveAssistanceDenomination = defensiveAssistance / defensiveAssistanceMax
-    let defensiveAssistanceDenominationNormalized = denomination(defensiveAssistanceDenomination * 100)
+    let defensiveAssistanceDenominationNormalized = utils.denomination(defensiveAssistanceDenomination * 100)
 
     const defensiveAssistanceModifierDifference = defensiveAssistance - defensiveAssistanceNoModifiers
     var defensiveAssistanceModifierDetails = ``
@@ -322,8 +314,8 @@ export function applyArrogance(element, arrogance) {
 }
 
 export function updateDetailedProperty(element, propertyDescription, propertyValue, config) {
-    const normalizedDescription = pluginNodeClass + propertyDescription.replace(/\s+/g, "_")
-    const containerClass = pluginNodeClass + "_detailedPropertyContainer"
+    const normalizedDescription = utils.pluginNodeClass + propertyDescription.replace(/\s+/g, "_")
+    const containerClass = utils.pluginNodeClass + "_detailedPropertyContainer"
     const container = Array.from(element.children).find(
         child =>
             child.classList.contains(containerClass) &&
@@ -408,7 +400,7 @@ export function applyTeamwork(element, teamwork) {
 async function applyCustomColorsLineupSymbols() {
     try {
         // Load colors from storage (with defaults)
-        const { colors = {} } = await optionsStorage.get("colors");
+        const { colors = {} } = await utils.optionsStorage.get("colors");
         const personalitiesColors = `
             span.leadership.doublePositive {
                 color: ${colors["color-setting-sportsmanship++"]};
@@ -469,7 +461,7 @@ async function applyCustomColorsLineupSymbols() {
                 color: ${colors["color-setting-teamwork--"]};
             }
         `
-        addCSS(personalitiesColors, "final-whistle-players-personalities-colors");
+        utils.addCSS(personalitiesColors, "final-whistle-players-personalities-colors");
     } catch (err) {
         console.error("Failed to apply custom colors for player personalities:", err);
     }

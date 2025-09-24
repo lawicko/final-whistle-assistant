@@ -167,13 +167,13 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
             let longShot = (SC + Math.min(2 * SC, PA)) / 2
             let longShotMax = (100 + Math.min(2 * 100, 100)) / 2
             let longShotDenomination = longShot / longShotMax
-            let longShotDenominationNormalized = uiUtils.denomination(longShotDenomination * 100)
+            let longShotDenominationNormalized = utils.denomination(longShotDenomination * 100)
 
             let constitutionTreshold = 50
             let midfieldDominanceContribution = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
             let midfieldDominanceMax = 100 + 200
             let midfieldDominanceDenomination = midfieldDominanceContribution / midfieldDominanceMax
-            let midfieldDominanceDenominationNormalized = uiUtils.denomination(midfieldDominanceDenomination * 100)
+            let midfieldDominanceDenominationNormalized = utils.denomination(midfieldDominanceDenomination * 100)
 
             const assistanceCalculations = uiUtils.calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: teamwork });
 
@@ -257,7 +257,8 @@ function isShowingGoalkeepers() {
 }
 
 export async function processPlayersPage() {
-    console.info(`${utils.version} Processing players page...`)
+    
+    console.info(`${utils.version} 🧍🧍🧍🧍 Processing players page`)
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
 

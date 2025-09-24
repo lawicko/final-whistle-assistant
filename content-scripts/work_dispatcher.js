@@ -1,12 +1,12 @@
-import { debounceAsync, FeatureFlagsKeys, isFeatureEnabled } from './utils.js'
-import { alwaysPresentNode } from './ui_utils.js'
+import * as utils from "./utils.js"
+import * as uiUtils from "./ui_utils.js"
 import { processTags } from './tags.js'
-import { processAcademyButtons } from './academy_buttons.js'
+import { processAcademyButtons } from './pages/academy/academy_buttons.js'
 import { processFixturesPage } from './calendar.js'
 import { processMatch } from './match.js'
 import { processPlayersPage } from './players.js'
 import { processLineupPage } from './lineup.js'
-import { processPlayerPage } from './player.js'
+import { processPlayerPage } from './pages/player/player.js'
 import { addTableRowsHighlighting } from './row_highlight.js'
 import { processLeaguePage } from './pages/league/league.js'
 import { processTransferPage } from './pages/transfer/transfer.js'
@@ -42,7 +42,7 @@ function createObserverCallback(targetNode, config, fn) {
 }
 
 function makeDebouncedWithReconnect(fn, wait, targetNode, config, observer) {
-    return debounceAsync(async (...args) => {
+    return utils.debounceAsync(async (...args) => {
         try {
             await fn(...args);
         } catch (e) {
@@ -55,60 +55,65 @@ function makeDebouncedWithReconnect(fn, wait, targetNode, config, observer) {
 
 async function dispatchWork(currentMessage) {
     if (!currentMessage || !currentMessage.url) {
-        return;
+        return
     }
 
     if (currentMessage.url.endsWith("/academy")) {
-        await debouncedProcessAcademyPage();
+        await debouncedProcessAcademyPage()
     }
 
     if (currentMessage.url.endsWith("fixtures") || currentMessage.url.endsWith("#Fixtures")) {
-        await debouncedProcessFixturesPage();
+        await debouncedProcessFixturesPage()
     }
 
     if (currentMessage.url.includes("league")) {
-        await debouncedProcessLeaguePage();
+        await debouncedProcessLeaguePage()
     }
 
     if (currentMessage.url.includes("lineup")) {
-        await debouncedProcessLineupPage();
+        await debouncedProcessLineupPage()
     }
 
     if (currentMessage.url.includes("match/")) {
-        await debouncedProcessMatchPage();
+        await debouncedProcessMatchPage()
     }
 
     if (currentMessage.url.includes("player/")) {
-        await debouncedProcessPlayerPage();
+        await debouncedProcessPlayerPage()
     }
 
     if (currentMessage.url.endsWith("players")) {
-        await debouncedProcessPlayersPage();
+        await debouncedProcessPlayersPage()
     }
 
     if (currentMessage.url.endsWith("training") || currentMessage.url.endsWith("training#Reports")) {
-        await debouncedProcessTrainingPage();
+        await debouncedProcessTrainingPage()
     }
 
     if (currentMessage.url.endsWith("training#Drills")) {
-        await debouncedProcessTrainingDrillsPage();
+        await debouncedProcessTrainingDrillsPage()
     }
 
     if (currentMessage.url.endsWith("training#Settings")) {
-        await debouncedProcessTrainingSettingsPage();
+        await debouncedProcessTrainingSettingsPage()
     }
 
-    if (currentMessage.url.endsWith("/transfer") || currentMessage.url.endsWith("/transfer#Market")) {
-        await debouncedProcessTransfersPage();
+    if (
+        currentMessage.url.endsWith("/transfer") ||
+        currentMessage.url.endsWith("/transfer#Market")  ||
+        currentMessage.url.endsWith("/transfer#Bids") ||
+        currentMessage.url.endsWith("/transfer#Watchlist")
+    ) {
+        await debouncedProcessTransfersPage()
     }
 
     if (currentMessage.url.endsWith("#Squad")) {
-        await debouncedProcessSquadPage();
+        await debouncedProcessSquadPage()
     }
 }
 
 const universalObserver = new MutationObserver(
-    createObserverCallback(alwaysPresentNode, observationConfig, async () => {
+    createObserverCallback(uiUtils.alwaysPresentNode, observationConfig, async () => {
         console.debug("universalObserver: dispatching work with the last known message:", lastMessageFromBackground);
         dispatchWork(lastMessageFromBackground)
     })
@@ -136,110 +141,110 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 // Start observing once
-universalObserver.observe(alwaysPresentNode, observationConfig);
+universalObserver.observe(uiUtils.alwaysPresentNode, observationConfig);
 
 // Debounced processors with auto-reconnect
 const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.ACADEMY_BUTTONS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ACADEMY_BUTTONS)) {
             processAcademyButtons();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.LETTERS_YOUTH_SENIOR)) {
             await processFixturesPage();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessLeaguePage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
             await processLeaguePage();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessMatchPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.MATCH_DATA_GATHERING)) {
             await processMatch();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.PLAYER_PAGE_ENHANCEMENTS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.PLAYER_PAGE_ENHANCEMENTS)) {
             await processPlayerPage();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.PLAYERS_PAGE_ENHANCEMENTS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.PLAYERS_PAGE_ENHANCEMENTS)) {
             await processPlayersPage();
         }
-        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
-        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessSquadPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessLineupPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.LINEUP)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.LINEUP)) {
             await processLineupPage();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
-        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 const debouncedProcessTrainingSettingsPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTrainingDrillsPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
             await processTags();
         }
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
     async () => {
-        if (await isFeatureEnabled(FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
             await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
         await processTransferPage()
-    }, DEBOUNCE_WAIT_MS, alwaysPresentNode, observationConfig, universalObserver
+    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );

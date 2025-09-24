@@ -16,6 +16,25 @@ export function isString(value) {
     return typeof value === "string" || value instanceof String
 }
 
+/**
+ * Recreates the denomination used on the website, used for coloring the numbers
+ * @param {number} value The value to get the denomination for (1-99)
+ * @returns {number} The denomination (1-9)
+ */
+export function denomination(value) {
+    let den = 0
+    if (value > 29) {
+        den = Math.trunc(value / 10)
+    } else {
+        if (value > 15) {
+            den = 2
+        } else {
+            den = 1
+        }
+    }
+    return den
+}
+
 export function toCamelCase(str) {
     return str
         .toLowerCase()
@@ -326,4 +345,60 @@ export const FeatureFlagsKeys = {
 export async function isFeatureEnabled(featureKey) {
     const { modules = {} } = await optionsStorage.get(["modules"]);
     return modules[featureKey] === true;
+}
+
+export function diffInDaysUTC(date1, date2) {
+    const d1 = Date.UTC(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate())
+    const d2 = Date.UTC(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate())
+    return Math.floor((d2 - d1) / (1000 * 60 * 60 * 24))
+}
+
+/**
+ * Calculates the start date of a future football season.
+ * 
+ * @param {Date} currentDate - The current date/time.
+ * @param {number} currentWeek - The current week of the season (1–12).
+ * @param {number} seasonsAhead - How many seasons ahead to calculate (1 = next season).
+ * @returns {Date} - The start date of the target season (Monday 00:00).
+ * @throws {Error} - If inputs are invalid or calculation fails.
+ */
+export function getSeasonStartDates(currentDate, currentWeek, seasonsAhead) {
+    try {
+        // --- Input validation ---
+        if (!(currentDate instanceof Date) || isNaN(currentDate)) {
+            throw new Error("Invalid currentDate: must be a valid Date object.")
+        }
+        if (!Number.isInteger(currentWeek) || currentWeek < 1 || currentWeek > 12) {
+            throw new Error("Invalid currentWeek: must be an integer between 1 and 12.")
+        }
+        if (!Number.isInteger(seasonsAhead) || seasonsAhead < 1) {
+            throw new Error("Invalid seasonsAhead: must be an integer >= 1.")
+        }
+
+        const results = []
+        const weeksRemaining = 12 - currentWeek
+
+        for (let k = 1; k <= seasonsAhead; k++) {
+            // Total weeks to add for the k-th season ahead (same formula as original)
+            const totalWeeksToAdd = weeksRemaining + (k - 1) * 12
+
+            // Start from the original date each time to avoid cumulative snapping drift
+            const date = new Date(currentDate.getTime())
+            date.setUTCDate(date.getUTCDate() + totalWeeksToAdd * 7)
+
+            // Snap to the NEXT Monday 00:00 UTC
+            const day = date.getUTCDay() // Sunday=0, Monday=1, ...
+            let daysUntilMonday = (1 - day + 7) % 7
+            if (daysUntilMonday === 0) daysUntilMonday = 7
+
+            date.setUTCDate(date.getUTCDate() + daysUntilMonday)
+            date.setUTCHours(0, 0, 0, 0)
+
+            results.push(date)
+        }
+
+        return results
+    } catch (err) {
+        throw new Error(`getSeasonStartDates failed: ${err.message}`)
+    }
 }

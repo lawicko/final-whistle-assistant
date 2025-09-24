@@ -1,51 +1,70 @@
-import * as utils from "./utils.js"
+import * as utils from "../../utils.js"
 
-/**
- * Calculates the start date of a future football season.
- * 
- * @param {Date} currentDate - The current date/time.
- * @param {number} currentWeek - The current week of the season (1–12).
- * @param {number} seasonsAhead - How many seasons ahead to calculate (1 = next season).
- * @returns {Date} - The start date of the target season (Monday 00:00).
- * @throws {Error} - If inputs are invalid or calculation fails.
- */
-export function getSeasonStartDate(currentDate, currentWeek, seasonsAhead) {
-    try {
-        // Validate inputs
-        if (!(currentDate instanceof Date) || isNaN(currentDate)) {
-            throw new Error("Invalid currentDate: must be a valid Date object.");
-        }
-        if (!Number.isInteger(currentWeek) || currentWeek < 1 || currentWeek > 12) {
-            throw new Error("Invalid currentWeek: must be an integer between 1 and 12.");
-        }
-        if (!Number.isInteger(seasonsAhead) || seasonsAhead < 1) {
-            throw new Error("Invalid seasonsAhead: must be an integer >= 1.");
-        }
+export function getPlayerAge() {
+    const ageElement = document.querySelector("fw-player-age > span > span")
+    if (!ageElement) return undefined
 
-        // Clone date to avoid mutating the original
-        const dateCopy = new Date(currentDate.getTime());
+    const regex = /(?:(?<years>\d+)\s*y)?(?:,\s*)?(?:(?<months>\d+)\s*m)?(?:,\s*)?(?:(?<days>\d+)\s*d)?/;
 
-        // Calculate how many weeks remain in the current season
-        const weeksRemaining = 12 - currentWeek + 1; // +1 ensures we move to the *next* season start
+    const { groups } = ageElement.textContent.trim().match(regex);
 
-        // Total weeks to jump = remaining weeks in current season + full seasons ahead
-        const totalWeeksToAdd = weeksRemaining + (seasonsAhead - 1) * 12;
+    const years = parseInt(groups.years || 0, 10)
+    const months = parseInt(groups.months || 0, 10)
+    const days = parseInt(groups.days || 0, 10)
 
-        // Move forward by the calculated weeks
-        dateCopy.setDate(dateCopy.getDate() + totalWeeksToAdd * 7);
-
-        // Align to the next Monday 00:00
-        const day = dateCopy.getDay(); // Sunday=0, Monday=1, ...
-        const daysUntilMonday = (1 - day + 7) % 7;
-        dateCopy.setDate(dateCopy.getDate() + daysUntilMonday);
-        dateCopy.setHours(0, 0, 0, 0);
-
-        return dateCopy;
-
-    } catch (err) {
-        throw new Error(`getSeasonStartDate failed: ${err.message}`);
-    }
+    return { years: years, months: months, days: days }
 }
+
+export function getSeasonsLeftAsYouth() {
+    const seasonsLeftElement = document.querySelector("fw-player-age > span:last-of-type")
+    if (!seasonsLeftElement) return undefined
+    return parseNumbersOnPlayerPage(seasonsLeftElement)
+}
+
+export function getFutureBirthdays(currentDate, years, months, days, count = 1) {
+    if (!(currentDate instanceof Date) || isNaN(currentDate)) {
+        throw new Error("Invalid currentDate: must be a Date object")
+    }
+    if (![years, months, days].every(Number.isInteger)) {
+        throw new Error("Age values must be integers")
+    }
+    if (!Number.isInteger(count) || count < 1) {
+        throw new Error("Count must be a positive integer")
+    }
+
+    const birthdays = []
+    let baseDate = new Date(currentDate.getTime())
+    let y = years, m = months, d = days
+
+    for (let i = 0; i < count; i++) {
+        // Days passed since last birthday
+        const daysPassed = m * 30 + d
+        const daysRemaining = 360 - daysPassed
+
+        // Real days until next birthday
+        const realDaysRemaining = Math.ceil(daysRemaining / 4)
+
+        // Compute next birthday date
+        const nextBirthday = new Date(baseDate.getTime())
+        nextBirthday.setUTCDate(nextBirthday.getUTCDate() + realDaysRemaining)
+
+        // Force to midnight UTC
+        nextBirthday.setUTCHours(0, 0, 0, 0)
+
+        birthdays.push({
+            age: y + 1 + i, // age after birthday
+            date: nextBirthday
+        })
+
+        // Prepare for next loop
+        baseDate = nextBirthday
+        m = 0
+        d = 0
+    }
+
+    return birthdays
+}
+
 
 
 /**
