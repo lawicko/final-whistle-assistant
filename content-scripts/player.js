@@ -880,6 +880,7 @@ export async function processPlayerPage() {
         await saveClubDataToStorage(clubData)
     }
     let playerDataFromPage = getPlayerData()
+    console.debug("playerDataFromPage",playerDataFromPage)
     const { "player-data": playersDictFromStorage = {} } = await storage.get('player-data');
     console.debug('playersDictFromStorage = ', playersDictFromStorage)
 
@@ -950,12 +951,13 @@ export async function processPlayerPage() {
     }
 
     if (isShowingOverview() || isShowingReports()) { // only save for Overview or Reports
+        currentPlayerRepresentationInStorage = mergeObjects(currentPlayerRepresentationInStorage, playerDataFromPage)
         console.debug(`Will save player data to storage`, currentPlayerRepresentationInStorage);
 
-        playersDictFromStorage[currentPlayerRepresentationInStorage.playerID] = currentPlayerRepresentationInStorage
+        playersDictFromStorage[playerDataFromPage.playerID] = currentPlayerRepresentationInStorage
         await storage.set({ "player-data": playersDictFromStorage })
 
-        console.info(`📥 Saved player data to storage (${currentPlayerRepresentationInStorage.playerID} ${currentPlayerRepresentationInStorage.name})`)
+        console.info(`📥 Saved player data to storage (${playerDataFromPage.playerID} ${currentPlayerRepresentationInStorage.name})`)
     }
 
     // TODO: develop this further
