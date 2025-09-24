@@ -33,30 +33,29 @@ export function getFutureBirthdays(currentDate, years, months, days, count = 1) 
     }
 
     const birthdays = []
+    const daysInYear = 336           // 4 seasons × 12 weeks
+    const daysInMonth = 28           // 12 × 28 = 336
+    const gameDaysPerRealDay = 4     // 4 game days = 1 real day
+
     let baseDate = new Date(currentDate.getTime())
     let y = years, m = months, d = days
 
     for (let i = 0; i < count; i++) {
-        // Days passed since last birthday
-        const daysPassed = m * 30 + d
-        const daysRemaining = 360 - daysPassed
+        // Days since last birthday in the 336/28 calendar
+        const daysPassed = m * daysInMonth + d
+        const remainingGameDays = daysInYear - daysPassed
 
-        // Real days until next birthday
-        const realDaysRemaining = Math.ceil(daysRemaining / 4)
+        // Real days until birthday
+        const realDaysRemaining = Math.round(remainingGameDays / gameDaysPerRealDay)
 
-        // Compute next birthday date
+        // Compute next birthday and normalize to midnight UTC
         const nextBirthday = new Date(baseDate.getTime())
         nextBirthday.setUTCDate(nextBirthday.getUTCDate() + realDaysRemaining)
-
-        // Force to midnight UTC
         nextBirthday.setUTCHours(0, 0, 0, 0)
 
-        birthdays.push({
-            age: y + 1 + i, // age after birthday
-            date: nextBirthday
-        })
+        birthdays.push({ age: y + 1 + i, date: nextBirthday })
 
-        // Prepare for next loop
+        // Prepare for next iteration: at birthday, months/days reset
         baseDate = nextBirthday
         m = 0
         d = 0
@@ -64,8 +63,6 @@ export function getFutureBirthdays(currentDate, years, months, days, count = 1) 
 
     return birthdays
 }
-
-
 
 /**
  * Processes the value node of a hidden skills table or a scout report and returns the numbers that are useful, e.g. 5 if the potential value is 5, 19 if the advanced development is 19y and 3 if the injury resistance is 3/5

@@ -86,54 +86,51 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
         const insertionPoint = rows[i].querySelector("td:has(fw-player-hover)")
         if (playerData) {
             console.debug(`Found stored player data for: ${playerName}`, playerData)
+            let playerPersonalities = playerData["personalities"]
+            if (!playerPersonalities) {
+                console.debug(`No personalities in player profile for ${playerName}.`)
+                uiUtils.addNoDataSymbol(insertionPoint)
+            } else {
+                uiUtils.removeNoDataSymbol(insertionPoint)
+
+                var teamwork = playerPersonalities['teamwork']
+                const showTeamwork = checkboxesData['teamwork'] ?? false
+                if (teamwork) {
+                    if (showTeamwork) {
+                        uiUtils.applyTeamwork(insertionPoint, teamwork)
+                    } else {
+                        clearTeamwork(insertionPoint)
+                    }
+                }
+                const sportsmanship = playerPersonalities['sportsmanship']
+                const showSportsmanship = checkboxesData['sportsmanship'] ?? false
+                if (sportsmanship) {
+                    if (showSportsmanship) {
+                        uiUtils.applySportsmanship(insertionPoint, sportsmanship)
+                    } else {
+                        clearSportsmanship(insertionPoint)
+                    }
+                }
+            }
+
+            const ageFromListing = listUtils.age(row)
+            const showAD = checkboxesData['advancedDevelopment'] ?? false
+            const showEP = checkboxesData['estimatedPotential'] ?? false
+            // Hidden skills
+            const hiddenSkills = playerData["hiddenSkills"]
+            if (hiddenSkills) {
+                listUtils.updateHiddenSkillsDetails({
+                    insertionPoint: insertionPoint,
+                    hiddenSkills: hiddenSkills,
+                    config: {
+                        showAdvancedDevelopment: showAD && ageFromListing < 25,
+                        showEstimatedPotential: showEP && ageFromListing < 21
+                    }
+                })
+            }
         } else {
             console.debug(`Player ${playerName} has no saved profile.`)
             uiUtils.addNoDataSymbol(insertionPoint)
-        }
-        var playerPersonalities = undefined
-        if (playerData && playerData["personalities"]) {
-            playerPersonalities = playerData["personalities"]
-        }
-        if (!playerPersonalities) {
-            console.debug(`No personalities in player profile for ${playerName}.`)
-            uiUtils.addNoDataSymbol(insertionPoint)
-        } else {
-            uiUtils.removeNoDataSymbol(insertionPoint)
-
-            var teamwork = playerPersonalities['teamwork']
-            const showTeamwork = checkboxesData['teamwork'] ?? false
-            if (teamwork) {
-                if (showTeamwork) {
-                    uiUtils.applyTeamwork(insertionPoint, teamwork)
-                } else {
-                    clearTeamwork(insertionPoint)
-                }
-            }
-            const sportsmanship = playerPersonalities['sportsmanship']
-            const showSportsmanship = checkboxesData['sportsmanship'] ?? false
-            if (sportsmanship) {
-                if (showSportsmanship) {
-                    uiUtils.applySportsmanship(insertionPoint, sportsmanship)
-                } else {
-                    clearSportsmanship(insertionPoint)
-                }
-            }
-        }
-
-        const ageFromListing = listUtils.age(row)
-        const showAD = checkboxesData['advancedDevelopment'] ?? false
-        const showEP = checkboxesData['estimatedPotential'] ?? false
-        // Hidden skills
-        const hiddenSkills = playerData["hiddenSkills"]
-        if (hiddenSkills) {
-            listUtils.updateHiddenSkillsDetails({
-                insertionPoint: insertionPoint,
-                hiddenSkills: hiddenSkills,
-                config: {
-                    showAdvancedDevelopment: showAD && ageFromListing < 25,
-                    showEstimatedPotential: showEP && ageFromListing < 21
-                }
-            })
         }
 
         const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
@@ -257,7 +254,7 @@ function isShowingGoalkeepers() {
 }
 
 export async function processPlayersPage() {
-    
+
     console.info(`${utils.version} 🧍🧍🧍🧍 Processing players page`)
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {

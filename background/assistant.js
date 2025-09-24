@@ -1,6 +1,7 @@
 import {
     dateStorageFormat,
     getStoredString,
+    isEmpty,
     optionsStorage,
     storage,
     version
@@ -171,7 +172,10 @@ async function handleInstalled(details) {
         "player-data": playersDataFromStorage = {},
         "matches": matches = {}
     } = await storage.get(["player-data", "matches"])
-    await checkDataIntegrityFor(playersDataFromStorage, matches, true)
+
+    if (!isEmpty(playersDataFromStorage) && !isEmpty(matches)) {
+        await checkDataIntegrityFor(playersDataFromStorage, matches, true)
+    }
 
     // Check the local storage version
     const localStorageVersion = await getStoredString("version")

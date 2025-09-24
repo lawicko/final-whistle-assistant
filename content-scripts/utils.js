@@ -362,7 +362,7 @@ export function diffInDaysUTC(date1, date2) {
  * @returns {Date} - The start date of the target season (Monday 00:00).
  * @throws {Error} - If inputs are invalid or calculation fails.
  */
-export function getSeasonStartDates(currentDate, currentWeek, seasonsAhead) {
+export function getSeasonStartDates(currentDate, currentWeek, seasonsAhead=1) {
     try {
         // --- Input validation ---
         if (!(currentDate instanceof Date) || isNaN(currentDate)) {
