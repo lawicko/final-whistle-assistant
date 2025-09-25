@@ -56,9 +56,8 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
     console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
-    let rows = document.querySelectorAll("table > tr");
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i]
+    let rows = document.querySelectorAll("table > tr:has(fw-player-hover)")
+    for (const row of rows) {
         const playerID = listUtils.id(row)
         listUtils.processTableRow(
             row,
@@ -79,7 +78,7 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
             teamwork = playerPersonalities['teamwork']
         }   
 
-        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child")
+        let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
         const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
         if (valueNodes.length < 8) { // Goalkeepers
             let RE = parseNumber(valueNodes[0]);
@@ -96,7 +95,7 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
                 assistanceCalculations.defensiveAssistance,
                 `formula: OR\n${assistanceCalculations.defensiveAssistance}${assistanceCalculations.defensiveAssistanceModifierDetails}`,
                 `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
-            rows[i].appendChild(tdDA);
+            row.appendChild(tdDA);
         } else { // Outfielders
             let SC = parseNumber(valueNodes[0]);
             let OP = parseNumber(valueNodes[1]);
@@ -127,21 +126,21 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
                     Math.trunc(longShot),
                     `formula: (SC + min(2 * SC, PA)) / 2\n(${SC} + min(2 * ${SC}, ${PA})) / 2\n(${SC} + ${Math.min(2 * SC, PA)}) / 2\n${SC + Math.min(2 * SC, PA)} / 2 = ${(SC + Math.min(2 * SC, PA)) / 2}`,
                     `denom${longShotDenominationNormalized}`);
-                rows[i].appendChild(tdLS);
+                row.appendChild(tdLS);
 
                 const tdMD = createHoverCardCell(
                     "td",
                     midfieldDominanceContribution,
                     `formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})\n${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})\n${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`,
                     `denom${midfieldDominanceDenominationNormalized}`);
-                rows[i].appendChild(tdMD);
+                row.appendChild(tdMD);
 
                 const tdOA = createHoverCardCell(
                     "td",
                     assistanceCalculations.offensiveAssistance,
                     `formula: OP + BC\n${OP} + ${BC} = ${assistanceCalculations.offensiveAssistance}${assistanceCalculations.offensiveAssistanceModifierDetails}`,
                     `denom${assistanceCalculations.offensiveAssistanceDenominationNormalized}`);
-                rows[i].appendChild(tdOA);
+                row.appendChild(tdOA);
             }
 
             if (!isShowingAttackers()) {
@@ -150,7 +149,7 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
                     assistanceCalculations.defensiveAssistance,
                     `formula: TA + DP\n${TA} + ${DP} = ${assistanceCalculations.defensiveAssistance}${assistanceCalculations.defensiveAssistanceModifierDetails}`,
                     `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
-                rows[i].appendChild(tdDA);
+                row.appendChild(tdDA);
             }
         }
     }
