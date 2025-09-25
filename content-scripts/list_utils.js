@@ -105,8 +105,10 @@ export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, 
         { id: "advancedDevelopmentCheckbox", label: `AD` },
         { id: "estimatedPotentialCheckbox", label: `EP` }
     ];
-    const rightItems = document.createElement("div")
-    rightItems.classList.add("right-items")
+    const checkboxContainer = document.createElement("div")
+    checkboxContainer.id = utils.pluginNodeClass + "CheckboxContainer"
+    checkboxContainer.classList.add("right-items")
+    checkboxContainer.classList.add("float-end") // comes from the game
 
     checkboxesData.forEach(item => {
         const checkbox = document.createElement("input")
@@ -138,9 +140,103 @@ export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, 
             afterCheckboxDataSetCallback(storedPlayerData, cd)
         })
 
-        rightItems.appendChild(checkbox)
-        rightItems.appendChild(label)
-        rightItems.appendChild(document.createTextNode(" ")) // spacing
+        checkboxContainer.appendChild(checkbox)
+        checkboxContainer.appendChild(label)
+        checkboxContainer.appendChild(document.createTextNode(" ")) // spacing
     })
-    insertionPoint.appendChild(rightItems)
+    insertionPoint.appendChild(checkboxContainer)
+}
+
+export function removeControlCheckboxes(parentNode) {
+    const checkboxContainer = parentNode.querySelector(`#${utils.pluginNodeClass + "CheckboxContainer"}`)
+    if (checkboxContainer) checkboxContainer.remove()
+}
+
+export function clearTeamwork(element) {
+    const spans = element.querySelectorAll("span");
+    spans.forEach(span => {
+        if (span.textContent.trim() === uiUtils.personalitiesSymbols["teamwork"]) {
+            span.remove();
+        }
+    });
+}
+
+export function clearSportsmanship(element) {
+    const spans = element.querySelectorAll("span");
+    spans.forEach(span => {
+        if (span.textContent.trim() === uiUtils.personalitiesSymbols["sportsmanship"]) {
+            span.remove();
+        }
+    });
+}
+
+export function processTableRow(
+    row,
+    storedPlayerData,
+    checkboxesData,
+    idCallback,
+    nameCallback,
+    additionalInfoInsertionPointCallback
+) {
+    // Select the first <a> inside a <td> whose href contains "/player/"
+    const playerLink = row.querySelector('td a[href*="/player/"]');
+    // Match the number after /player/
+    if (!playerLink) { // When the user hovers over the player name, the hover card shows up
+        return
+    }
+
+    const playerID = idCallback(row)//utils.lastPathComponent(row.querySelector("td > a").href)
+    var playerName = nameCallback(row)//row.querySelector("td > a").textContent.trim()
+    console.debug('Processing player:', playerName)
+
+    const playerData = storedPlayerData[playerID]
+    const insertionPoint = additionalInfoInsertionPointCallback(row)//row.querySelector("td:has(a)")
+    if (playerData) {
+        console.debug(`Found stored player data for: ${playerName}`, playerData)
+        let playerPersonalities = playerData["personalities"]
+        if (!playerPersonalities) {
+            console.debug(`No personalities in player profile for ${playerName}.`)
+            uiUtils.addNoDataSymbol(insertionPoint)
+        } else {
+            uiUtils.removeNoDataSymbol(insertionPoint)
+
+            var teamwork = playerPersonalities['teamwork']
+            const showTeamwork = checkboxesData['teamwork'] ?? false
+            if (teamwork) {
+                if (showTeamwork) {
+                    uiUtils.applyTeamwork(insertionPoint, teamwork)
+                } else {
+                    clearTeamwork(insertionPoint)
+                }
+            }
+            const sportsmanship = playerPersonalities['sportsmanship']
+            const showSportsmanship = checkboxesData['sportsmanship'] ?? false
+            if (sportsmanship) {
+                if (showSportsmanship) {
+                    uiUtils.applySportsmanship(insertionPoint, sportsmanship)
+                } else {
+                    clearSportsmanship(insertionPoint)
+                }
+            }
+        }
+
+        const ageFromListing = age(row)
+        const showAD = checkboxesData['advancedDevelopment'] ?? false
+        const showEP = checkboxesData['estimatedPotential'] ?? false
+        // Hidden skills
+        const hiddenSkills = playerData["hiddenSkills"]
+        if (hiddenSkills) {
+            updateHiddenSkillsDetails({
+                insertionPoint: insertionPoint,
+                hiddenSkills: hiddenSkills,
+                config: {
+                    showAdvancedDevelopment: showAD && ageFromListing < 25,
+                    showEstimatedPotential: showEP && ageFromListing < 21
+                }
+            })
+        }
+    } else {
+        console.debug(`Player ${playerName} has no saved profile.`)
+        uiUtils.addNoDataSymbol(insertionPoint)
+    }
 }

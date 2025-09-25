@@ -9,6 +9,7 @@ import { processLineupPage } from './lineup.js'
 import { processPlayerPage } from './pages/player/player.js'
 import { addTableRowsHighlighting } from './row_highlight.js'
 import { processLeaguePage } from './pages/league/league.js'
+import { processOpponentClubPage } from "./pages/club_opponent/club_opponent.js"
 import { processTransferPage } from './pages/transfer/transfer.js'
 
 // How long to wait after the last mutation before processing the DOM (in ms)
@@ -62,7 +63,7 @@ async function dispatchWork(currentMessage) {
         await debouncedProcessAcademyPage()
     }
 
-    if (currentMessage.url.endsWith("fixtures") || currentMessage.url.endsWith("#Fixtures")) {
+    if (currentMessage.url.endsWith("fixtures")) {
         await debouncedProcessFixturesPage()
     }
 
@@ -100,15 +101,17 @@ async function dispatchWork(currentMessage) {
 
     if (
         currentMessage.url.endsWith("/transfer") ||
-        currentMessage.url.endsWith("/transfer#Market")  ||
+        currentMessage.url.endsWith("/transfer#Market") ||
         currentMessage.url.endsWith("/transfer#Bids") ||
         currentMessage.url.endsWith("/transfer#Watchlist")
     ) {
         await debouncedProcessTransfersPage()
     }
 
-    if (currentMessage.url.endsWith("#Squad")) {
-        await debouncedProcessSquadPage()
+    // club pattern with # at the end for the selected tab
+    const pattern = /club\/\d+#/
+    if (pattern.test(currentMessage.url)) {
+        await debouncedProcessOpponentClubPage()
     }
 }
 
@@ -198,11 +201,9 @@ const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
-const debouncedProcessSquadPage = makeDebouncedWithReconnect(
+const debouncedProcessOpponentClubPage = makeDebouncedWithReconnect(
     async () => {
-        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
-            await addTableRowsHighlighting();
-        }
+        await processOpponentClubPage()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 

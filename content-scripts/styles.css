@@ -178,13 +178,17 @@ span.teamwork {
     transform: translateY(5%); /* pull back by half of own height */
     margin-left: 4px;
 }
-fw-players div.card-header > div.row > input, fw-players div.card-header > div.row > label {
+fw-players div.card-header > div.row > input,
+fw-players div.card-header > div.row > label,
+fw-club div.card-header > div.row input,
+fw-club div.card-header > div.row label {
     margin-left: auto;    /* push to the right */
     flex: 0 0 auto;       /* don't grow or shrink */
     width: auto;          /* natural width */
     min-width: 0;         /* allow shrinking below default min-width */
 }
-.row > .right-items {
+.row > .right-items,
+.row > div > .right-items {
     display: inline-flex;  /* shrink to content */
     gap: 0.5rem;
 

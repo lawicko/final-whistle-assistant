@@ -59,80 +59,27 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
     let rows = document.querySelectorAll("table > tr");
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i]
-        // Select the first <a> inside a <td> whose href contains "/player/"
-        const playerLink = row.querySelector('td a[href*="/player/"]');
-        // Match the number after /player/
-        if (!playerLink) { // When the user hovers over the player name, the hover card shows up
-            return
-        }
-
         const playerID = listUtils.id(row)
-
-        // Select the first span child
-        const firstSpan = Array.from(playerLink.children).find(
-            child => child.tagName === 'SPAN' && child.textContent.trim() !== ''
-        );
-        var playerName = ""
-        if (firstSpan) {
-            playerName = firstSpan.textContent
-            console.debug('Processing player:', playerName);
-        } else {
-            console.warn('No non-empty span found - unable to determine the player name :(');
-        }
-
-        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child");
+        listUtils.processTableRow(
+            row,
+            storedPlayerData,
+            checkboxesData,
+            (row) => playerID,
+            (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),
+            (row) => row.querySelector("td:has(fw-player-hover)")
+        )
 
         const playerData = storedPlayerData[playerID]
-        const insertionPoint = rows[i].querySelector("td:has(fw-player-hover)")
-        if (playerData) {
-            console.debug(`Found stored player data for: ${playerName}`, playerData)
-            let playerPersonalities = playerData["personalities"]
-            if (!playerPersonalities) {
-                console.debug(`No personalities in player profile for ${playerName}.`)
-                uiUtils.addNoDataSymbol(insertionPoint)
-            } else {
-                uiUtils.removeNoDataSymbol(insertionPoint)
-
-                var teamwork = playerPersonalities['teamwork']
-                const showTeamwork = checkboxesData['teamwork'] ?? false
-                if (teamwork) {
-                    if (showTeamwork) {
-                        uiUtils.applyTeamwork(insertionPoint, teamwork)
-                    } else {
-                        clearTeamwork(insertionPoint)
-                    }
-                }
-                const sportsmanship = playerPersonalities['sportsmanship']
-                const showSportsmanship = checkboxesData['sportsmanship'] ?? false
-                if (sportsmanship) {
-                    if (showSportsmanship) {
-                        uiUtils.applySportsmanship(insertionPoint, sportsmanship)
-                    } else {
-                        clearSportsmanship(insertionPoint)
-                    }
-                }
-            }
-
-            const ageFromListing = listUtils.age(row)
-            const showAD = checkboxesData['advancedDevelopment'] ?? false
-            const showEP = checkboxesData['estimatedPotential'] ?? false
-            // Hidden skills
-            const hiddenSkills = playerData["hiddenSkills"]
-            if (hiddenSkills) {
-                listUtils.updateHiddenSkillsDetails({
-                    insertionPoint: insertionPoint,
-                    hiddenSkills: hiddenSkills,
-                    config: {
-                        showAdvancedDevelopment: showAD && ageFromListing < 25,
-                        showEstimatedPotential: showEP && ageFromListing < 21
-                    }
-                })
-            }
-        } else {
-            console.debug(`Player ${playerName} has no saved profile.`)
-            uiUtils.addNoDataSymbol(insertionPoint)
+        let playerPersonalities
+        if (playerData && playerData["personalities"]) {
+            playerPersonalities = playerData["personalities"]
         }
+        let teamwork
+        if (playerPersonalities && playerPersonalities['teamwork']) {
+            teamwork = playerPersonalities['teamwork']
+        }   
 
+        let valueNodes = rows[i].querySelectorAll("fw-player-skill > span > span:first-child")
         const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
         if (valueNodes.length < 8) { // Goalkeepers
             let RE = parseNumber(valueNodes[0]);
@@ -209,24 +156,6 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
     }
 }
 
-function clearTeamwork(element) {
-    const spans = element.querySelectorAll("span");
-    spans.forEach(span => {
-        if (span.textContent.trim() === uiUtils.personalitiesSymbols["teamwork"]) {
-            span.remove();
-        }
-    });
-}
-
-function clearSportsmanship(element) {
-    const spans = element.querySelectorAll("span");
-    spans.forEach(span => {
-        if (span.textContent.trim() === uiUtils.personalitiesSymbols["sportsmanship"]) {
-            span.remove();
-        }
-    });
-}
-
 function cleanUpNodeForPlayers(tableNode) {
     console.debug(`removing the old cells...`)
     tableNode.querySelectorAll(`td.${utils.pluginNodeClass}`).forEach(el => el.remove());
@@ -257,7 +186,7 @@ export async function processPlayersPage() {
 
     console.info(`${utils.version} 🧍🧍🧍🧍 Processing players page`)
     let tableNode = document.querySelector("table.table")
-    if (tableNode != undefined && tableNode.rows.length > 1) {
+    if (tableNode && tableNode.rows.length > 1) {
 
         console.debug(`Found the following table: `, tableNode)
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
