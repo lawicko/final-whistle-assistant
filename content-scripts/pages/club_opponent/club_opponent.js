@@ -66,7 +66,7 @@ async function processSquadPage(config) {
     const checkboxesData = result["checkboxes"] || checkboxesDefault
     const storedPlayerData = result["player-data"] || {}
 
-    // preparation - col-md-8 adds width 66.6% and col-md-4 33.3%
+    // preparation - col-md-8 adds width 66.6% and col-md-4 33.3% so they need to be modified to make space
     const headerLeft = document.querySelector("fw-club div.card-header > div.row > div.col-md-8")
     if (headerLeft) {
         headerLeft.classList.remove("col-md-8")

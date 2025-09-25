@@ -11,6 +11,7 @@ import { addTableRowsHighlighting } from './row_highlight.js'
 import { processLeaguePage } from './pages/league/league.js'
 import { processOpponentClubPage } from "./pages/club_opponent/club_opponent.js"
 import { processTransferPage } from './pages/transfer/transfer.js'
+import { processTrainingPage } from "./pages/training/training.js"
 
 // How long to wait after the last mutation before processing the DOM (in ms)
 const DEBOUNCE_WAIT_MS = 150;
@@ -87,30 +88,21 @@ async function dispatchWork(currentMessage) {
         await debouncedProcessPlayersPage()
     }
 
-    if (currentMessage.url.endsWith("training") || currentMessage.url.endsWith("training#Reports")) {
+    // training pattern with possible # at the end
+    const trainingPattern = /training/
+    if (trainingPattern.test(currentMessage.url)) {
         await debouncedProcessTrainingPage()
     }
 
-    if (currentMessage.url.endsWith("training#Drills")) {
-        await debouncedProcessTrainingDrillsPage()
-    }
-
-    if (currentMessage.url.endsWith("training#Settings")) {
-        await debouncedProcessTrainingSettingsPage()
-    }
-
-    if (
-        currentMessage.url.endsWith("/transfer") ||
-        currentMessage.url.endsWith("/transfer#Market") ||
-        currentMessage.url.endsWith("/transfer#Bids") ||
-        currentMessage.url.endsWith("/transfer#Watchlist")
-    ) {
+    // transfer pattern with possible # at the end
+    const transferPattern = /transfer/
+    if (transferPattern.test(currentMessage.url)) {
         await debouncedProcessTransfersPage()
     }
 
     // club pattern with # at the end for the selected tab
-    const pattern = /club\/\d+#/
-    if (pattern.test(currentMessage.url)) {
+    const clubPattern = /club\/\d+#/
+    if (clubPattern.test(currentMessage.url)) {
         await debouncedProcessOpponentClubPage()
     }
 }
@@ -217,29 +209,9 @@ const debouncedProcessLineupPage = makeDebouncedWithReconnect(
 
 const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
     async () => {
-        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
-            await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
-        }
-        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
-            await processTags();
-        }
+        await processTrainingPage()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
-);
-const debouncedProcessTrainingSettingsPage = makeDebouncedWithReconnect(
-    async () => {
-        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
-            await processTags();
-        }
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
-);
-
-const debouncedProcessTrainingDrillsPage = makeDebouncedWithReconnect(
-    async () => {
-        if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
-            await processTags();
-        }
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
-);
+)
 
 const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
     async () => {
