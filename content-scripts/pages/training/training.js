@@ -10,7 +10,7 @@ export async function processTrainingPage() {
     const match = window.location.href.match(pattern)
 
     let selectedTab = "Reports"
-    if (match) {
+    if (match && match[1]) {
         selectedTab = match[1]
     }
     switch (selectedTab) {
