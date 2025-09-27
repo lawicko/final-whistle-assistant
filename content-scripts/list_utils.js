@@ -201,7 +201,8 @@ export function processTableRow(
     checkboxesData,
     idCallback,
     nameCallback,
-    additionalInfoInsertionPointCallback
+    additionalInfoInsertionPointCallback,
+    accountForSpecialTalents = false
 ) {
     // Select the first <a> inside a <td> whose href contains "/player/"
     const playerLink = row.querySelector('td a[href*="/player/"]');
@@ -262,11 +263,13 @@ export function processTableRow(
         }
 
         // Special talents
-        let valueNodes = row.querySelectorAll("table.table fw-player-skill > span > span:first-child")
-        const applySpecialTalents = checkboxesData['specialTalents'] ?? false
-        const specialTalents = playerData["specialTalents"]
-        if (specialTalents) {
-            updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+        if (accountForSpecialTalents) {
+            let valueNodes = row.querySelectorAll("table.table fw-player-skill > span > span:first-child")
+            const applySpecialTalents = checkboxesData['specialTalents'] ?? false
+            const specialTalents = playerData["specialTalents"]
+            if (specialTalents) {
+                updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+            }
         }
     } else {
         console.debug(`Player ${playerName} has no saved profile.`)

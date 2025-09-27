@@ -65,7 +65,8 @@ async function appendAdditionalInfo(storedPlayerData, checkboxesData) {
             checkboxesData,
             (row) => playerID,
             (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),
-            (row) => row.querySelector("td:has(fw-player-hover)")
+            (row) => row.querySelector("td:has(fw-player-hover)"),
+            true
         )
 
         const playerData = storedPlayerData[playerID]
