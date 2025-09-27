@@ -45,6 +45,8 @@ export const personalitiesSymbols = {
     "teamwork": normalizeEmoji("⬡", "text")
 }
 
+export const specialTalentSymbol = "⚡︎"
+
 export function toggleClass(el, className) {
     if (el.className.indexOf(className) >= 0) {
         el.className = el.className.replace(` ${className}`, "");

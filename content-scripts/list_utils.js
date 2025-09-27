@@ -1,5 +1,29 @@
 import * as utils from "./utils.js"
 import * as uiUtils from "./ui_utils.js"
+import * as specialTalentsUtils from "./special_talents_utils.js"
+
+const skillIndexOutfielders = {
+    "SC": 0,
+    "OP": 1,
+    "BC": 2,
+    "PA": 3,
+    "AE": 4,
+    "CO": 5,
+    "TA": 6,
+    "DP": 7
+}
+
+const skillIndexGoalkeepers = {
+    "RE": 0,
+    "GP": 1,
+    "IN": 2,
+    "CT": 3,
+    "OR": 4
+}
+
+export function parseNumber(node) {
+    return Number(node.textContent.replace(/\D/g, ''))
+}
 
 /**
  * Finds and returns an age value from a given row
@@ -100,6 +124,7 @@ export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, 
     if (document.getElementById("teamworkCheckbox")) return
 
     const checkboxesData = [
+        { id: "specialTalentsCheckbox", label: `${uiUtils.specialTalentSymbol} ST` },
         { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork` },
         { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship` },
         { id: "advancedDevelopmentCheckbox", label: `AD` },
@@ -235,8 +260,102 @@ export function processTableRow(
                 }
             })
         }
+
+        // Special talents
+        let valueNodes = row.querySelectorAll("table.table fw-player-skill > span > span:first-child")
+        const applySpecialTalents = checkboxesData['specialTalents'] ?? false
+        const specialTalents = playerData["specialTalents"]
+        if (specialTalents) {
+            updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+        }
     } else {
         console.debug(`Player ${playerName} has no saved profile.`)
         uiUtils.addNoDataSymbol(insertionPoint)
+    }
+}
+
+const IgnoredTalentsOutfielders = [
+    specialTalentsUtils.SpecialTalentsKeys.OneOnOne,
+    specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
+]
+
+const IgnoredTalentsGoalKeepers = [
+    specialTalentsUtils.SpecialTalentsKeys.OneOnOne,
+    specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
+]
+
+function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
+    // console.info(`Updating (${add ? "adding" : "removing"}) talents:`, specialTalents)
+    const stClass = utils.pluginNodeClass + "SpecialTalentModified"
+    const stTooltipClass = stClass + "Tooltip"
+    let ignoredTalents = IgnoredTalentsOutfielders
+    let skillIndexArray = skillIndexOutfielders
+    if (valueNodes.length < 8) { // Goalkeepers
+        ignoredTalents = IgnoredTalentsGoalKeepers
+        skillIndexArray = skillIndexGoalkeepers
+    }
+    let modifications = new Array(valueNodes.length).fill(0)
+    let tooltips = new Array(valueNodes.length).fill("If you plan on changing the form you will have to reload the page to get the correct numbers.")
+    for (const specialTalent of specialTalents) {
+        const affectedSkills = specialTalentsUtils.SpecialTalentsDefinitions[specialTalent]
+        if (!affectedSkills || IgnoredTalentsOutfielders.includes(specialTalent)) continue // for skills like tough there are no skills affected
+        // console.info("talent", specialTalent, "affectedSkills", affectedSkills)
+        for (const [skill, value] of Object.entries(affectedSkills)) {
+            const index = skillIndexArray[skill]
+            if (index === undefined) continue
+            modifications[index] += value
+            tooltips[index] += "\n+" + value + " from " + specialTalent
+        }
+    }
+    // console.info("modifications", modifications)
+    for (let index = 0; index < modifications.length; index++) {
+        const modification = modifications[index]
+        if (modification === 0) continue
+
+        if (add && !valueNodes[index].classList.contains(stClass)) {
+            const currentValue = parseNumber(valueNodes[index])
+            const updatedValue = currentValue + modification
+            const paddedValue = String(updatedValue).padStart(2, "0")
+            console.debug("applying", currentValue, "->", updatedValue, valueNodes[index])
+            const updatedText = valueNodes[index].textContent.replace(/\d+/, paddedValue)
+            valueNodes[index].textContent = updatedText
+            valueNodes[index].classList.add(stClass)
+
+            let tooltipNode = valueNodes[index].parentNode.querySelector(`span.${stTooltipClass}`)
+            if (!tooltipNode) {
+                tooltipNode = document.createElement("span")
+                tooltipNode.classList.add(stTooltipClass)
+                tooltipNode.textContent = "\uf29c"
+                tooltipNode.title = tooltips[index]
+                valueNodes[index].after(tooltipNode)
+            }
+
+            const denomination = utils.denomination(updatedValue)
+            const denomClass = "denom" + denomination
+            // Find the class that starts with "denom"
+            const currentDenomClass = Array.from(valueNodes[index].classList).find(cls => cls.startsWith("denom"))
+            if (currentDenomClass) {
+                valueNodes[index].classList.remove(currentDenomClass) // remove old denomX
+                valueNodes[index].classList.add(denomClass) // add new denomX
+            }
+        }
+        if (!add && valueNodes[index].classList.contains(stClass)) {
+            const currentValue = parseNumber(valueNodes[index])
+            const updatedValue = currentValue - modification
+            const paddedValue = String(updatedValue).padStart(2, "0")
+            console.debug("removing", currentValue, "->", updatedValue, valueNodes[index])
+            const updatedText = valueNodes[index].textContent.replace(/\d+/, paddedValue)
+            valueNodes[index].textContent = updatedText
+            valueNodes[index].classList.remove(stClass)
+
+            const denomination = utils.denomination(updatedValue)
+            const denomClass = "denom" + denomination
+            /// Find the class that starts with "denom"
+            const currentDenomClass = Array.from(valueNodes[index].classList).find(cls => cls.startsWith("denom"))
+            if (currentDenomClass) {
+                valueNodes[index].classList.remove(currentDenomClass) // remove old denomX
+                valueNodes[index].classList.add(denomClass) // add new denomX
+            }
+        }
     }
 }

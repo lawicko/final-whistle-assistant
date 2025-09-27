@@ -52,7 +52,7 @@ function createHeaders() {
 }
 
 // Calculates and adds the cells with the midfield dominance values for each player
-function appendAdditionalInfo(storedPlayerData, checkboxesData) {
+async function appendAdditionalInfo(storedPlayerData, checkboxesData) {
     console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
@@ -76,16 +76,15 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
         let teamwork
         if (playerPersonalities && playerPersonalities['teamwork']) {
             teamwork = playerPersonalities['teamwork']
-        }   
+        }
 
         let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
-        const parseNumber = (node) => Number(node.textContent.replace(/\D/g, ''));
         if (valueNodes.length < 8) { // Goalkeepers
-            let RE = parseNumber(valueNodes[0]);
-            let GP = parseNumber(valueNodes[1]);
-            let IN = parseNumber(valueNodes[2]);
-            let CT = parseNumber(valueNodes[3]);
-            let OR = parseNumber(valueNodes[4]);
+            let RE = listUtils.parseNumber(valueNodes[0]);
+            let GP = listUtils.parseNumber(valueNodes[1]);
+            let IN = listUtils.parseNumber(valueNodes[2]);
+            let CT = listUtils.parseNumber(valueNodes[3]);
+            let OR = listUtils.parseNumber(valueNodes[4]);
 
             console.debug(`RE=${RE} GP=${GP} IN=${IN} CT=${CT} OR=${OR}`)
             const assistanceCalculations = uiUtils.calculateDefensiveAssistanceGK({ OR: OR, teamwork: teamwork });
@@ -97,13 +96,14 @@ function appendAdditionalInfo(storedPlayerData, checkboxesData) {
                 `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
             row.appendChild(tdDA);
         } else { // Outfielders
-            let SC = parseNumber(valueNodes[0]);
-            let OP = parseNumber(valueNodes[1]);
-            let BC = parseNumber(valueNodes[2]);
-            let PA = parseNumber(valueNodes[3]);
-            let CO = parseNumber(valueNodes[5]);
-            let TA = parseNumber(valueNodes[6]);
-            let DP = parseNumber(valueNodes[7]);
+
+            let SC = listUtils.parseNumber(valueNodes[0]);
+            let OP = listUtils.parseNumber(valueNodes[1]);
+            let BC = listUtils.parseNumber(valueNodes[2]);
+            let PA = listUtils.parseNumber(valueNodes[3]);
+            let CO = listUtils.parseNumber(valueNodes[5]);
+            let TA = listUtils.parseNumber(valueNodes[6]);
+            let DP = listUtils.parseNumber(valueNodes[7]);
 
             console.debug(`SC=${SC} OP=${OP} BC=${BC} PA=${PA} TA=${TA} DP=${DP}`)
 
@@ -192,6 +192,7 @@ export async function processPlayersPage() {
 
         const result = await utils.storage.get(["player-data", "checkboxes"])
         const checkboxesDefault = {
+            specialTalents: "true",
             teamwork: "true",
             sportsmanship: "true",
             advancedDevelopment: "true",
@@ -208,6 +209,6 @@ export async function processPlayersPage() {
             (pData, cData) => { appendAdditionalInfo(pData, cData) }
         )
         createHeaders()
-        appendAdditionalInfo(storedPlayerData, checkboxesData)
+        await appendAdditionalInfo(storedPlayerData, checkboxesData)
     }
 }

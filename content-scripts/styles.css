@@ -351,3 +351,11 @@ div.player-select > fw-player-card > div.p-block::after {
   display: table;
   clear: both;
 }
+
+span.FinalWhistlePluginSpecialTalentModifiedTooltip {
+  position: relative;
+  left: -3px;
+  top: -5px;
+  font: 7px/1 FontAwesome;
+  cursor: help;
+}

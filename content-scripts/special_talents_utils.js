@@ -1,7 +1,7 @@
 import { PositionsKeys } from "./ui_utils.js"
 
 export const SpecialTalentsKeys = {
-    OneOnOne: "1 on 1",
+    OneOnOne: "one on one",
     Ambidextrous: "ambidextrous",
     Anticipator: "anticipator",
     Dribbler: "dribbler",
@@ -16,7 +16,7 @@ export const SpecialTalentsKeys = {
     Tough: "tough"
 }
 
-const SpecialTalentsDefinitions = {
+export const SpecialTalentsDefinitions = {
     [SpecialTalentsKeys.OneOnOne]: {
         SC: 5,
         RE: 5
@@ -53,6 +53,9 @@ const SpecialTalentsDefinitions = {
     },
     [SpecialTalentsKeys.Stopper]: {
         TA: 5
+    },
+    [SpecialTalentsKeys.SureHands]: {
+        CT: 5
     }
 }
 
