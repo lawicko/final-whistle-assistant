@@ -345,3 +345,9 @@ i.fa-tag::before {
   font-size: 0.5em;
   margin-top: -0.1em;    /* fine-tune vertical spacing */
 }
+
+div.player-select > fw-player-card > div.p-block::after {
+  content: "";
+  display: table;
+  clear: both;
+}
