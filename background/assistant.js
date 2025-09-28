@@ -2,16 +2,103 @@ import {
     dateStorageFormat,
     getStoredString,
     isEmpty,
+    normalizePromise,
     optionsStorage,
     storage,
     version
 } from '../content-scripts/utils.js';
 
 import { checkDataIntegrityFor } from './data_integrity.js'
+import { database } from '../content-scripts/database.js'
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
+}
+
+// TODO: rename and think if this needs to be always called
+async function initDB() {
+
+    const {
+        "player-data": playerDataFromStorage = {},
+        "matches": matchesDataFromStorage = {}
+    } = await storage.get(["player-data", "matches"])
+
+    const playersArray = Object.entries(playerDataFromStorage).map(([id, data]) => {
+        // Destructure to remove playerID if it exists
+        const { playerID, ...rest } = data
+        return {
+            id: id,
+            ...rest
+        }
+    })
+
+    // console.info(playersArray)
+
+    const matchesArray = Object.entries(matchesDataFromStorage).map(([id, data]) => {
+        const lineupTranformer = ([playerId, matchPlayerData]) => {
+            return {
+                id: playerId,
+                ...matchPlayerData
+            }
+        }
+        const lineupsTransformer = (lineups, tranformer) => {
+            let result = {}
+            if (lineups?.home) {
+                const mappedHome = Object.entries(lineups.home).map(tranformer)
+                result["home"] = mappedHome
+            }
+            if (lineups?.away) {
+                const mappedAway = Object.entries(lineups.away).map(tranformer)
+                result["away"] = mappedAway
+            }
+            return result
+        }
+        if (data.startingLineups) {
+            const startingLineupsTransformed = lineupsTransformer(data.startingLineups, lineupTranformer)
+            data.startingLineups = startingLineupsTransformed
+        }
+        if (data.finishingLineups) {
+            const finishingLineupsTransformed = lineupsTransformer(data.finishingLineups, lineupTranformer)
+            data.finishingLineups = finishingLineupsTransformed
+        }
+
+        return {
+            id,
+            ...data
+        }
+    })
+
+    // console.info(matchesArray)
+
+    database.on("populate", function (transaction) {
+        // This runs only once, when the DB is first created
+        console.info("Populating initial data...")
+
+        // Add players from local storage
+        transaction.table("players").bulkAdd(playersArray)
+
+        // Add matches from local storage
+        transaction.table("matches").bulkAdd(matchesArray)
+
+        console.info("Populating initial data finished")
+    })
+
+    try {
+        const dbInstance = await database.open()
+        console.info("Database opened successfully:", dbInstance.name)
+
+        // Verify
+        const allPlayers = await database.players.toArray()
+        console.info("Players in DB:", allPlayers)
+        const allMatches = await database.matches.toArray()
+        console.info("Matches in DB:", allMatches)
+
+        // TODO: uncomment local storage cleanup
+        // await storage.remove(["player-data", "matches"])
+    } catch (err) {
+        console.error("Error opening database:", err)
+    }
 }
 
 /**
@@ -122,6 +209,33 @@ function handleOnMessage(msg, sender, sendResponse) {
     if (msg.type === "contextMenuConfig") {
         browser.contextMenus.update(colorPlayerRowMenuID, { enabled: msg.enabled })
     }
+
+    // Database access
+    if (msg.type === "getMatch") {
+        return normalizePromise(database.matches.get(msg.id))
+    }
+
+    if (msg.type === "getPlayer") {
+        return normalizePromise(database.players.get(msg.id))
+    }
+
+    if (msg.type === "addMatch") {
+        return normalizePromise(database.matches.put(msg.data)) // put = add or update
+    }
+
+    if (msg.type === "addPlayer") {
+        return normalizePromise(database.players.put(msg.data))
+    }
+
+    if (msg.type === "updateMatch") {
+        return normalizePromise(database.matches.update(msg.id, msg.changes))
+    }
+
+    if (msg.type === "deleteMatch") {
+        return normalizePromise(database.matches.delete(msg.id))
+    }
+
+    return Promise.resolve(null)
 }
 browser.runtime.onMessage.addListener(handleOnMessage)
 
@@ -184,6 +298,8 @@ async function handleInstalled(details) {
     } else {
         await handleMigrationAndBumpLocalDataVersion(localStorageVersion)
     }
+
+    await initDB()
 
     const defaultOptions = {
         modules: {

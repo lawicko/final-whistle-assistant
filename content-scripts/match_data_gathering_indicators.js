@@ -1,5 +1,6 @@
 import * as utils from "../content-scripts/utils"
 import { calculateDataGatheringProgressForMatch, createProgressDot } from './match_utils.js'
+import * as db from './db_access.js'
 
 /**
  * Adds match data indicators for a given page configuration
@@ -30,8 +31,6 @@ export async function processPlayedMatches(playedMatchesContainers, config) {
     const commentStart = config.commentStart || "⚽ Processing matches"
     console.info(commentStart)
 
-    const { matches = {} } = await utils.storage.get("matches")
-
     try {
         for (const tr of playedMatchesContainers) {
             const matchLinkContainer = tr.querySelector(config.matchLinkContainerQuery)
@@ -44,7 +43,7 @@ export async function processPlayedMatches(playedMatchesContainers, config) {
             const matchLinkElement = matchLinkContainer.querySelector(config.matchLinkElementQuery)
             const matchID = utils.lastPathComponent(matchLinkElement.href)
 
-            const matchDataFromStorage = matches[matchID] ?? {}
+            const matchDataFromStorage = await db.getMatch(matchID) ?? {}
             const progress = calculateDataGatheringProgressForMatch(matchDataFromStorage)
             const dotSpan = createProgressDot(progress)
 

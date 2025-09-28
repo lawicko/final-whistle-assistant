@@ -1,0 +1,14 @@
+import Dexie from "dexie"
+
+export const database = new Dexie("FinalWhistleAssistant")
+
+database.version(1).stores({
+    // all expected fields: id, teamId, name, position, rating, talent, personalities, hiddenSkills, specialTalents, injuries, minutesPlayed
+    players: "id, teamId, position, rating, talent",
+    // all expected fields: id, date, homeTeam, awayTeam, tactics, startingLineups, finishingLineups
+    matches: "id, date, homeTeam, awayTeam"
+})
+
+database.on("blocked", ev => {
+    console.warn("Database open is blocked by another connection", ev);
+})
