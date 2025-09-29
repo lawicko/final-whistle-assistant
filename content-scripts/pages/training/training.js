@@ -3,6 +3,7 @@ import * as uiUtils from "../../ui_utils.js"
 import * as listUtils from "../../list_utils.js"
 import { addTableRowsHighlighting } from "../../row_highlight.js"
 import { processTags } from "../../tags.js"
+import * as db from "../../db_access.js"
 
 export async function processTrainingPage() {
     console.info(`${utils.version} 🏋️ Processing training page`)
@@ -18,13 +19,11 @@ export async function processTrainingPage() {
             await tryTagsProcessing()
             await tryRowHighlighting()
 
-            const result = await utils.storage.get(["player-data"])
             const checkboxesData = {
                 advancedDevelopment: "true",
                 estimatedPotential: "true"
             }
-            const storedPlayerData = result["player-data"] || {}
-            updateAdditionalInfo(storedPlayerData, checkboxesData)
+            await updateAdditionalInfo(checkboxesData)
             break
         case "Settings":
             await tryTagsProcessing()
@@ -37,15 +36,16 @@ export async function processTrainingPage() {
     }
 }
 
-function updateAdditionalInfo(storedPlayerData, checkboxesData) {
+async function updateAdditionalInfo(checkboxesData) {
     console.info(`${utils.version} 📝 Updating additional info`)
 
     let rows = document.querySelectorAll("table > tbody > tr")
     for (const row of rows) {
         const playerID = listUtils.id(row)
+        const loadedPlayerData = await db.getPlayer(playerID)
         listUtils.processTableRow(
             row,
-            storedPlayerData,
+            loadedPlayerData,
             checkboxesData,
             (row) => playerID,
             (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),

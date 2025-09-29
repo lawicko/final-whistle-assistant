@@ -1,6 +1,7 @@
 import * as utils from "./utils.js"
 import * as uiUtils from "./ui_utils.js"
 import * as listUtils from "./list_utils.js"
+import * as db from "./db_access.js"
 
 /**
  * Creates a <td> or <th> element with a hover-card.
@@ -52,16 +53,17 @@ function createHeaders() {
 }
 
 // Calculates and adds the cells with the midfield dominance values for each player
-async function appendAdditionalInfo(storedPlayerData, checkboxesData) {
+async function appendAdditionalInfo(checkboxesData) {
     console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
     let rows = document.querySelectorAll("table > tr:has(fw-player-hover)")
     for (const row of rows) {
         const playerID = listUtils.id(row)
+        const loadedPlayerData = await db.getPlayer(playerID)
         listUtils.processTableRow(
             row,
-            storedPlayerData,
+            loadedPlayerData,
             checkboxesData,
             (row) => playerID,
             (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),
@@ -69,7 +71,7 @@ async function appendAdditionalInfo(storedPlayerData, checkboxesData) {
             true
         )
 
-        const playerData = storedPlayerData[playerID]
+        const playerData = loadedPlayerData
         let playerPersonalities
         if (playerData && playerData["personalities"]) {
             playerPersonalities = playerData["personalities"]
@@ -191,7 +193,7 @@ export async function processPlayersPage() {
         console.debug(`Found the following table: `, tableNode)
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
 
-        const result = await utils.storage.get(["player-data", "checkboxes"])
+        const result = await utils.storage.get(["checkboxes"])
         const checkboxesDefault = {
             specialTalents: "true",
             teamwork: "true",
@@ -200,16 +202,15 @@ export async function processPlayersPage() {
             estimatedPotential: "true"
         }
         const checkboxesData = result["checkboxes"] || checkboxesDefault
-        const storedPlayerData = result["player-data"] || {}
 
         cleanUpNodeForPlayers(tableNode)
 
         listUtils.addControlCheckboxes(
             document.querySelector("fw-players div.card-header > div.row"),
             checkboxesData,
-            (pData, cData) => { appendAdditionalInfo(pData, cData) }
+            (cData) => { appendAdditionalInfo(cData) }
         )
         createHeaders()
-        await appendAdditionalInfo(storedPlayerData, checkboxesData)
+        await appendAdditionalInfo(checkboxesData)
     }
 }

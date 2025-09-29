@@ -246,13 +246,12 @@ async function processIntoLineup(players, isFinishingLineup) {
 
 async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
     console.info(`🤕⏱️ Processing injuries and minutes played`)
-    // const { "player-data": playerDataFromStorage = {} } = await storage.get('player-data')
 
     const allPlayers = [...lineups.home, ...lineups.away]
     const allPlayersKeys = allPlayers.map(p => p.id)
     const playersInStorage = await db.bulkGetPlayers(allPlayersKeys)
     let updatedPlayers = []
-    console.info("playersInStorage", playersInStorage)
+    // console.info("playersInStorage", playersInStorage)
 
     for (const player of allPlayers) {
         let playerData
@@ -261,9 +260,9 @@ async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
         } else {
             playerData = { id: player.id }
         }
-        console.info("playerFromStorage", playerData)
+        // console.info("playerFromStorage", playerData)
         let minutesDictionary = playerData["minutes-played"] || {}
-        console.info("minutesDictionary", minutesDictionary)
+        // console.info("minutesDictionary", minutesDictionary)
 
         const newEntry = { [utils.dateStorageFormat(date)]: player.minutes }
         minutesDictionary = utils.mergeObjects(minutesDictionary, newEntry)

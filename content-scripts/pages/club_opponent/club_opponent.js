@@ -3,17 +3,20 @@ import * as uiUtils from "../../ui_utils.js"
 import * as listUtils from "../../list_utils.js"
 import { addTableRowsHighlighting } from "../../row_highlight.js"
 import { processFixturesPage } from "../../calendar.js"
+import * as db from "../../db_access.js"
 
-function updateAdditionalInfo(storedPlayerData, checkboxesData) {
+async function updateAdditionalInfo(checkboxesData) {
     console.info("updating additional info")
     let rows = document.querySelectorAll("table > tr");
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i]
+        const playerID = utils.lastPathComponent(row.querySelector("td > a").href)
+        const loadedPlayerData = await db.getPlayer(playerID)
         listUtils.processTableRow(
             row,
-            storedPlayerData,
+            loadedPlayerData,
             checkboxesData,
-            (row) => utils.lastPathComponent(row.querySelector("td > a").href),
+            (row) => playerID,
             (row) => row.querySelector("td > a").textContent.trim(),
             (row) => row.querySelector("td:has(a)")
         )
@@ -56,7 +59,7 @@ export async function processOpponentClubPage() {
 
 async function processSquadPage(config) {
     console.info(`${utils.version} 🛡️🧍‍♂️🧍‍♂️🧍‍♂️ Processing opponent squad page`)
-    const result = await utils.storage.get(["player-data", "checkboxes"])
+    const result = await utils.storage.get(["checkboxes"])
     const checkboxesDefault = {
         teamwork: "true",
         sportsmanship: "true",
@@ -64,7 +67,6 @@ async function processSquadPage(config) {
         estimatedPotential: "true"
     }
     const checkboxesData = result["checkboxes"] || checkboxesDefault
-    const storedPlayerData = result["player-data"] || {}
 
     // preparation - col-md-8 adds width 66.6% and col-md-4 33.3% so they need to be modified to make space
     const headerLeft = document.querySelector("fw-club div.card-header > div.row > div.col-md-8")
@@ -79,8 +81,8 @@ async function processSquadPage(config) {
     listUtils.addControlCheckboxes(
         config.controlCheckboxesInsertionPoint,
         checkboxesData,
-        (pData, cData) => { updateAdditionalInfo(pData, cData) }
+        (cData) => { updateAdditionalInfo(cData) }
     )
 
-    updateAdditionalInfo(storedPlayerData, checkboxesData)
+    updateAdditionalInfo(checkboxesData)
 }

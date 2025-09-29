@@ -14,6 +14,7 @@ import {
     removeNoDataSymbol,
     personalitiesSymbols
 } from "./ui_utils";
+import * as db from "./db_access.js"
 
 function getPlayerLinks(selector) {
     // Get the container
@@ -41,19 +42,6 @@ function getHrefList(selector) {
     const playerLinks = getPlayerLinks(selector)
 
     return playerLinks.map(a => a.href);
-}
-
-async function loadValuesForComponents(components) {
-    const playerData = await storage.get('player-data')
-
-    const result = playerData['player-data']
-
-    return components.map(key => {
-        const raw = result[key];
-        if (!raw) return null; // missing key
-
-        return raw
-    });
 }
 
 function proposeAnchors(anchors) {
@@ -429,10 +417,8 @@ async function processLineup() {
     console.info(`${version} Processing lineup...`)
     const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
-    console.debug(hrefs);
-    const lastParts = hrefs.map(lastPathComponent);
-    console.debug(lastParts)
-    const profiles = await loadValuesForComponents(lastParts);
+    const playerIDs = hrefs.map(lastPathComponent);
+    const profiles = await db.bulkGetPlayers(playerIDs)
     console.debug('Profiles: ', profiles)
 
     // Load tresholds from storage

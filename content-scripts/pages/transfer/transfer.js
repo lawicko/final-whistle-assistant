@@ -1,6 +1,7 @@
 import * as utils from "../../utils.js"
 import * as uiUtils from "../../ui_utils.js"
 import * as listUtils from "../../list_utils.js"
+import * as db from "../../db_access.js"
 
 export async function processTransferPage() {
     console.info(`💸 Processing transfer page`)
@@ -13,7 +14,6 @@ export async function processTransferPage() {
     if (fromWatchlist.length > 0) {
         rows = [...rows, ...fromWatchlist]
     }
-    const { ['player-data']: playersDataFromStorage = {} } = await utils.storage.get('player-data')
     for (const row of [...rows]) {
         const playerID = listUtils.id(row)
         const playerName = row
@@ -21,7 +21,8 @@ export async function processTransferPage() {
             .textContent
             .trim()
         const ageFromListing = listUtils.age(row)
-        let loadedPlayerData = playersDataFromStorage[playerID]
+
+        const loadedPlayerData = await db.getPlayer(playerID)
         if (!loadedPlayerData) continue
 
         console.debug("We have a record on ", playerName, "(", playerID, "):", loadedPlayerData)

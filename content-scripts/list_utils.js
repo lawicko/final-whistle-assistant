@@ -153,16 +153,15 @@ export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, 
             const isChecked = event.target.checked
             console.debug(`${item.label}:`, checkbox.checked)
             const {
-                checkboxes: cd = checkboxesDataFromStorage,
-                "player-data": storedPlayerData = {}
-            } = await utils.storage.get(["player-data", "checkboxes"])
+                checkboxes: cd = checkboxesDataFromStorage
+            } = await utils.storage.get(["checkboxes"])
             if (isChecked) {
                 cd[checkboxKey] = "true"
             } else {
                 delete cd[checkboxKey]
             }
             await utils.storage.set({ checkboxes: cd })
-            afterCheckboxDataSetCallback(storedPlayerData, cd)
+            afterCheckboxDataSetCallback(cd)
         })
 
         checkboxContainer.appendChild(checkbox)
@@ -215,7 +214,7 @@ export function processTableRow(
     var playerName = nameCallback(row)//row.querySelector("td > a").textContent.trim()
     console.debug('Processing player:', playerName)
 
-    const playerData = storedPlayerData[playerID]
+    const playerData = storedPlayerData
     const insertionPoint = additionalInfoInsertionPointCallback(row)//row.querySelector("td:has(a)")
     if (playerData) {
         console.debug(`Found stored player data for: ${playerName}`, playerData)

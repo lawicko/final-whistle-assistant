@@ -5,6 +5,7 @@ import * as personalitiesUtils from "../../personalities_utils.js"
 import * as playerUtils from "./player_utils.js"
 import { processPlayedMatches } from '../../match_data_gathering_indicators.js'
 import { addYAndSLabelsForMatchBadges } from '../../y_and_s_labels_for_match_badges.js'
+import * as db from "../../db_access.js"
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -605,9 +606,23 @@ function getHiddenSkillsData(hiddenSkillsTable) {
     return result
 }
 
+function getPlayerRating() {
+    // Grab all <td> elements from the first table
+    const tds = document.querySelectorAll("table.table > tr > td")
+
+    // Find the one whose textContent includes "/"
+    const ratingTD = Array.from(tds).find(td => td.textContent.includes("/"))
+    const spans = ratingTD.querySelectorAll('span')
+    const rating = spans[0].textContent.trim()
+    const talent = spans[1].textContent.trim()
+    return { rating: rating, talent: talent }
+}
+
 function getPlayerData() {
     const position = getPlayerPosition()
     const name = getPlayerName()
+    const clubData = getPlayerClubData()
+    const { rating, talent } = getPlayerRating()
 
     const personalitiesTable = getPersonalitiesTable()
     let personalitiesData
@@ -633,9 +648,12 @@ function getPlayerData() {
     const playerID = utils.lastPathComponent(window.location.pathname)
 
     return {
-        playerID: playerID,
+        id: playerID,
         name: name,
         position: position,
+        rating: rating,
+        talent: talent,
+        teamId: clubData.id,
         ...(personalitiesData !== undefined && { personalities: personalitiesData }),
         ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData }),
         ...(hiddenSkillsData != undefined && { hiddenSkills: hiddenSkillsData })
@@ -862,17 +880,14 @@ export async function processPlayerPage() {
         return
     }
 
-    let clubData
+    let clubData = getPlayerClubData()
     if (isOwnPlayer()) {
-        clubData = getPlayerClubData()
         await saveClubDataToStorage(clubData)
     }
     let playerDataFromPage = getPlayerData()
     console.debug("playerDataFromPage", playerDataFromPage)
-    const { "player-data": playersDictFromStorage = {} } = await utils.storage.get('player-data');
-    console.debug('playersDictFromStorage = ', playersDictFromStorage)
 
-    let currentPlayerRepresentationInStorage = playersDictFromStorage[playerDataFromPage.playerID] || {};
+    let currentPlayerRepresentationInStorage = await db.getPlayer(playerDataFromPage.id) || {}
     console.debug('currentPlayerRepresentationInStorage = ', currentPlayerRepresentationInStorage)
 
     await showInjuries(currentPlayerRepresentationInStorage)
@@ -940,12 +955,10 @@ export async function processPlayerPage() {
 
     if (isShowingOverview() || isShowingReports()) { // only save for Overview or Reports
         currentPlayerRepresentationInStorage = utils.mergeObjects(currentPlayerRepresentationInStorage, playerDataFromPage)
-        console.debug(`Will save player data to storage`, currentPlayerRepresentationInStorage);
+        // console.info(`Will save player data to storage`, currentPlayerRepresentationInStorage)
+        await db.putPlayer(currentPlayerRepresentationInStorage)
 
-        playersDictFromStorage[playerDataFromPage.playerID] = currentPlayerRepresentationInStorage
-        await utils.storage.set({ "player-data": playersDictFromStorage })
-
-        console.info(`📥 Saved player data to storage (${playerDataFromPage.playerID} ${currentPlayerRepresentationInStorage.name})`)
+        console.info(`📥 Saved player data to storage (${playerDataFromPage.id} ${currentPlayerRepresentationInStorage.name})`)
     }
 
     // TODO: develop this further
@@ -962,7 +975,7 @@ export async function processPlayerPage() {
             })
             const currentSeasonNumber = uiUtils.getCurrentSeasonNumber()
             const now = new Date() // current date/time
-            
+
             const playerAge = playerUtils.getPlayerAge()
             const lookAheadBy = 21 - playerAge.years
             const birthdaysArray = playerUtils.getFutureBirthdays(now, playerAge.years, playerAge.months, playerAge.days, lookAheadBy)
@@ -971,7 +984,7 @@ export async function processPlayerPage() {
             // console.info(`Current season: ${currentSeasonNumber}, season ${currentSeasonNumber + seasonsAhead} starts on:`, formatter.format(targetSeasonStart), `(${targetSeasonStart.toUTCString()})`)
 
             // console.info(`Player age: ${playerAge.years}y ${playerAge.months}m ${playerAge.days}d, seasons left as youth: ${playerUtils.getSeasonsLeftAsYouth()}, next birthday: `, formatter.format(birthdaysArray[0].date), `(${birthdaysArray[0].date.toUTCString()})`)
-            for (let i=0; i < birthdaysArray.length; i++) {
+            for (let i = 0; i < birthdaysArray.length; i++) {
                 const birthday = birthdaysArray[i]
                 const seasonStartDate = seasonStartDates[i]
                 console.info(`Birthday ${birthday.age} on ${formatter.format(birthday.date)} (${birthday.date.toUTCString()}) is ${utils.diffInDaysUTC(seasonStartDate, birthday.date)} days after season ${currentSeasonNumber + i + 1} starts (${seasonStartDate})`)
