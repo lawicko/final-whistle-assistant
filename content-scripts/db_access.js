@@ -11,12 +11,20 @@ export function getPlayer(id) {
     return browser.runtime.sendMessage({ type: "getPlayer", id });
 }
 
-export function addMatch(matchObj) {
-    return browser.runtime.sendMessage({ type: "addMatch", data: matchObj });
+export function bulkGetPlayers(keysArray) {
+    return browser.runtime.sendMessage({ type: "bulkGetPlayers", keysArray: keysArray })
 }
 
-export function addPlayer(playerObj) {
-    return browser.runtime.sendMessage({ type: "addPlayer", data: playerObj });
+export function putMatch(matchObj) {
+    return browser.runtime.sendMessage({ type: "putMatch", data: matchObj });
+}
+
+export function putPlayer(playerObj) {
+    return browser.runtime.sendMessage({ type: "putPlayer", data: playerObj });
+}
+
+export function bulkPutPlayers(playersArray) {
+    return browser.runtime.sendMessage({ type: "bulkPutPlayers", data: playersArray })
 }
 
 export function updateMatch(id, changes) {

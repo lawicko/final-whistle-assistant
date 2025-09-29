@@ -1,7 +1,16 @@
 import * as utils from "./utils.js"
 
 // The node that will be observed for mutations
-export const alwaysPresentNode = document.querySelector("div.wrapper");
+export const alwaysPresentNode = document.querySelector("div.wrapper")
+
+export function nextMatching(el, selector) {
+    let sib = el.nextElementSibling
+    while (sib) {
+        if (sib.matches(selector)) return sib
+        sib = sib.nextElementSibling
+    }
+    return null
+}
 
 export const PositionsKeys = {
     CB: "CB",

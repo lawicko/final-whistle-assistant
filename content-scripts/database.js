@@ -6,7 +6,7 @@ database.version(1).stores({
     // all expected fields: id, teamId, name, position, rating, talent, personalities, hiddenSkills, specialTalents, injuries, minutesPlayed
     players: "id, teamId, position, rating, talent",
     // all expected fields: id, date, homeTeam, awayTeam, tactics, startingLineups, finishingLineups
-    matches: "id, date, homeTeam, awayTeam"
+    matches: "id, date, competition, homeTeamID, homeTeamName, awayTeamID, awayTeamName"
 })
 
 database.on("blocked", ev => {

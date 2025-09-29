@@ -219,12 +219,20 @@ function handleOnMessage(msg, sender, sendResponse) {
         return normalizePromise(database.players.get(msg.id))
     }
 
-    if (msg.type === "addMatch") {
+    if (msg.type === "bulkGetPlayers") {
+        return normalizePromise(database.players.bulkGet(msg.keysArray))
+    }
+
+    if (msg.type === "putMatch") {
         return normalizePromise(database.matches.put(msg.data)) // put = add or update
     }
 
-    if (msg.type === "addPlayer") {
+    if (msg.type === "putPlayer") {
         return normalizePromise(database.players.put(msg.data))
+    }
+
+    if (msg.type === "bulkPutPlayers") {
+        return normalizePromise(database.players.bulkPut(msg.data))
     }
 
     if (msg.type === "updateMatch") {
