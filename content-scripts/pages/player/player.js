@@ -467,6 +467,7 @@ function isOwnPlayer() {
  */
 function getPlayerClubData() {
     const link = document.querySelector('table span fw-club-hover a')
+    if (!link) return
     const clubID = utils.lastPathComponent(link.href)
     const clubName = link.querySelector('span.club-name').textContent
     const clubData = {
@@ -653,7 +654,7 @@ function getPlayerData() {
         position: position,
         rating: rating,
         talent: talent,
-        teamId: clubData.id,
+        teamId: clubData ? clubData.id : null,
         ...(personalitiesData !== undefined && { personalities: personalitiesData }),
         ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData }),
         ...(hiddenSkillsData != undefined && { hiddenSkills: hiddenSkillsData })

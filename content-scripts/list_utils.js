@@ -314,7 +314,7 @@ function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
         const modification = modifications[index]
         if (modification === 0) continue
 
-        if (add && !valueNodes[index].classList.contains(stClass)) {
+        if (add && valueNodes[index] && !valueNodes[index].classList.contains(stClass)) {
             const currentValue = parseNumber(valueNodes[index])
             const updatedValue = currentValue + modification
             const paddedValue = String(updatedValue).padStart(2, "0")
@@ -341,7 +341,7 @@ function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
                 valueNodes[index].classList.add(denomClass) // add new denomX
             }
         }
-        if (!add && valueNodes[index].classList.contains(stClass)) {
+        if (!add && valueNodes[index] && valueNodes[index].classList.contains(stClass)) {
             const currentValue = parseNumber(valueNodes[index])
             const updatedValue = currentValue - modification
             const paddedValue = String(updatedValue).padStart(2, "0")
