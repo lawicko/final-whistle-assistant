@@ -11,12 +11,18 @@ const configs = targets.flatMap((target) =>
 )
 const copyCommonFiles = targets.flatMap((target) => [
     { src: 'icons/*', dest: `dist/${target}/icons` },
-    { src: 'options/*', dest: `dist/${target}/options` },
     { src: 'content-scripts/styles.css', dest: `dist/${target}` },
     { src: 'dist/background-scripts.bundle.js', dest: `dist/${target}` },
     { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}` },
     { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
     { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` }
+])
+
+const copyOptions = targets.flatMap((target) => [
+    { src: 'dist/options.bundle.js', dest: `dist/${target}/options` },
+    { src: 'dist/options.bundle.js.map', dest: `dist/${target}/options` },
+    { src: 'options/options.html', dest: `dist/${target}/options` },
+    { src: 'options/options.css', dest: `dist/${target}/options` }
 ])
 
 export default [
@@ -35,8 +41,7 @@ export default [
                 targets: copyCommonFiles,
                 hook: 'writeBundle'
             }),
-            watchStylesheet(),
-            watchOptions()
+            watchStylesheet()
         ]
     },
 
@@ -56,8 +61,26 @@ export default [
                 targets: copyCommonFiles,
                 hook: 'writeBundle'
             }),
-            watchStylesheet(),
-            watchOptions()
+            watchStylesheet()
+        ]
+    },
+
+    // options
+    {
+        input: 'options/options.js',
+        output: {
+            file: 'dist/options.bundle.js',
+            format: 'iife',
+            sourcemap: true
+        },
+        plugins: [
+            resolve(),
+            commonjs(),
+            watchOptions(),
+            copy({
+                targets: copyOptions,
+                hook: 'writeBundle'
+            })
         ]
     },
 
@@ -151,14 +174,12 @@ function watchStylesheet() {
     };
 }
 
-// TODO: When we have a separate config entry for options call this method only there instead of listening to options changes on the other two configs
 function watchOptions() {
     return {
         name: 'watch-options',
         buildStart() {
             this.addWatchFile(path.resolve('options/options.css'));
             this.addWatchFile(path.resolve('options/options.html'));
-            this.addWatchFile(path.resolve('options/options.js'));
         }
     };
 }
