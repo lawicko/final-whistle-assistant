@@ -9,79 +9,40 @@
 
 <body>
     <fieldset>
-        <legend>Import / Export Storage</legend>
-        <div class="container">
-            <!-- Export column -->
-            <div class="box">
-                <button id="exportBtn">⬆️ Export to Clipboard</button>
-                <p id="exportStatus" class="status"></p>
-            </div>
-
-            <!-- Import column -->
-            <div class="box">
-                <button id="importBtn">⬇️ Import from Clipboard</button>
-                <p id="importStatus" class="status"></p>
-                <!-- Custom confirm dialog -->
-                <dialog id="importDialog">
-                    <form method="dialog">
-                        <h3>⚠️ Confirm Import</h3>
-                        <p>This will overwrite your current storage.</p>
-                        <pre id="importPreview"></pre>
-                        <menu class="dialog-buttons">
-                            <button value="cancel" class="cancel-btn">❌ Cancel</button>
-                            <button id="confirmImportBtn" value="ok" class="confirm-btn">🚀 Continue</button>
-                        </menu>
-                    </form>
-                </dialog>
-                <!-- Manual paste dialog (for fallback if clipboard read fails) -->
-                <dialog id="pasteDialog">
-                    <form method="dialog">
-                        <h3>Paste JSON to Import</h3>
-                        <textarea id="pasteArea" rows="10" cols="50" placeholder="Paste your JSON here"></textarea>
-                        <menu class="dialog-buttons">
-                            <button value="cancel" class="cancel-btn">❌ Cancel</button>
-                            <button id="confirmPasteBtn" value="ok" class="confirm-btn">📥 Import</button>
-                        </menu>
-                    </form>
-                </dialog>
-            </div>
-        </div>
-    </fieldset>
-    <fieldset>
-        <legend>Choose your modules:</legend>
+        <legend>Choose your features:</legend>
         <div>
-            <input type="checkbox" id="academy_buttons" name="academy buttons" checked />
-            <label for="academy_buttons">Academy Buttons</label>
+            <input type="checkbox" id="academyButtonsSeparation" name="academyButtonsSeparation" checked />
+            <label for="academyButtonsSeparation">Academy Buttons Separation</label>
         </div>
 
         <div>
-            <input type="checkbox" id="calendar" name="calendar" checked />
-            <label for="calendar">Calendar</label>
+            <input type="checkbox" id="matchBadgeEnhancement" name="matchBadgeEnhancement" checked />
+            <label for="matchBadgeEnhancement">Match Badge Enhancement</label>
         </div>
         <div>
-            <input type="checkbox" id="lineup" name="lineup" checked />
-            <label for="lineup">Lineup</label>
+            <input type="checkbox" id="lineupPageAdditions" name="lineupPageAdditions" checked />
+            <label for="lineupPageAdditions">Lineup Page Additions</label>
         </div>
         <div>
-            <input type="checkbox" id="match" name="match" checked />
-            <label for="match">Match</label>
+            <input type="checkbox" id="matchDataGathering" name="matchDataGathering" checked />
+            <label for="matchDataGathering">Match Data Gathering</label>
         </div>
         <div>
-            <input type="checkbox" id="player" name="player" checked />
-            <label for="player">Player</label>
+            <input type="checkbox" id="playerPageAdditions" name="playerPageAdditions" checked />
+            <label for="playerPageAdditions">Player Page Additions</label>
         </div>
         <div>
-            <input type="checkbox" id="players" name="players" checked />
-            <label for="players">Players</label>
+            <input type="checkbox" id="playersPageAdditions" name="playersPageAdditions" checked />
+            <label for="playersPageAdditions">Players Page Additions</label>
         </div>
 
         <div>
-            <input type="checkbox" id="row_highlight" name="row highlight" checked />
-            <label for="row_highlight">Row highlight</label>
+            <input type="checkbox" id="rowHighlighting" name="rowHighlighting" checked />
+            <label for="rowHighlighting">Row Highlighting</label>
         </div>
         <div>
-            <input type="checkbox" id="tags" name="tags" checked />
-            <label for="tags">Tags</label>
+            <input type="checkbox" id="tagsEnhancement" name="tagsEnhancement" checked />
+            <label for="tagsEnhancement">Tags Enhancement</label>
         </div>
     </fieldset>
 
@@ -89,45 +50,45 @@
         <legend>Choose your tag colors:</legend>
 
         <div>
-            <input type="color" id="color1" name="color 1" value="#e66465" />
-            <label for="color1">Color 1</label>
+            <input type="color" id="tagColor1" name="tagColor1" value="#e66465" />
+            <label for="tagColor1">Color 1</label>
         </div>
 
         <div>
-            <input type="color" id="color2" name="color 2" value="#f6b73c" />
-            <label for="color2">Color 2</label>
+            <input type="color" id="tagColor2" name="tagColor2" value="#f6b73c" />
+            <label for="tagColor2">Color 2</label>
         </div>
 
         <div>
-            <input type="color" id="color3" name="color 3" value="#f6b73c" />
-            <label for="color3">Color 3</label>
+            <input type="color" id="tagColor3" name="tagColor3" value="#f6b73c" />
+            <label for="tagColor3">Color 3</label>
         </div>
 
         <div>
-            <input type="color" id="color4" name="color 4" value="#f6b73c" />
-            <label for="color4">Color 4</label>
+            <input type="color" id="tagColor4" name="tagColor4" value="#f6b73c" />
+            <label for="tagColor4">Color 4</label>
         </div>
 
         <div>
-            <input type="color" id="color5" name="color 5" value="#f6b73c" />
-            <label for="color5">Color 5</label>
+            <input type="color" id="tagColor5" name="tagColor5" value="#f6b73c" />
+            <label for="tagColor5">Color 5</label>
         </div>
 
         <div>
-            <input type="color" id="color6" name="color 6" value="#f6b73c" />
-            <label for="color6">Color 6</label>
+            <input type="color" id="tagColor6" name="tagColor6" value="#f6b73c" />
+            <label for="tagColor6">Color 6</label>
         </div>
         <div>
-            <input type="color" id="color7" name="color 7" value="#f6b73c" />
-            <label for="color7">Color 7</label>
+            <input type="color" id="tagColor7" name="tagColor7" value="#f6b73c" />
+            <label for="tagColor7">Color 7</label>
         </div>
         <div>
-            <input type="color" id="color8" name="color 8" value="#f6b73c" />
-            <label for="color8">Color 8</label>
+            <input type="color" id="tagColor8" name="tagColor8" value="#f6b73c" />
+            <label for="tagColor8">Color 8</label>
         </div>
         <div>
-            <input type="color" id="color9" name="color 9" value="#f6b73c" />
-            <label for="color9">Color 9</label>
+            <input type="color" id="tagColor9" name="tagColor9" value="#f6b73c" />
+            <label for="tagColor9">Color 9</label>
         </div>
     </fieldset>
 
@@ -135,98 +96,98 @@
         <legend>Choose your lineup symbols colors:</legend>
         <div class="color-grid">
             <div>
-                <input type="color" id="color-setting-arrogance-" name="arrogance-" value="#FFD700" />
-                <label for="arrogance-">Arrogance-</label>
-                <span id="color-preview-arrogance-" class="color-preview">♛</span>
+                <input type="color" id="arroganceBad" name="arroganceBad" value="#FFD700" />
+                <label for="arroganceBad">Arrogance-</label>
+                <span id="colorPreview-arroganceBad" class="color-preview">♛</span>
             </div>
             <div>
-                <input type="color" id="color-setting-arrogance--" name="arrogance--" value="#FF4500" />
-                <label for="arrogance--">Arrogance--</label>
-                <span id="color-preview-arrogance--" class="color-preview">♛</span>
-            </div>
-
-            <div>
-                <input type="color" id="color-setting-composure++" name="composure++" value="#228B22" />
-                <label for="composure++">Composure++</label>
-                <span id="color-preview-composure++" class="color-preview">○</span>
-            </div>
-            <div>
-                <input type="color" id="color-setting-composure+" name="composure+" value="#4CBB17" />
-                <label for="composure+">Composure+</label>
-                <span id="color-preview-composure+" class="color-preview">○</span>
-            </div>
-            <div>
-                <input type="color" id="color-setting-composure-" name="composure-" value="#FFD700" />
-                <label for="composure-">Composure-</label>
-                <span id="color-preview-composure-" class="color-preview">○</span>
-            </div>
-            <div>
-                <input type="color" id="color-setting-composure--" name="composure--" value="#FF4500" />
-                <label for="composure--">Composure--</label>
-                <span id="color-preview-composure--" class="color-preview">○</span>
+                <input type="color" id="arroganceVeryBad" name="arroganceVeryBad" value="#FF4500" />
+                <label for="arroganceVeryBad">Arrogance--</label>
+                <span id="colorPreview-arroganceVeryBad" class="color-preview">♛</span>
             </div>
 
             <div>
-                <input type="color" id="color-setting-leadership++" name="leadership++" value="#228B22" />
-                <label for="leadership++">Leadership++</label>
-                <span id="color-preview-leadership++" class="color-preview">✪</span>
+                <input type="color" id="composureVeryGood" name="composureVeryGood" value="#228B22" />
+                <label for="composureVeryGood">Composure++</label>
+                <span id="colorPreview-composureVeryGood" class="color-preview">○</span>
             </div>
             <div>
-                <input type="color" id="color-setting-leadership+" name="leadership+" value="#4CBB17" />
-                <label for="leadership+">Leadership+</label>
-                <span id="color-preview-leadership+" class="color-preview">✪</span>
+                <input type="color" id="composureGood" name="composureGood" value="#4CBB17" />
+                <label for="composureGood">Composure+</label>
+                <span id="colorPreview-composureGood" class="color-preview">○</span>
             </div>
             <div>
-                <input type="color" id="color-setting-leadership-" name="leadership-" value="#FFD700" />
-                <label for="leadership-">Leadership-</label>
-                <span id="color-preview-leadership-" class="color-preview">✪</span>
+                <input type="color" id="composureBad" name="composureBad" value="#FFD700" />
+                <label for="composureBad">Composure-</label>
+                <span id="colorPreview-composureBad" class="color-preview">○</span>
             </div>
             <div>
-                <input type="color" id="color-setting-leadership--" name="leadership--" value="#FF4500" />
-                <label for="leadership--">Leadership--</label>
-                <span id="color-preview-leadership--" class="color-preview">✪</span>
-            </div>
-
-            <div>
-                <input type="color" id="color-setting-sportsmanship++" name="sportsmanship++" value="#228B22" />
-                <label for="sportsmanship++">Sportsmanship++</label>
-                <span id="color-preview-sportsmanship++" class="color-preview">⚖</span>
-            </div>
-            <div>
-                <input type="color" id="color-setting-sportsmanship+" name="sportsmanship+" value="#4CBB17" />
-                <label for="sportsmanship+">Sportsmanship+</label>
-                <span id="color-preview-sportsmanship+" class="color-preview">⚖</span>
-            </div>
-            <div>
-                <input type="color" id="color-setting-sportsmanship-" name="sportsmanship-" value="#FFD700" />
-                <label for="sportsmanship-">Sportsmanship-</label>
-                <span id="color-preview-sportsmanship-" class="color-preview">⚖</span>
-            </div>
-            <div>
-                <input type="color" id="color-setting-sportsmanship--" name="sportsmanship--" value="#FF4500" />
-                <label for="sportsmanship--">Sportsmanship--</label>
-                <span id="color-preview-sportsmanship--" class="color-preview">⚖</span>
+                <input type="color" id="composureVeryBad" name="composureVeryBad" value="#FF4500" />
+                <label for="composureVeryBad">Composure--</label>
+                <span id="colorPreview-composureVeryBad" class="color-preview">○</span>
             </div>
 
             <div>
-                <input type="color" id="color-setting-teamwork++" name="teamwork++" value="#228B22" />
-                <label for="teamwork++">Teamwork++</label>
-                <span id="color-preview-teamwork++" class="color-preview">⬡</span>
+                <input type="color" id="leadershipVeryGood" name="leadershipVeryGood" value="#228B22" />
+                <label for="leadershipVeryGood">Leadership++</label>
+                <span id="colorPreview-leadershipVeryGood" class="color-preview">✪</span>
             </div>
             <div>
-                <input type="color" id="color-setting-teamwork+" name="teamwork+" value="#4CBB17" />
-                <label for="teamwork+">Teamwork+</label>
-                <span id="color-preview-teamwork+" class="color-preview">⬡</span>
+                <input type="color" id="leadershipGood" name="leadershipGood" value="#4CBB17" />
+                <label for="leadershipGood">Leadership+</label>
+                <span id="colorPreview-leadershipGood" class="color-preview">✪</span>
             </div>
             <div>
-                <input type="color" id="color-setting-teamwork-" name="teamwork-" value="#FFD700" />
-                <label for="teamwork-">Teamwork-</label>
-                <span id="color-preview-teamwork-" class="color-preview">⬡</span>
+                <input type="color" id="leadershipBad" name="leadershipBad" value="#FFD700" />
+                <label for="leadershipBad">Leadership-</label>
+                <span id="colorPreview-leadershipBad" class="color-preview">✪</span>
             </div>
             <div>
-                <input type="color" id="color-setting-teamwork--" name="teamwork--" value="#FF4500" />
-                <label for="teamwork--">Teamwork--</label>
-                <span id="color-preview-teamwork--" class="color-preview">⬡</span>
+                <input type="color" id="leadershipVeryBad" name="leadershipVeryBad" value="#FF4500" />
+                <label for="leadershipVeryBad">Leadership--</label>
+                <span id="colorPreview-leadershipVeryBad" class="color-preview">✪</span>
+            </div>
+
+            <div>
+                <input type="color" id="sportsmanshipVeryGood" name="sportsmanshipVeryGood" value="#228B22" />
+                <label for="sportsmanshipVeryGood">Sportsmanship++</label>
+                <span id="colorPreview-sportsmanshipVeryGood" class="color-preview">⚖</span>
+            </div>
+            <div>
+                <input type="color" id="sportsmanshipGood" name="sportsmanshipGood" value="#4CBB17" />
+                <label for="sportsmanshipGood">Sportsmanship+</label>
+                <span id="colorPreview-sportsmanshipGood" class="color-preview">⚖</span>
+            </div>
+            <div>
+                <input type="color" id="sportsmanshipBad" name="sportsmanshipBad" value="#FFD700" />
+                <label for="sportsmanshipBad">Sportsmanship-</label>
+                <span id="colorPreview-sportsmanshipBad" class="color-preview">⚖</span>
+            </div>
+            <div>
+                <input type="color" id="sportsmanshipVeryBad" name="sportsmanshipVeryBad" value="#FF4500" />
+                <label for="sportsmanshipVeryBad">Sportsmanship--</label>
+                <span id="colorPreview-sportsmanshipVeryBad" class="color-preview">⚖</span>
+            </div>
+
+            <div>
+                <input type="color" id="teamworkVeryGood" name="teamworkVeryGood" value="#228B22" />
+                <label for="teamworkVeryGood">Teamwork++</label>
+                <span id="colorPreview-teamworkVeryGood" class="color-preview">⬡</span>
+            </div>
+            <div>
+                <input type="color" id="teamworkGood" name="teamworkGood" value="#4CBB17" />
+                <label for="teamworkGood">Teamwork+</label>
+                <span id="colorPreview-teamworkGood" class="color-preview">⬡</span>
+            </div>
+            <div>
+                <input type="color" id="teamworkBad" name="teamworkBad" value="#FFD700" />
+                <label for="teamworkBad">Teamwork-</label>
+                <span id="colorPreview-teamworkBad" class="color-preview">⬡</span>
+            </div>
+            <div>
+                <input type="color" id="teamworkVeryBad" name="teamworkVeryBad" value="#FF4500" />
+                <label for="teamworkVeryBad">Teamwork--</label>
+                <span id="colorPreview-teamworkVeryBad" class="color-preview">⬡</span>
             </div>
 
         </div>
@@ -236,73 +197,58 @@
         <legend>Choose your tranfer list detail colors:</legend>
         <div class="color-grid">
             <div>
-                <input type="color" id="color-setting-advanced-development-very-good"
-                    name="advanced-development-very-good" value="#228B22" />
-                <label for="advanced-development-very-good">Advanced Development very good</label>
+                <input type="color" id="advancedDevelopmentVeryGood"
+                    name="advancedDevelopmentVeryGood" value="#228B22" />
+                <label for="advancedDevelopmentVeryGood">Advanced Development very good</label>
                 <span class="FinalWhistlePlugin_detailedPropertyContainer FinalWhistlePluginAD">
-                    <span id="color-preview-advanced-development-very-good" class="top very_good">19</span>
+                    <span id="colorPreview-advancedDevelopmentVeryGood" class="top very_good">19</span>
                     <span class="bottom">AD</span>
                 </span>
             </div>
             <div>
-                <input type="color" id="color-setting-advanced-development-good" name="advanced-development-good"
+                <input type="color" id="advancedDevelopmentGood" name="advancedDevelopmentGood"
                     value="#4CBB17" />
-                <label for="advanced-development-good">Advanced Development good</label>
+                <label for="advancedDevelopmentGood">Advanced Development good</label>
                 <span class="FinalWhistlePlugin_detailedPropertyContainer FinalWhistlePluginAD">
-                    <span id="color-preview-advanced-development-good" class="top good">20</span>
+                    <span id="colorPreview-advancedDevelopmentGood" class="top good">20</span>
                     <span class="bottom">AD</span>
                 </span>
             </div>
             <div>
-                <input type="color" id="color-setting-advanced-development-bad" name="advanced-development-bad"
+                <input type="color" id="advancedDevelopmentBad" name="advancedDevelopmentBad"
                     value="#FFD700" />
-                <label for="advanced-development-bad">Advanced Development bad</label>
+                <label for="advancedDevelopmentBad">Advanced Development bad</label>
                 <span class="FinalWhistlePlugin_detailedPropertyContainer FinalWhistlePluginAD">
-                    <span id="color-preview-advanced-development-bad" class="top bad">21</span>
+                    <span id="colorPreview-advancedDevelopmentBad" class="top bad">21</span>
                     <span class="bottom">AD</span>
                 </span>
             </div>
             <div>
-                <input type="color" id="color-setting-advanced-development-very-bad"
-                    name="advanced-development-very-bad" value="#FF4500" />
-                <label for="advanced-development-very-bad">Advanced Development very bad</label>
+                <input type="color" id="advancedDevelopmentVeryBad"
+                    name="advancedDevelopmentVeryBad" value="#FF4500" />
+                <label for="advancedDevelopmentVeryBad">Advanced Development very bad</label>
                 <span class="FinalWhistlePlugin_detailedPropertyContainer FinalWhistlePluginAD">
-                    <span id="color-preview-advanced-development-very-bad" class="top very_bad">22</span>
+                    <span id="colorPreview-advancedDevelopmentVeryBad" class="top very_bad">22</span>
                     <span class="bottom">AD</span>
                 </span>
             </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Local Data</legend>
-        <textarea id="localData" rows="10" cols="50"></textarea>
-        <br>
-        <button id="saveBtn">⬇️ Save</button>
-        <dialog id="confirmationDialog">
-            <form method="dialog">
-                <h3>Saved 👍</h3>
-                <menu class="dialog-buttons">
-                    <button class="confirm-btn">Ok</button>
-                </menu>
-            </form>
-        </dialog>
-        <dialog id="localDataSaveFailedDialog">
-            <form method="dialog">
-                <h3>Failed 👎</h3>
-                <pre id="localDataSaveFailedDialogDescription" class="errorDescription"></pre>
-                <menu class="dialog-buttons">
-                    <button class="confirm-btn">Ok</button>
-                </menu>
-            </form>
-        </dialog>
     </fieldset>
 
     <fieldset>
         <legend>Database</legend>
-        <a id="exportLink" href="#">Click here to export the database</a>
+        <button id="exportBtn">⬆️ Export</button>
         <div id="dropzone">
-            Drop dexie export JSON file here
+            Drop your backup JSON file here
         </div>
+        <input id="fileInput" type="file" style="display: none;" />
+        <dialog id="confirmationDialog">
+            <form method="dialog">
+                <h3>Imported 👍</h3>
+                <menu class="dialog-buttons">
+                    <button class="confirm-btn">Ok</button>
+                </menu>
+            </form>
+        </dialog>
     </fieldset>
     <script src="options.bundle.js"></script>
 </body>

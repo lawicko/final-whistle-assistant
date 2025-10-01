@@ -4,6 +4,7 @@ import * as listUtils from "../../list_utils.js"
 import { addTableRowsHighlighting } from "../../row_highlight.js"
 import { processTags } from "../../tags.js"
 import * as db from "../../db_access.js"
+import * as dbUtils from '../../db_utils.js'
 
 export async function processTrainingPage() {
     console.info(`${utils.version} 🏋️ Processing training page`)
@@ -55,13 +56,13 @@ async function updateAdditionalInfo(checkboxesData) {
 }
 
 async function tryTagsProcessing() {
-    if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.TAGS_ENHANCEMENTS)) {
+    if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.TagsEnhancement)) {
         await processTags()
     }
 }
 
 async function tryRowHighlighting() {
-    if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+    if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.RowHighlighting)) {
         await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false })
     }
 }

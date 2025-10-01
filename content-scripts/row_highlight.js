@@ -1,5 +1,6 @@
 import { toggleClass, alwaysPresentNode } from "./ui_utils";
 import { storage, pluginNodeClass, version } from "./utils.js";
+import * as db from "./db_access.js"
 
 // Helpers
 function getPlayerIDFromRow(tr) {
@@ -200,7 +201,7 @@ async function processTableRows(tableNode, config = {
     persistentHighlight: true
 }) {
     console.info(`${version} ✨ Adding row highlighting`)
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    const rowHighlightData = await db.getRowHighlights() ?? {}
     for (let i = 1; i < tableNode.rows.length; i++) {
         const tr = tableNode.rows[i]
         if (config.basicHighlight) {
@@ -257,19 +258,19 @@ export async function addTableRowsHighlighting(config = {
 
 // Saving to storage
 async function storeRowHighlightClass(rowHighlightClass, playerID) {
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    const rowHighlightData = await db.getRowHighlights() ?? {}
     rowHighlightData[playerID] = rowHighlightClass
-    await storage.set({ "row-highlight-data": rowHighlightData });
+    await db.putRowHighlights(rowHighlightData)
 }
 
 async function clearRowHighlight(playerID) {
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    const rowHighlightData = await db.getRowHighlights() ?? {}
     delete rowHighlightData[playerID]
-    await storage.set({ "row-highlight-data": rowHighlightData })
+    await db.putRowHighlights(rowHighlightData)
 }
 
 async function clearAllRowsOnThisPage() {
-    const { "row-highlight-data": rowHighlightData = {} } = await storage.get("row-highlight-data");
+    const rowHighlightData = await db.getRowHighlights() ?? {}
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
         for (let i = 1; i < tableNode.rows.length; i++) {
@@ -282,10 +283,10 @@ async function clearAllRowsOnThisPage() {
             console.debug("removing row highlighting for", playerID)
             delete rowHighlightData[playerID]
         }
-        await storage.set({ "row-highlight-data": rowHighlightData })
+        await db.putRowHighlights(rowHighlightData)
     }
 }
 
 async function clearAllRowHighlights() {
-    await storage.remove("row-highlight-data")
+    await db.putRowHighlights({})
 }

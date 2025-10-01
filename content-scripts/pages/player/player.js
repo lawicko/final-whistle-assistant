@@ -661,12 +661,6 @@ function getPlayerData() {
     }
 }
 
-async function saveClubDataToStorage(clubData) {
-    console.debug(`Will save club data to storage`, clubData);
-    await utils.storage.set({ club: clubData })
-    console.debug(`Done`);
-}
-
 function getBidButton() {
     return document.querySelector("button:has(> i.fa-gavel)")
 }
@@ -881,10 +875,6 @@ export async function processPlayerPage() {
         return
     }
 
-    let clubData = getPlayerClubData()
-    if (isOwnPlayer()) {
-        await saveClubDataToStorage(clubData)
-    }
     let playerDataFromPage = getPlayerData()
     console.debug("playerDataFromPage", playerDataFromPage)
 

@@ -1,6 +1,7 @@
 import * as utils from "./utils.js"
 import * as uiUtils from "./ui_utils.js"
 import * as specialTalentsUtils from "./special_talents_utils.js"
+import * as db from "./db_access.js"
 
 const skillIndexOutfielders = {
     "SC": 0,
@@ -152,15 +153,13 @@ export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, 
         checkbox.addEventListener("change", async (event) => {
             const isChecked = event.target.checked
             console.debug(`${item.label}:`, checkbox.checked)
-            const {
-                checkboxes: cd = checkboxesDataFromStorage
-            } = await utils.storage.get(["checkboxes"])
+            const cd = await db.getCheckboxes() || checkboxesDataFromStorage
             if (isChecked) {
-                cd[checkboxKey] = "true"
+                cd[checkboxKey] = true
             } else {
-                delete cd[checkboxKey]
+                cd[checkboxKey] = false
             }
-            await utils.storage.set({ checkboxes: cd })
+            await db.putCheckboxes(cd)
             afterCheckboxDataSetCallback(cd)
         })
 
@@ -210,12 +209,12 @@ export function processTableRow(
         return
     }
 
-    const playerID = idCallback(row)//utils.lastPathComponent(row.querySelector("td > a").href)
-    var playerName = nameCallback(row)//row.querySelector("td > a").textContent.trim()
+    const playerID = idCallback(row)
+    var playerName = nameCallback(row)
     console.debug('Processing player:', playerName)
 
     const playerData = storedPlayerData
-    const insertionPoint = additionalInfoInsertionPointCallback(row)//row.querySelector("td:has(a)")
+    const insertionPoint = additionalInfoInsertionPointCallback(row)
     if (playerData) {
         console.debug(`Found stored player data for: ${playerName}`, playerData)
         let playerPersonalities = playerData["personalities"]

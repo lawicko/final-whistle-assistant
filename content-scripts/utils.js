@@ -331,20 +331,18 @@ export function debounceAsync(fn, delay = 100) {
     };
 }
 
-export const FeatureFlagsKeys = {
-    ACADEMY_BUTTONS: "academy_buttons",
-    LETTERS_YOUTH_SENIOR: "calendar",
-    LINEUP: "lineup",
-    MATCH_DATA_GATHERING: "match",
-    PLAYER_PAGE_ENHANCEMENTS: "player",
-    PLAYERS_PAGE_ENHANCEMENTS: "players",
-    ROW_HIGHLIGHT: "row_highlight",
-    TAGS_ENHANCEMENTS: "tags"
-};
-
-export async function isFeatureEnabled(featureKey) {
-    const { modules = {} } = await optionsStorage.get(["modules"]);
-    return modules[featureKey] === true;
+export function formatError(e, { includeStack = false } = {}) {
+    if (e instanceof Error) {
+        return includeStack ? `${e.message}\n${e.stack}` : e.message;
+    }
+    if (typeof e === "string") {
+        return e;
+    }
+    try {
+        return JSON.stringify(e);
+    } catch {
+        return String(e);
+    }
 }
 
 export function diffInDaysUTC(date1, date2) {
@@ -362,7 +360,7 @@ export function diffInDaysUTC(date1, date2) {
  * @returns {Date} - The start date of the target season (Monday 00:00).
  * @throws {Error} - If inputs are invalid or calculation fails.
  */
-export function getSeasonStartDates(currentDate, currentWeek, seasonsAhead=1) {
+export function getSeasonStartDates(currentDate, currentWeek, seasonsAhead = 1) {
     try {
         // --- Input validation ---
         if (!(currentDate instanceof Date) || isNaN(currentDate)) {

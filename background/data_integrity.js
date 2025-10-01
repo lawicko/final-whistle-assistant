@@ -1,7 +1,7 @@
 import * as utils from "../content-scripts/utils"
 
 export async function checkDataIntegrityFor(playersDataFromStorage, matches, repair = false) {
-    console.info("🗄️ Checking data integrity")
+    console.info("📚 Checking data integrity")
 
     const originalMatches = structuredClone(matches)
     let playersFromMatches = {}
@@ -223,7 +223,7 @@ export async function checkDataIntegrityFor(playersDataFromStorage, matches, rep
 
     const diff = utils.diffObjects(originalMatches, matches)
     console.info(`🔀 Changes to the matches object: ${JSON.stringify(diff, null, 2)}`)
-    console.info(`🗄️📥 Saving to storage`)
+    console.info(`📚📥 Saving to storage`)
     await utils.storage.set({ "matches": matches })
-    console.info("🗄️🏁 Data integrity test concluded")
+    console.info("📚🏁 Data integrity test concluded")
 }

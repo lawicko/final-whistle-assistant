@@ -74,22 +74,21 @@ export async function processTransferPage() {
 async function applyCustomColorsForTLDetails() {
     console.debug(`Applying custom colors for transfer list details...`);
     try {
-        // Load colors from storage (with defaults)
-        const { colors = {} } = await utils.optionsStorage.get("colors")
-
+        const colors = await db.getColors()
+        if (!colors) return
         // Inject CSS rule so future elements are styled too
         utils.addCSS(`
             .FinalWhistlePlugin_detailedPropertyContainer.FinalWhistlePluginAD .top.very_good {
-                color: ${colors["color-setting-advanced-development-very-good"]} !important;
+                color: ${colors.advancedDevelopmentVeryGood} !important;
             }
             .FinalWhistlePlugin_detailedPropertyContainer.FinalWhistlePluginAD .top.good {
-                color: ${colors["color-setting-advanced-development-good"]} !important;
+                color: ${colors.advancedDevelopmentGood} !important;
             }
             .FinalWhistlePlugin_detailedPropertyContainer.FinalWhistlePluginAD .top.very_bad {
-                color: ${colors["color-setting-advanced-development-very-bad"]} !important;
+                color: ${colors.advancedDevelopmentVeryBad} !important;
             }
             .FinalWhistlePlugin_detailedPropertyContainer.FinalWhistlePluginAD .top.bad {
-                color: ${colors["color-setting-advanced-development-bad"]} !important;
+                color: ${colors.advancedDevelopmentBad} !important;
             }
         `, "final-whistle-custom-transfer-list-colors");
     } catch (err) {
@@ -97,5 +96,4 @@ async function applyCustomColorsForTLDetails() {
     }
 }
 
-// Run the function
 applyCustomColorsForTLDetails()

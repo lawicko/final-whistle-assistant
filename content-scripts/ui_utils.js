@@ -1,4 +1,5 @@
 import * as utils from "./utils.js"
+import * as db from './db_access.js'
 
 // The node that will be observed for mutations
 export const alwaysPresentNode = document.querySelector("div.wrapper")
@@ -411,65 +412,66 @@ export function applyTeamwork(element, teamwork) {
 async function applyCustomColorsLineupSymbols() {
     try {
         // Load colors from storage (with defaults)
-        const { colors = {} } = await utils.optionsStorage.get("colors");
+        const colors = await db.getColors()
+        if (!colors) return
         const personalitiesColors = `
             span.leadership.doublePositive {
-                color: ${colors["color-setting-sportsmanship++"]};
+                color: ${colors.leadershipVeryGood};
             }
             span.leadership.positive {
-                color: ${colors["color-setting-sportsmanship+"]};
+                color: ${colors.leadershipGood};
             }
             span.leadership.negative {
-                color: ${colors["color-setting-sportsmanship-"]};
+                color: ${colors.leadershipBad};
             }
             span.leadership.doubleNegative {
-                color: ${colors["color-setting-sportsmanship--"]};
+                color: ${colors.leadershipVeryBad};
             }
             
             span.composure.doublePositive {
-                color: ${colors["color-setting-composure++"]};
+                color: ${colors.composureVeryGood};
             }
             span.composure.positive {
-                color: ${colors["color-setting-composure+"]};
+                color: ${colors.composureGood};
             }
             span.composure.negative {
-                color: ${colors["color-setting-composure-"]};
+                color: ${colors.composureBad};
             }
             span.composure.doubleNegative {
-                color: ${colors["color-setting-composure--"]};
+                color: ${colors.composureVeryBad};
             }
 
             span.arrogance.negative {
-                color: ${colors["color-setting-arrogance-"]};
+                color: ${colors.arroganceBad};
             }
             span.arrogance.doubleNegative {
-                color: ${colors["color-setting-arrogance--"]};
+                color: ${colors.arroganceVeryBad};
             }
 
             span.sportsmanship.doublePositive {
-                color: ${colors["color-setting-sportsmanship++"]};
+                color: ${colors.sportsmanshipVeryGood};
             }
             span.sportsmanship.positive {
-                color: ${colors["color-setting-sportsmanship+"]};
+                color: ${colors.sportsmanshipGood};
             }
             span.sportsmanship.negative {
-                color: ${colors["color-setting-sportsmanship-"]};
+                color: ${colors.sportsmanshipBad};
             }
             span.sportsmanship.doubleNegative {
-                color: ${colors["color-setting-sportsmanship--"]};
+                color: ${colors.sportsmanshipVeryBad};
             }
 
             span.teamwork.doublePositive {
-                color: ${colors["color-setting-teamwork++"]};
+                color: ${colors.teamworkVeryGood};
             }
             span.teamwork.positive {
-                color: ${colors["color-setting-teamwork+"]};
+                color: ${colors.teamworkGood};
             }
             span.teamwork.negative {
-                color: ${colors["color-setting-teamwork-"]};
+                color: ${colors.teamworkBad};
             }
             span.teamwork.doubleNegative {
-                color: ${colors["color-setting-teamwork--"]};
+                color: ${colors.teamworkVeryBad};
             }
         `
         utils.addCSS(personalitiesColors, "final-whistle-players-personalities-colors");
@@ -477,6 +479,4 @@ async function applyCustomColorsLineupSymbols() {
         console.error("Failed to apply custom colors for player personalities:", err);
     }
 }
-
-// Run the function
-applyCustomColorsLineupSymbols();
+applyCustomColorsLineupSymbols()

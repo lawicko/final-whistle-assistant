@@ -4,6 +4,7 @@ import * as listUtils from "../../list_utils.js"
 import { addTableRowsHighlighting } from "../../row_highlight.js"
 import { processFixturesPage } from "../../calendar.js"
 import * as db from "../../db_access.js"
+import * as dbUtils from '../../db_utils.js'
 
 async function updateAdditionalInfo(checkboxesData) {
     console.info("updating additional info")
@@ -45,7 +46,7 @@ export async function processOpponentClubPage() {
             await processSquadPage({
                 controlCheckboxesInsertionPoint: controlCheckboxesInsertionPoint
             })
-            if (await utils.isFeatureEnabled(utils.FeatureFlagsKeys.ROW_HIGHLIGHT)) {
+            if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.RowHighlighting)) {
                 await addTableRowsHighlighting()
             }
             break
@@ -59,14 +60,15 @@ export async function processOpponentClubPage() {
 
 async function processSquadPage(config) {
     console.info(`${utils.version} 🛡️🧍‍♂️🧍‍♂️🧍‍♂️ Processing opponent squad page`)
-    const result = await utils.storage.get(["checkboxes"])
+    const checkboxes = await db.getCheckboxes()
     const checkboxesDefault = {
-        teamwork: "true",
-        sportsmanship: "true",
-        advancedDevelopment: "true",
-        estimatedPotential: "true"
+        specialTalents: true,
+        teamwork: true,
+        sportsmanship: true,
+        advancedDevelopment: true,
+        estimatedPotential: true
     }
-    const checkboxesData = result["checkboxes"] || checkboxesDefault
+    const checkboxesData = checkboxes || checkboxesDefault
 
     // preparation - col-md-8 adds width 66.6% and col-md-4 33.3% so they need to be modified to make space
     const headerLeft = document.querySelector("fw-club div.card-header > div.row > div.col-md-8")

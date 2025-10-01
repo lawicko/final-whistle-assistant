@@ -193,15 +193,15 @@ export async function processPlayersPage() {
         console.debug(`Found the following table: `, tableNode)
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
 
-        const result = await utils.storage.get(["checkboxes"])
+        const checkboxes = await db.getCheckboxes()
         const checkboxesDefault = {
-            specialTalents: "true",
-            teamwork: "true",
-            sportsmanship: "true",
-            advancedDevelopment: "true",
-            estimatedPotential: "true"
+            specialTalents: true,
+            teamwork: true,
+            sportsmanship: true,
+            advancedDevelopment: true,
+            estimatedPotential: true
         }
-        const checkboxesData = result["checkboxes"] || checkboxesDefault
+        const checkboxesData = checkboxes || checkboxesDefault
 
         cleanUpNodeForPlayers(tableNode)
 

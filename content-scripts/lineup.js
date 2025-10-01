@@ -323,21 +323,17 @@ async function insertComposureTresholdInput(parent) {
     input.id = "composure-treshold";
     input.placeholder = "Composure treshold";
 
-    // Optional: load saved value from options storage
-    const { tresholds = {} } = await storage.get("tresholds");
-    // Destructure with defaults
-    const {
-        composure_treshold = 50
-    } = tresholds;
-
+    const tresholds = await db.getTresholds()
+    const composure_treshold = tresholds.composure ?? 50
     input.value = composure_treshold
 
     // Add a listener for changes
     input.addEventListener("change", async (e) => {
         const newValue = e.target.value;
-        tresholds['composure_treshold'] = newValue
+        const tresholds = await db.getTresholds()
+        tresholds['composure'] = newValue
 
-        await storage.set({ tresholds: tresholds });
+        await db.putTresholds(tresholds)
         console.debug("Updated tresholds =", tresholds);
         removeProposedPenaltyTakersControls()
     });
@@ -353,16 +349,16 @@ async function insertComposureTresholdInput(parent) {
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
     checkbox.id = "ignoreComposureForPenaltyTakers"
-    const { checkboxes = {} } = await storage.get("checkboxes")
+    const checkboxes = await db.getCheckboxes()
     checkbox.checked = checkboxes["ignoreComposureForPenaltyTakers"]
     checkbox.addEventListener("change", async () => {
-        const { checkboxes = {} } = await storage.get("checkboxes")
+        const cd = await db.getCheckboxes()
         if (checkbox.checked) {
-            checkboxes["ignoreComposureForPenaltyTakers"] = "true"
+            cd["ignoreComposureForPenaltyTakers"] = true
         } else {
-            delete checkboxes["ignoreComposureForPenaltyTakers"]
+            cd["ignoreComposureForPenaltyTakers"] = false
         }
-        await storage.set({ checkboxes: checkboxes })
+        await db.putCheckboxes(cd)
         removeProposedPenaltyTakersControls()
     });
 
@@ -385,21 +381,18 @@ async function insertArroganceTresholdInput(parent) {
     input.id = "arrogance-treshold";
     input.placeholder = "Arrogance treshold";
 
-    // Optional: load saved value from options storage
-    const { tresholds = {} } = await storage.get("tresholds");
-    // Destructure with defaults
-    const {
-        arrogance_treshold = 50
-    } = tresholds;
+    const tresholds = await db.getTresholds()
+    const arrogance_treshold = tresholds.arrogance ?? 50
 
     input.value = arrogance_treshold
 
     // Add a listener for changes
     input.addEventListener("change", async (e) => {
         const newValue = e.target.value;
-        tresholds['arrogance_treshold'] = newValue
+        const tresholds = await db.getTresholds()
+        tresholds['arrogance'] = newValue
 
-        await storage.set({ tresholds: tresholds });
+        await db.putTresholds(tresholds)
         console.debug("Updated tresholds =", tresholds);
 
         processLineup()
@@ -414,7 +407,7 @@ async function insertArroganceTresholdInput(parent) {
 }
 
 async function processLineup() {
-    console.info(`${version} Processing lineup...`)
+    console.info(`${version} ⚽♟️ Processing lineup...`)
     const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
     const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
     const playerIDs = hrefs.map(lastPathComponent);
@@ -422,7 +415,7 @@ async function processLineup() {
     console.debug('Profiles: ', profiles)
 
     // Load tresholds from storage
-    const { tresholds = {} } = await storage.get("tresholds");
+    const tresholds = await db.getTresholds()
     console.debug(`Loaded tresholds from storage: `, tresholds)
 
     var penaltyTakersData = {
@@ -627,7 +620,7 @@ async function processLineup() {
     proposeCrossTakers(crossingPlayers.slice(0, 3))
 
     // Propose penalty takers
-    const { checkboxes = {} } = await storage.get("checkboxes")
+    const checkboxes = await db.getCheckboxes()
     const ignoreComposure = checkboxes["ignoreComposureForPenaltyTakers"] || false
 
     if (ignoreComposure) {

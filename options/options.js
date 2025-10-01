@@ -1,28 +1,18 @@
-import * as db from "../content-scripts/db_access"
+import { getDB, setDB, initDB } from "../background/database"
+import { importDB, exportDB, importInto, peakImportFile } from "dexie-export-import"
+import download from "downloadjs"
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
 }
 
-// Use chrome.storage.sync or chrome.storage.local
-// (sync lets settings follow user across devices)
-const optionsStorage = browser.storage.sync;
-
-function isChrome() {
-    return navigator.userAgent.includes("Chrome") && !navigator.userAgent.includes("Firefox")
-}
-
 async function exportStorage() {
     try {
-        const data = await optionsStorage.get();
-        const json = JSON.stringify(data, null, 2);
-        await navigator.clipboard.writeText(json);
-
-        setStatus("exportStatus", "✅ Exported storage to clipboard.");
-    } catch (err) {
-        console.error("Export failed:", err);
-        setStatus("exportStatus", "❌ Export failed: " + err.message);
+        const blob = await exportDB(getDB(), { prettyJson: true, progressCallback })
+        download(blob, "final-whistle-assistant-export.json", "application/json")
+    } catch (error) {
+        console.error('' + error)
     }
 }
 
@@ -84,193 +74,119 @@ async function openDialogAbove(button, dialog, gap = 8) {
     window.addEventListener('scroll', reposition, { passive: true });
 }
 
-async function showPasteDialogNear(element) {
-    const pasteDialog = document.getElementById("pasteDialog");
-    // Get element's position
-    const rect = element.getBoundingClientRect();
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-    // Position the dialog near the element
-    pasteDialog.style.top = rect.bottom + 5 + "px"; // 5px below
-    pasteDialog.show();
-
-    const confirmed = await new Promise(resolve => {
-        pasteDialog.addEventListener("close", function handler() {
-            pasteDialog.removeEventListener("close", handler);
-            resolve(pasteDialog.returnValue === "ok");
-        });
-    });
-
-    if (!confirmed) {
-        setStatus("importStatus", "❌ Import cancelled by user.");
-        return null;
-    }
-
-    return document.getElementById("pasteArea").value;
-}
-
-async function importStorage() {
-    try {
-        let text;
-        if (isChrome()) {
-            // Always show paste dialog on Chrome
-            text = await showPasteDialogNear(document.getElementById("importBtn"));
-            if (text === null || text === "") {
-                setStatus("importStatus", "❌ No text detected in the text area.");
-                return;
-            }
-        } else {
-            try {
-                // Try reading from clipboard on non-Chrome
-                text = await navigator.clipboard.readText();
-            } catch {
-                // Fallback to paste dialog if clipboard fails
-                text = await showPasteDialogNear(document.getElementById("importBtn"));
-                if (text === null || text === "") {
-                    setStatus("importStatus", "❌ No text detected in the text area.");
-                    return;
-                }
-            }
-        }
-
-        const importPreview = document.getElementById("importPreview")
-        try {
-            const parsed = JSON.parse(text);
-            importPreview.textContent = JSON.stringify(parsed, null, 2);
-        } catch (e) {
-            importPreview.textContent = "❌ Invalid JSON!";
-        }
-
-        const dialog = document.getElementById("importDialog");
-        // Get element's position
-        const element = document.getElementById("importBtn")
-        const rect = element.getBoundingClientRect();
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-        // Position the dialog near the element
-        dialog.style.top = rect.bottom + 5 + "px"; // 5px below
-        dialog.show();
-
-        // Wait for user response
-        const confirmed = await new Promise(resolve => {
-            dialog.addEventListener("close", function handler() {
-                dialog.removeEventListener("close", handler);
-                resolve(dialog.returnValue === "ok");
-            });
-        });
-
-        if (!confirmed) {
-            setStatus("importStatus", "❌ Import cancelled by user.");
-            return;
-        }
-
-        const parsed = JSON.parse(text);
-        if (typeof parsed !== "object" || parsed === null) {
-            throw new Error("Clipboard does not contain valid JSON.");
-        }
-
-        await optionsStorage.set(parsed);
-        await restoreOptions()
-        setStatus("importStatus", "✅ Imported storage from clipboard.");
-    } catch (err) {
-        console.error("Import failed:", err);
-        setStatus("importStatus", "❌ Import failed: " + err.message);
-    }
-}
-
-function setStatus(id, msg) {
-    document.getElementById(id).textContent = msg;
-}
-
 document.getElementById("exportBtn").addEventListener("click", exportStorage);
-document.getElementById("importBtn").addEventListener("click", importStorage);
 
+const dropZoneDiv = document.getElementById('dropzone');
+
+// Configure dropZoneDiv
+dropZoneDiv.ondragover = event => {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+};
+
+// Handle file drop:
+dropZoneDiv.ondrop = async ev => {
+    ev.stopPropagation();
+    ev.preventDefault();
+
+    // Pick the File from the drop event (a File is also a Blob):
+    const file = ev.dataTransfer.files[0];
+    try {
+        if (!file) throw new Error(`Only files can be dropped here`);
+        console.info("⚙️ Importing " + file.name);
+        const dbInstance = getDB()
+        // If we opened in options context, clean up
+        if (dbInstance) {
+            dbInstance.close()
+            await dbInstance.delete()
+        }
+        // Notify other contexts that we are about to import
+        browser.runtime.sendMessage({ type: "WILL_IMPORT_DB" })
+        const db = await importDB(file, {
+            progressCallback
+        })
+        setDB(db)
+        console.info("⚙️ Import complete");
+        // Notify other contexts that we imported the db
+        browser.runtime.sendMessage({ type: "DID_IMPORT_DB" })
+        const confirmationDialog = document.getElementById("confirmationDialog");
+        openDialogAbove(document.getElementById("exportBtn"), confirmationDialog)
+        initDB("⚙️ DID_IMPORT_DB")
+        await restoreOptions()
+    } catch (error) {
+        console.error('' + error);
+    }
+}
+
+function progressCallback({ totalRows, completedRows }) {
+    console.log(`⚙️ Progress: ${completedRows} of ${totalRows} rows completed`)
+}
 
 // Save settings when changed
-function saveOptions() {
-    console.info("Saving options to storage")
-    // Collect all checkboxes
-    const modules = {
-        academy_buttons: document.getElementById('academy_buttons').checked,
-        calendar: document.getElementById('calendar').checked,
-        match: document.getElementById('match').checked,
-        player: document.getElementById('player').checked,
-        players: document.getElementById('players').checked,
-        row_highlight: document.getElementById('row_highlight').checked,
-        tags: document.getElementById('tags').checked,
-        lineup: document.getElementById('lineup').checked,
+async function saveOptions() {
+    console.info("⚙️ Saving options to storage")
+    // Collect all features
+    const features = {
+        academyButtonsSeparation: document.getElementById('academyButtonsSeparation').checked,
+        matchBadgeEnhancement: document.getElementById('matchBadgeEnhancement').checked,
+        lineupPageAdditions: document.getElementById('lineupPageAdditions').checked,
+        matchDataGathering: document.getElementById('matchDataGathering').checked,
+        playerPageAdditions: document.getElementById('playerPageAdditions').checked,
+        playersPageAdditions: document.getElementById('playersPageAdditions').checked,
+        rowHighlighting: document.getElementById('rowHighlighting').checked,
+        tagsEnhancement: document.getElementById('tagsEnhancement').checked
     };
 
     // Collect all colors
     const colors = {};
-    const colorInputs = document.querySelectorAll('input[id^="color"]');
+    const colorInputs = document.querySelectorAll('input[type="color"]');
     colorInputs.forEach(input => {
         colors[input.id] = input.value
     });
 
     // Save both to storage
-    optionsStorage.set({ modules, colors }, () => {
-        console.log("Options saved", { modules, colors });
-    });
+    await getDB().settings.put({
+        category: "features",
+        settings: features
+    })
+    await getDB().settings.put({
+        category: "colors",
+        settings: colors
+    })
 }
 
-// Restore settings when page is opened
+// Restore settings when page is opened or the database imported
 async function restoreOptions() {
-    optionsStorage.get(["modules", "colors", "tresholds"], (result) => {
-        if (result.modules) {
-            Object.keys(result.modules).forEach((key) => {
+    initDB("⚙️ restoreOptions")
+    const loadedFeatures = await getDB().settings.get("features")
+    if (loadedFeatures) {
+        const features = loadedFeatures.settings
+        if (features) {
+            Object.keys(features).forEach((key) => {
                 const el = document.getElementById(key);
-                if (el) el.checked = result.modules[key];
+                if (el) el.checked = features[key];
             });
         }
+    }
 
-        if (result.colors) {
-            Object.keys(result.colors).forEach((key) => {
+    const loadedColors = await getDB().settings.get("colors")
+    if (loadedColors) {
+        const colors = loadedColors.settings
+        if (colors) {
+            Object.keys(colors).forEach((key) => {
                 const el = document.getElementById(key);
-                if (el) el.value = result.colors[key];
+                if (el) el.value = colors[key];
             });
         }
+    }
 
-        if (result.tresholds) {
-            Object.keys(result.tresholds).forEach((key) => {
-                const el = document.getElementById(key);
-                if (el) el.value = result.tresholds[key];
-            });
-        }
-    });
-
-    // Handling the local data
-    const textarea = document.getElementById("localData");
-    const saveBtn = document.getElementById("saveBtn");
-
-    // Load existing data from storage
-    const stored = await browser.storage.local.get();
-    console.info("store: ", stored)
-    textarea.value = stored
-        ? JSON.stringify(stored, null, 2)  // formatted JSON
-        : "{}"; // default empty object
-
-    // Save back to storage
-    saveBtn.addEventListener("click", async () => {
-        try {
-            const parsed = JSON.parse(textarea.value); // make sure it's valid JSON
-            await browser.storage.local.set(parsed);
-
-            const confirmationDialog = document.getElementById("confirmationDialog");
-            openDialogAbove(saveBtn, confirmationDialog)
-        } catch (e) {
-            const failedDialog = document.getElementById("localDataSaveFailedDialog");
-            const descriptionLabel = failedDialog.querySelector("#localDataSaveFailedDialogDescription");
-            descriptionLabel.textContent = formatError(e)
-            openDialogAbove(saveBtn, failedDialog)
-        }
-    })
-
-    const inputs = document.querySelectorAll('input[id^="color-setting"]');
-    const previews = document.querySelectorAll('span[id^="color-preview"]');
-    for (let i = 0; i < inputs.length; i++) {
-        const input = inputs[i]
+    const inputs = document.querySelectorAll('input[type="color"]');
+    const previews = document.querySelectorAll('span[id^="colorPreview-"]');
+    for (let i = 0; i < previews.length; i++) {
         const preview = previews[i]
+        const suffix = preview.id.split("-")[1]
+        const input = [...inputs].find(ipt => ipt.id === suffix)
 
         preview.style.color = input.value;
 
@@ -279,21 +195,6 @@ async function restoreOptions() {
         });
     }
 }
-
-function formatError(e, { includeStack = false } = {}) {
-    if (e instanceof Error) {
-        return includeStack ? `${e.message}\n${e.stack}` : e.message;
-    }
-    if (typeof e === "string") {
-        return e;
-    }
-    try {
-        return JSON.stringify(e);
-    } catch {
-        return String(e);
-    }
-}
-
 
 // Add listeners to inputs
 document.addEventListener("DOMContentLoaded", restoreOptions);

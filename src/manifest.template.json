@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Final Whistle Assistant",
-    "version": "3.4.1",
+    "version": "4.0.0",
     "description": "Displays additional information when browsing FinalWhistle website.",
     "icons": {
         "48": "icons/fw-logo-48.png",
@@ -32,6 +32,7 @@
         "webNavigation"
     ],
     "options_ui": {
-        "page": "options/options.html"
+        "page": "options/options.html",
+        "open_in_tab": true
     }
 }

@@ -1,48 +1,47 @@
-import { optionsStorage, addCSS, version } from './utils.js';
+import { addCSS, version } from './utils.js';
+import * as db from './db_access.js'
 
 async function applyCustomColorsForTags() {
     console.debug(`Applying custom colors for tags...`);
     try {
         // Load colors from storage (with defaults)
-        const { colors = {} } = await optionsStorage.get("colors");
-
+        const colors = await db.getColors()
+        if (!colors) return
         // Inject CSS rule so future elements are styled too
         addCSS(`
             i.denom1, span.denom1 i {
-                color: ${colors.color1} !important;
+                color: ${colors.tagColor1} !important;
             }
             i.denom2, span.denom2 i {
-                color: ${colors.color2} !important;
+                color: ${colors.tagColor2} !important;
             }
             i.denom3, span.denom3 i {
-                color: ${colors.color3} !important;
+                color: ${colors.tagColor3} !important;
             }
             i.denom4, span.denom4 i {
-                color: ${colors.color4} !important;
+                color: ${colors.tagColor4} !important;
             }
             i.denom5, span.denom5 i {
-                color: ${colors.color5} !important;
+                color: ${colors.tagColor5} !important;
             }
             i.denom6, span.denom6 i {
-                color: ${colors.color6} !important;
+                color: ${colors.tagColor6} !important;
             }
             i.denom7, span.denom7 i {
-                color: ${colors.color7} !important;
+                color: ${colors.tagColor7} !important;
             }
             i.denom8, span.denom8 i {
-                color: ${colors.color8} !important;
+                color: ${colors.tagColor8} !important;
             }
             i.denom9, span.denom9 i {
-                color: ${colors.color9} !important;
+                color: ${colors.tagColor9} !important;
             }
         `, "final-whistle-custom-tag-colors");
     } catch (err) {
         console.error("Failed to apply custom colors for tags:", err);
     }
 }
-
-// Run the function
-applyCustomColorsForTags();
+applyCustomColorsForTags()
 
 export async function processTags() {
     console.info(`${version} 🏷️ Processing tags`)
@@ -65,5 +64,5 @@ export async function processTags() {
         } else {
             console.debug(`Skipping a table with only one row (probably header): `, tableNode)
         }
-    } 
+    }
 }
