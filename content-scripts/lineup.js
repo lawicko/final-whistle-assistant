@@ -259,8 +259,8 @@ async function proposePenaltyTakers(takers) {
         "Recommended penalty takers",
         "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     );
-    const recommendedList = buildTakersList(takers.recommended, personalitiesSymbols);
 
+    const recommendedList = buildTakersList(takers.recommended, personalitiesSymbols);
     // Decide layout
     if (takers.other.length > 0) {
         // Create two-panel layout
@@ -331,7 +331,7 @@ async function insertComposureTresholdInput(parent) {
     input.addEventListener("change", async (e) => {
         const newValue = e.target.value;
         const tresholds = await db.getTresholds()
-        tresholds['composure'] = newValue
+        tresholds['composure'] = parseInt(newValue, 10)
 
         await db.putTresholds(tresholds)
         console.debug("Updated tresholds =", tresholds);
@@ -390,7 +390,7 @@ async function insertArroganceTresholdInput(parent) {
     input.addEventListener("change", async (e) => {
         const newValue = e.target.value;
         const tresholds = await db.getTresholds()
-        tresholds['arrogance'] = newValue
+        tresholds['arrogance'] = parseInt(newValue, 10)
 
         await db.putTresholds(tresholds)
         console.debug("Updated tresholds =", tresholds);
@@ -464,12 +464,6 @@ async function processLineup() {
             removeNoDataSymbol(container)
         }
 
-        // compatibility with 1.3.1 and older
-        if (isString(personalities)) {
-            console.info("Applying compatibility with <1.3.1 extension version, personalities are processed into objects")
-            personalities = JSON.parse(personalities)
-        }
-
         console.debug(`Found profile for ${name}, applying personalities: `, personalities)
         const leadership = personalities['leadership']
         const composure = personalities['composure']
@@ -498,7 +492,7 @@ async function processLineup() {
             const SC = skills[0].querySelector('span[class^="denom"]').textContent.trim();
             const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
             const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
-            const composure_treshold = tresholds['composure_treshold'] ?? 50
+            const composure_treshold = tresholds.composure ?? 50
             if (!tresholds) {
                 console.warn("Tresholds could not be loaded from storage! Using default composure_treshold of ", 50)
             }
@@ -552,7 +546,7 @@ async function processLineup() {
             // Alternatively check if the defensive skill is reasonable
             const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
             var reasonableDP = false
-            const arrogance_treshold = tresholds['arrogance_treshold'] ?? 50
+            const arrogance_treshold = tresholds.arrogance ?? 50
             console.debug('arrogance_treshold: ', arrogance_treshold)
             if (skills.length == 8) { // goalkeepers have only 6 skills
                 const DP = skills[7].querySelector('span[class^="denom"]').textContent.trim();
