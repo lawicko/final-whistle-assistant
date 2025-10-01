@@ -402,16 +402,3 @@ export function getSeasonStartDates(currentDate, currentWeek, seasonsAhead=1) {
         throw new Error(`getSeasonStartDates failed: ${err.message}`)
     }
 }
-
-export function normalizePromise(p) {
-    // If it's already a native Promise, just return it
-    if (p instanceof Promise) return p;
-
-    // If it's a thenable (Dexie.Promise), wrap it
-    if (p && typeof p.then === "function") {
-        return new Promise((resolve, reject) => p.then(resolve, reject));
-    }
-
-    // Otherwise, wrap plain values
-    return Promise.resolve(p);
-}

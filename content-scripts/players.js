@@ -205,11 +205,14 @@ export async function processPlayersPage() {
 
         cleanUpNodeForPlayers(tableNode)
 
-        listUtils.addControlCheckboxes(
-            document.querySelector("fw-players div.card-header > div.row"),
-            checkboxesData,
-            (cData) => { appendAdditionalInfo(cData) }
-        )
+        const checkboxInsertionPoint = document.querySelector("fw-players div.card-header > div.row")
+        if (checkboxInsertionPoint) {
+            listUtils.addControlCheckboxes(
+                checkboxInsertionPoint,
+                checkboxesData,
+                (cData) => { appendAdditionalInfo(cData) }
+            )
+        }
         createHeaders()
         await appendAdditionalInfo(checkboxesData)
     }

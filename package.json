@@ -30,6 +30,8 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "dexie": "^4.2.0"
+    "dexie": "^4.2.0",
+    "dexie-export-import": "^4.1.4",
+    "downloadjs": "^1.4.7"
   }
 }

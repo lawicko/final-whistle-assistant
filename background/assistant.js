@@ -2,22 +2,20 @@ import {
     dateStorageFormat,
     getStoredString,
     isEmpty,
-    normalizePromise,
     optionsStorage,
     storage,
     version
 } from '../content-scripts/utils.js';
 
 import { checkDataIntegrityFor } from './data_integrity.js'
-import { database } from '../content-scripts/database.js'
+import { getDB, initDB } from './database.js'
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
 }
 
-// TODO: rename and think if this needs to be always called
-async function initDB() {
+async function initializeDB() {
 
     const {
         "player-data": playerDataFromStorage = {},
@@ -71,7 +69,8 @@ async function initDB() {
 
     // console.info(matchesArray)
 
-    database.on("populate", function (transaction) {
+    initDB()
+    getDB().on("populate", function (transaction) {
         // This runs only once, when the DB is first created
         console.info("Populating initial data...")
 
@@ -85,13 +84,13 @@ async function initDB() {
     })
 
     try {
-        const dbInstance = await database.open()
+        const dbInstance = await getDB().open()
         console.info("Database opened successfully:", dbInstance.name)
 
         // Verify
-        const allPlayers = await database.players.toArray()
+        const allPlayers = await getDB().players.toArray()
         console.info("Players in DB:", allPlayers)
-        const allMatches = await database.matches.toArray()
+        const allMatches = await getDB().matches.toArray()
         console.info("Matches in DB:", allMatches)
 
         // TODO: uncomment local storage cleanup
@@ -210,37 +209,84 @@ function handleOnMessage(msg, sender, sendResponse) {
         browser.contextMenus.update(colorPlayerRowMenuID, { enabled: msg.enabled })
     }
 
+    // Database utils
+    if (msg.type === "WILL_IMPORT_DB") {
+        console.info("WILL_IMPORT_DB")
+        const dbInstance = getDB()
+        // console.info("playersCount",dbInstance.players.count())
+        if (dbInstance) {
+            dbInstance.close()
+        }
+        console.info("WILL_IMPORT_DB end")
+    }
+
+    if (msg.type === "DID_IMPORT_DB") {
+        console.info("DID_IMPORT_DB")
+        initDB()
+        // const dbInstance = getDB()
+        // dbInstance.players.count().then(count => {
+        //     console.info("players.count", count)
+        // }).catch(err => {
+        //     console.error("Error counting players:", err)
+        // })
+        console.info("DID_IMPORT_DB end")
+    }
+
     // Database access
     if (msg.type === "getMatch") {
-        return normalizePromise(database.matches.get(msg.id))
+        getDB().matches.get(msg.id)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "getPlayer") {
-        return normalizePromise(database.players.get(msg.id))
+        getDB().players.get(msg.id)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "bulkGetPlayers") {
-        return normalizePromise(database.players.bulkGet(msg.keysArray))
+        getDB().players.bulkGet(msg.keysArray)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "putMatch") {
-        return normalizePromise(database.matches.put(msg.data)) // put = add or update
+        getDB().matches.put(msg.data)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "putPlayer") {
-        return normalizePromise(database.players.put(msg.data))
+        getDB().players.put(msg.data)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "bulkPutPlayers") {
-        return normalizePromise(database.players.bulkPut(msg.data))
+        getDB().players.bulkPut(msg.data)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "updateMatch") {
-        return normalizePromise(database.matches.update(msg.id, msg.changes))
+        getDB().matches.update(msg.id, msg.changes)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     if (msg.type === "deleteMatch") {
-        return normalizePromise(database.matches.delete(msg.id))
+        getDB().matches.delete(msg.id)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
     }
 
     return Promise.resolve(null)
@@ -307,7 +353,7 @@ async function handleInstalled(details) {
         await handleMigrationAndBumpLocalDataVersion(localStorageVersion)
     }
 
-    await initDB()
+    await initializeDB()
 
     const defaultOptions = {
         modules: {
