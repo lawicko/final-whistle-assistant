@@ -196,7 +196,7 @@ async function initializeDB(defaultOptions) {
         const allSettings = await getDB().settings.toArray()
         console.log("👨‍💻 Settings in DB:", allSettings)
 
-        // TODO: uncomment local storage cleanup
+        // TODO: uncomment local storage cleanup at some point after 4.0.0
         // await storage.remove(["player-data", "matches"])
     } catch (err) {
         console.error("Error opening database:", err)
