@@ -7,10 +7,31 @@ if (typeof browser == "undefined") {
     globalThis.browser = chrome;
 }
 
+function makeExportFileName(db, label = "export") {
+    const now = new Date();
+
+    // Format local time to YYYY-MM-DDTHH-MM (minutes precision)
+    const pad = n => String(n).padStart(2, "0");
+    const year = now.getFullYear();
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hours = pad(now.getHours());
+    const minutes = pad(now.getMinutes());
+
+    // Build safe timestamp string
+    const localStamp = `${year}-${month}-${day}T${hours}-${minutes}`;
+
+    // Dexie database version
+    const version = db.verno;
+
+    return `${localStamp}_db-v${version}_${label}.json`;
+}
+
 async function exportStorage() {
     try {
         const blob = await exportDB(getDB(), { prettyJson: true, progressCallback })
-        download(blob, "final-whistle-assistant-export.json", "application/json")
+        const fileName = makeExportFileName(getDB(), "final-whistle-assistant")
+        download(blob, fileName, "application/json")
     } catch (error) {
         console.error('' + error)
     }
