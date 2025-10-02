@@ -678,7 +678,7 @@ function showBuyingGuide(playerData) {
 
     const buyingGuideIdentifier = `${utils.pluginNodeClass}-buying-guide`
     if (document.getElementById(buyingGuideIdentifier)) {
-        console.info("Buing guide already present")
+        console.debug("Buying guide already present")
         return
     }
 
@@ -695,6 +695,7 @@ function showBuyingGuide(playerData) {
  */
 function assembleBuyingGuide(identifier, playerData) {
     const position = playerData.position
+    const experience = getPlayerExperience()
     const buyingGuideList = document.createElement("ol")
     buyingGuideList.id = identifier
 
@@ -704,7 +705,12 @@ function assembleBuyingGuide(identifier, playerData) {
         console.info("Appending personalities info to buying guide")
         Object.entries(personalitiesData).forEach(([personality, value]) => {
             try {
-                const description = personalitiesUtils.personalityDescription(personality, value, position)
+                const description = personalitiesUtils.personalityDescription(
+                    personality,
+                    value,
+                    position,
+                    experience.value
+                )
                 if (!description) return
                 buyingGuideDescriptions.push(description)
             } catch (e) {
@@ -763,6 +769,23 @@ function getPlayerName() {
     let playerName = headerElement.textContent.trim()
     playerName = playerName.replace(/\s+/g, " ") // removes repeated spaces
     return playerName
+}
+
+/**
+ * Gets the player experience.
+ * @returns {Object} player experience as Object e.g. { value: 5, description: "good" }
+ */
+function getPlayerExperience() {
+    // Grab all <td> elements from the first table
+    const tds = document.querySelectorAll("table.table > tr > td")
+
+    // Find the one whose textContent includes "Experience"
+    const experienceLabelTD = Array.from(tds).find(td => td.textContent.trim() === "Experience")
+    const experienceValueTD = experienceLabelTD.nextElementSibling
+    const descriptionSpan = experienceValueTD.querySelector("span")
+    const denomClass = [...descriptionSpan.classList].find(c => c.startsWith("denom"))
+    const number = parseInt(denomClass.slice(5), 10)
+    return { value: number, description: descriptionSpan.textContent.trim() }
 }
 
 const positionEmoji = {

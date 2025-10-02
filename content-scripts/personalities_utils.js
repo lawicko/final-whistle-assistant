@@ -37,9 +37,14 @@ const PersonalitiesDefinitions = {
  * @param {string} personalityKey - a key as in PersonalitiesKeys
  * @param {string} personalityValue - a value of the personality <-2, 2>
  * @param {string} positionKey - a position key as in PositionsKeys
+ * @param {Number} experience - experience as a number, e.g. 5 for good experience
  * @returns {string} a formatted description of the talent ready for display on the front-end.
  */
-export function personalityDescription(personalityKey, personalityValue, positionKey) {
+export function personalityDescription(
+    personalityKey,
+    personalityValue,
+    positionKey,
+    experience) {
     switch (personalityKey) {
         case PersonalitiesKeys.Ambition:
             return ambitionDescription(personalityValue, positionKey)
@@ -52,7 +57,7 @@ export function personalityDescription(personalityKey, personalityValue, positio
         case PersonalitiesKeys.Composure:
             return composureDescription(personalityValue, positionKey)
         case PersonalitiesKeys.Confidence:
-            return confidenceDescription(personalityValue, positionKey)
+            return confidenceDescription(personalityValue, positionKey, experience)
         case PersonalitiesKeys.Decisions:
             return decisionsDescription(personalityValue, positionKey)
         case PersonalitiesKeys.Leadership:
@@ -212,10 +217,19 @@ function composureDescription(personalityValue, positionKey) {
  * Returns Confidence personality description for a given position.
  * @param {string} personalityValue - a value of the personality <-2, 2>
  * @param {string} positionKey - a position key as in PositionsKeys
+ * @param {Number} experience - experience as a number, e.g. 5 for good experience
  * @returns {string} a formatted description of the personality ready for display on the front-end.
  */
-function confidenceDescription(personalityValue, positionKey) {
+function confidenceDescription(personalityValue, positionKey, experience) {
     switch (positionKey) {
+        case PositionsKeys.FW:
+            if (experience < 6 && personalityValue < 0) {
+                return "👎 Negative confidence in combination with experience < 60 results in increased chance that his Scoring can be influenced by an additional rare variation beyond the standard ranges. This rare modifier ranges from -16 to -24"
+            }
+        case PositionsKeys.GK:
+            if (experience < 6 && personalityValue < 0) {
+                return "👎 Negative confidence in combination with experience < 60 results in increased chance that his Reflexes can be influenced by an additional rare variation beyond the standard ranges. This rare modifier ranges from -16 to -24"
+            }
         default:
             switch (personalityValue) {
                 case -2:
