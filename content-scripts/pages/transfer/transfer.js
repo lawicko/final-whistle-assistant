@@ -22,6 +22,8 @@ export async function processTransferPage() {
             .trim()
         const ageFromListing = listUtils.age(row)
 
+        // console.info(`Processing ${playerName} (${playerID})`)
+
         const loadedPlayerData = await db.getPlayer(playerID)
         if (!loadedPlayerData) continue
 
@@ -69,6 +71,10 @@ export async function processTransferPage() {
             })
         }
     }
+
+    const footerElement = document.querySelector("fw-transfer-market > div.row:has(div > div.view-switch)")
+    const resultsElement = footerElement.parentNode.querySelector("div:has(table.table)")
+    footerElement.parentNode.insertBefore(footerElement, resultsElement)
 }
 
 async function applyCustomColorsForTLDetails() {
