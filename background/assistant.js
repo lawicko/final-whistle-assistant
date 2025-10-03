@@ -11,6 +11,8 @@ import {
 import { checkDataIntegrityFor } from './data_integrity.js'
 import { getDB, initDB } from './database.js'
 
+if (!getDB()) initDB("👨‍💻 Assistant wake up")
+
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
     globalThis.browser = chrome;
@@ -163,8 +165,9 @@ async function initializeDB(defaultOptions) {
         newColors
     ]
 
-    initDB("👨‍💻 initializeDB")
-    getDB().on("populate", function (transaction) {
+    if (!getDB()) initDB("👨‍💻 initializeDB")
+    const db = getDB()
+    db.on("populate", function (transaction) {
         try {
             // This runs only once, when the DB is first created
             console.info("👨‍💻 Populating initial data...")
@@ -185,15 +188,15 @@ async function initializeDB(defaultOptions) {
     })
 
     try {
-        const dbInstance = await getDB().open()
+        const dbInstance = await db.open()
         console.info("👨‍💻 Database opened successfully:", dbInstance.name)
 
         // Verify
-        const allPlayers = await getDB().players.toArray()
+        const allPlayers = await db.players.toArray()
         console.log("👨‍💻 Players in DB:", allPlayers)
-        const allMatches = await getDB().matches.toArray()
+        const allMatches = await db.matches.toArray()
         console.log("👨‍💻 Matches in DB:", allMatches)
-        const allSettings = await getDB().settings.toArray()
+        const allSettings = await db.settings.toArray()
         console.log("👨‍💻 Settings in DB:", allSettings)
 
         // TODO: uncomment local storage cleanup at some point after 4.0.0
@@ -310,6 +313,7 @@ function handleOnMessage(msg, sender, sendResponse) {
     console.debug("received message: ", msg)
     if (msg.type === "contextMenuConfig") {
         browser.contextMenus.update(colorPlayerRowMenuID, { enabled: msg.enabled })
+        return
     }
 
     // Database utils
@@ -321,6 +325,7 @@ function handleOnMessage(msg, sender, sendResponse) {
             dbInstance.close()
         }
         console.info("👨‍💻 WILL_IMPORT_DB processing finished")
+        return
     }
 
     if (msg.type === "DID_IMPORT_DB") {
@@ -333,6 +338,7 @@ function handleOnMessage(msg, sender, sendResponse) {
         //     console.error("Error counting players:", err)
         // })
         console.info("👨‍💻 DID_IMPORT_DB processing finished")
+        return
     }
 
     // Database access
