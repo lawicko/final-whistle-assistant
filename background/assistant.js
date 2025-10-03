@@ -469,6 +469,7 @@ function handleOnMessage(msg, sender, sendResponse) {
         return true; // keep channel open
     }
 
+    console.warn("Will return null for message: ",msg)
     return Promise.resolve(null)
 }
 browser.runtime.onMessage.addListener(handleOnMessage)
