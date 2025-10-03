@@ -73,8 +73,10 @@ export async function processTransferPage() {
     }
 
     const footerElement = document.querySelector("fw-transfer-market > div.row:has(div > div.view-switch)")
-    const resultsElement = footerElement.parentNode.querySelector("div:has(table.table)")
-    footerElement.parentNode.insertBefore(footerElement, resultsElement)
+    if (footerElement) {
+        const resultsElement = footerElement.parentNode.querySelector("div:has(table.table)")
+        footerElement.parentNode.insertBefore(footerElement, resultsElement)
+    }
 }
 
 async function applyCustomColorsForTLDetails() {
