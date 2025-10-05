@@ -45,6 +45,7 @@ export async function processMatch() {
 
     // Save the basic match data we have so far
     await db.putMatch(matchData)
+    console.debug("Basic match data", matchData)
     console.info(`📅📥 Saved basic match data to storage`)
 
     const teamMentalityContainer = document.querySelector("div.justify-content-between:has(div.tactics-label i.bi-lightning-charge-fill")
@@ -123,6 +124,10 @@ export async function processMatch() {
         await db.putMatch(matchData)
         console.info(`⚽🧍🧍📥 Saved the finishing lineups to storage`)
 
+        const matchPlayers = processMatchPlayers(matchData)
+        await db.bulkPutMatchPlayers(matchPlayers)
+        console.info(`⚽🧍🧍📥 Saved match players to storage`)
+
         if (ignoredMatchTypesForPlayerCalculations.includes(competitionName)) {
             console.info(`⏩ Skipping player minutes and injuries processing for ${competitionName}`)
         } else {
@@ -131,6 +136,52 @@ export async function processMatch() {
     }
 
     console.info(`✅ Match processing finished`)
+}
+
+function processMatchPlayers(matchData) {
+    const rows = []
+    function getMatchPlayer(matchId, teamId, opponentId, opponentName, player) {
+        let mPlayer = {
+            matchId: matchId,
+            playerId: player.id,
+            teamId: teamId,
+            opponentId: opponentId,
+            opponentName: opponentName,
+            name: player.name,
+            minutesPlayed: parseInt(player.minutes)
+        }
+        if (player.injury) mPlayer["injury"] = player.injury
+        if (player.goals) mPlayer["goals"] = player.goals
+        if (player.cards) mPlayer["cards"] = player.cards
+        return mPlayer
+    }
+
+    for (const p of matchData.finishingLineups.home) {
+        let mPlayer = getMatchPlayer(
+            matchData.id,
+            matchData.homeTeamID,
+            matchData.awayTeamID,
+            matchData.awayTeamName,
+            p
+        )
+        mPlayer['date'] = matchData.date
+        mPlayer['competition'] = matchData.competition
+        rows.push(mPlayer)
+    }
+    for (const p of matchData.finishingLineups.away) {
+        let mPlayer = getMatchPlayer(
+            matchData.id,
+            matchData.awayTeamID,
+            matchData.homeTeamID,
+            matchData.homeTeamName,
+            p
+        )
+        mPlayer['date'] = matchData.date
+        mPlayer['competition'] = matchData.competition
+        rows.push(mPlayer)
+    }
+
+    return rows
 }
 
 function formatTacticsLabel(label) {
@@ -216,6 +267,22 @@ async function processIntoLineup(players, isFinishingLineup) {
         // console.info(`Found in ${isFinishingLineup ? 'finishing' : 'starting'} lineup:`, playerData)
 
         if (isFinishingLineup) {
+            const statusStack = player.querySelector("div.player-status-stack")
+            if (statusStack) {
+                // Goals
+                const goalCountElement = statusStack.querySelector("span.status-item > span.goal-count")
+                if (goalCountElement) {
+                    const goalCount = goalCountElement.textContent.trim()
+                    playerData['goals'] = parseInt(goalCount)
+                }
+
+                // Cards
+                const yellowCardElement = statusStack.querySelector("span.status-item > img.img-fluid.status-icon[src='assets/images/yellow.png']")
+                if (yellowCardElement) {
+                    playerData['cards'] = "🟨" // add 🟥 later when it's supported
+                }
+
+            }
             // Injuries
             const lightInjury = player.querySelector('i.bi-capsule')
             if (lightInjury) {
@@ -249,16 +316,17 @@ async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
 
     const allPlayers = [...lineups.home, ...lineups.away]
     const allPlayersKeys = allPlayers.map(p => p.id)
-    const playersInStorage = await db.bulkGetPlayers(allPlayersKeys)
+    let playersInStorage = await db.bulkGetPlayers(allPlayersKeys)
+    if (playersInStorage) {
+        playersInStorage = playersInStorage.filter(p => p != null)
+    }
     let updatedPlayers = []
     // console.info("playersInStorage", playersInStorage)
 
     for (const player of allPlayers) {
-        let playerData
+        let playerData = { id: player.id }
         if (playersInStorage) {
-            playerData = playersInStorage.find(p => p.id === player.id)
-        } else {
-            playerData = { id: player.id }
+            playerData = utils.mergeObjects(playerData, playersInStorage.find(p => p.id === player.id))
         }
         // console.info("playerFromStorage", playerData)
         let minutesDictionary = playerData["minutes-played"] || {}

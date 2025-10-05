@@ -349,7 +349,6 @@ function handleOnMessage(msg, sender, sendResponse) {
             .catch(err => sendResponse({ error: err.message }))
         return true; // keep channel open
     }
-
     if (db && msg.type === "putColors") {
         db.settings.put({
             category: "colors",
@@ -421,7 +420,21 @@ function handleOnMessage(msg, sender, sendResponse) {
     }
     if (db && msg.type === "getMatch") {
         db.matches.get(msg.id)
-            .then(player => sendResponse(player))
+            .then(match => sendResponse(match))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
+    }
+
+    if (db && msg.type === "getMatchPlayersForPlayer") {
+        db.matchPlayers.where("playerId").equals(msg.id).toArray()
+            .then(matchPlayers => sendResponse(matchPlayers))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
+    }
+
+    if (db && msg.type === "bulkPutMatchPlayers") {
+        db.matchPlayers.bulkPut(msg.matchPlayers)
+            .then(matchPlayers => sendResponse(matchPlayers))
             .catch(err => sendResponse({ error: err.message }));
         return true; // keep channel open
     }
@@ -435,14 +448,14 @@ function handleOnMessage(msg, sender, sendResponse) {
 
     if (db && msg.type === "bulkGetPlayers") {
         db.players.bulkGet(msg.keysArray)
-            .then(player => sendResponse(player))
+            .then(players => sendResponse(players))
             .catch(err => sendResponse({ error: err.message }));
         return true; // keep channel open
     }
 
     if (db && msg.type === "putMatch") {
         db.matches.put(msg.data)
-            .then(player => sendResponse(player))
+            .then(match => sendResponse(match))
             .catch(err => sendResponse({ error: err.message }));
         return true; // keep channel open
     }
@@ -456,21 +469,21 @@ function handleOnMessage(msg, sender, sendResponse) {
 
     if (db && msg.type === "bulkPutPlayers") {
         db.players.bulkPut(msg.data)
-            .then(player => sendResponse(player))
+            .then(players => sendResponse(players))
             .catch(err => sendResponse({ error: err.message }));
         return true; // keep channel open
     }
 
     if (db && msg.type === "updateMatch") {
         db.matches.update(msg.id, msg.changes)
-            .then(player => sendResponse(player))
+            .then(match => sendResponse(match))
             .catch(err => sendResponse({ error: err.message }));
         return true; // keep channel open
     }
 
     if (db && msg.type === "deleteMatch") {
         db.matches.delete(msg.id)
-            .then(player => sendResponse(player))
+            .then(match => sendResponse(match))
             .catch(err => sendResponse({ error: err.message }));
         return true; // keep channel open
     }

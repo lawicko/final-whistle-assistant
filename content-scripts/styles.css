@@ -1,56 +1,72 @@
 /* Lineup */
 span.leadership {
-    display: inline-block; /* ✅ makes top/transform effective */
-    font-size: 1.35em;
-    cursor: help;
-    position: relative;    /* relative to the container */
-    transform: translateY(4%);
-    margin-left: 4px;
+  display: inline-block;
+  /* ✅ makes top/transform effective */
+  font-size: 1.35em;
+  cursor: help;
+  position: relative;
+  /* relative to the container */
+  transform: translateY(4%);
+  margin-left: 4px;
 }
 
 span.composure {
-    display: inline-block; /* ✅ makes top/transform effective */
-    font-size: 1.2em;
-    cursor: help;
-    position: relative;    /* relative to the container */
-    /*transform: translateY(5%);  pull back by half of own height */
-    margin-left: 4px;
+  display: inline-block;
+  /* ✅ makes top/transform effective */
+  font-size: 1.2em;
+  cursor: help;
+  position: relative;
+  /* relative to the container */
+  /*transform: translateY(5%);  pull back by half of own height */
+  margin-left: 4px;
 }
 
 span.arrogance {
-    display: inline-block; /* ✅ makes top/transform effective */
-    font-size: 1.2em;
-    cursor: help;
-    position: relative;    /* relative to the container */
-    transform: translateY(3%);
-    margin-left: 4px;
+  display: inline-block;
+  /* ✅ makes top/transform effective */
+  font-size: 1.2em;
+  cursor: help;
+  position: relative;
+  /* relative to the container */
+  transform: translateY(3%);
+  margin-left: 4px;
 }
 
 span.sportsmanship {
-    display: inline-block; /* ✅ makes top/transform effective */
-    font-size: 1.35em;
-    cursor: help;
-    position: relative;    /* relative to the container */
-    transform: translateY(3%);
-    margin-left: 4px;
+  display: inline-block;
+  /* ✅ makes top/transform effective */
+  font-size: 1.35em;
+  cursor: help;
+  position: relative;
+  /* relative to the container */
+  transform: translateY(3%);
+  margin-left: 4px;
 }
 
-ol#proposed-penalty-takers, ol#proposed-corner-takers, ol#proposed-anchors {
-    font-size: .8rem;
-    text-align: center;
+ol#proposed-penalty-takers,
+ol#proposed-corner-takers,
+ol#proposed-anchors {
+  font-size: .8rem;
+  text-align: center;
 
-    list-style-type: none; /* removes numbers */
-    padding-left: 0;       /* optional: remove indentation */
-    margin-left: 0;  
+  list-style-type: none;
+  /* removes numbers */
+  padding-left: 0;
+  /* optional: remove indentation */
+  margin-left: 0;
 }
 
-h6#proposed-penalty-takers-header, h6#proposed-corner-takers-header, h6#proposed-anchors-header {
-    text-align: center;
+h6#proposed-penalty-takers-header,
+h6#proposed-corner-takers-header,
+h6#proposed-anchors-header {
+  text-align: center;
 }
 
-h6#proposed-penalty-takers-header > span, h6#proposed-corner-takers-header > span, h6#proposed-anchors-header > span {
-    cursor: help;
-    font: 14px/1 FontAwesome;
+h6#proposed-penalty-takers-header>span,
+h6#proposed-corner-takers-header>span,
+h6#proposed-anchors-header>span {
+  cursor: help;
+  font: 14px/1 FontAwesome;
 }
 
 h6#proposed-penalty-takers-header label span {
@@ -58,66 +74,81 @@ h6#proposed-penalty-takers-header label span {
 }
 
 div.proposed-penalty-takers-container {
-    display: flex;
+  display: flex;
 }
 
 div.proposed-penalty-takers-panel {
-    flex: 1;                 /* Equal width */
-    display: flex;
-    flex-direction: column;  /* 👈 stack children vertically */
-    justify-content: flex-start; /* 👈 Align children to top */
-    align-items: center;
+  flex: 1;
+  /* Equal width */
+  display: flex;
+  flex-direction: column;
+  /* 👈 stack children vertically */
+  justify-content: flex-start;
+  /* 👈 Align children to top */
+  align-items: center;
 }
 
-input#composure-treshold, input#arrogance-treshold {
-    width: 160px;         /* make it wider */
-    height: 26px;         /* control the height */
-    padding: 4px 4px;     /* inner spacing */
-    border-radius: 8px;   /* rounded corners */
-    font-size: 13px;      /* adjust font size */
-    box-sizing: border-box;
+input#composure-treshold,
+input#arrogance-treshold {
+  width: 160px;
+  /* make it wider */
+  height: 26px;
+  /* control the height */
+  padding: 4px 4px;
+  /* inner spacing */
+  border-radius: 8px;
+  /* rounded corners */
+  font-size: 13px;
+  /* adjust font size */
+  box-sizing: border-box;
 }
 
 h5[touranchor="lineup.tour"] span {
-    font: 14px/1 FontAwesome;
-    cursor: help;
+  font: 14px/1 FontAwesome;
+  cursor: help;
 }
 
 /* Player */
 [data-tooltip] {
-  position: relative; /* Needed for positioning the tooltip */
-  cursor: help;       /* Optional: indicates hover help */
+  position: relative;
+  /* Needed for positioning the tooltip */
+  cursor: help;
+  /* Optional: indicates hover help */
 }
 
 /* The tooltip itself */
 [data-tooltip]::after {
-    content: attr(data-tooltip); /* Pulls text from the attribute */
-    position: absolute;
-    top: 0%;
-    left: 100%;
+  content: attr(data-tooltip);
+  /* Pulls text from the attribute */
+  position: absolute;
+  top: 0%;
+  left: 100%;
 
-    background: rgb(77, 129, 62);
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
+  background: rgb(77, 129, 62);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
 
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease-in-out;
-    display: inline-block;
-    white-space: pre;        /* only break at \n */
-    width: max-content;      /* shrink to longest line */
-    max-width: none;         /* no implicit cap */
-    z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  display: inline-block;
+  white-space: pre;
+  /* only break at \n */
+  width: max-content;
+  /* shrink to longest line */
+  max-width: none;
+  /* no implicit cap */
+  z-index: 999;
 }
 
 .header-tooltip[data-tooltip]::after {
-    left: 141%;
+  left: 141%;
 }
 
 .value-tooltip[data-tooltip]::after {
-    left: 200%;
+  left: 200%;
 }
 
 /* Show on hover */
@@ -126,86 +157,109 @@ h5[touranchor="lineup.tour"] span {
 }
 
 .details-row {
-    display: none; /* all hidden by default */
+  display: none;
+  /* all hidden by default */
 }
 
 .summary-row {
-    cursor: pointer;
-    font-weight: bold;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .disclosure {
-    display: inline-block;
-    transition: transform 0.2s ease;
-    margin-right: 6px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+  margin-right: 6px;
 }
 
 /* Rotates arrow when open */
 .disclosure.open {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 th.table-header-minutes span {
-    cursor: help;
-    font: 14px/1 FontAwesome;
+  cursor: help;
+  font: 14px/1 FontAwesome;
 }
 
 span#minutes-since-last-injury {
-    font-size: .9rem;
+  font-size: .9rem;
 }
 
 ol#FinalWhistlePlugin-buying-guide {
-    list-style-type: none; /* removes numbers */
-    padding-left: 0;       /* optional: remove indent */
-    margin-left: 0;        /* optional: align with parent */
-    font-size: .9rem;
-    margin-top: 0.5rem;
+  list-style-type: none;
+  /* removes numbers */
+  padding-left: 0;
+  /* optional: remove indent */
+  margin-left: 0;
+  /* optional: align with parent */
+  font-size: .9rem;
+  margin-top: 0.5rem;
 }
 
 /* Players */
 .FinalWhistlePlugin[data-tooltip]::after {
-    right: 0%;   /* push it left of the parent */
-    left: auto;    /* reset the left so it doesn’t conflict */
-    top: auto;
-    bottom: 100%;
+  right: 0%;
+  /* push it left of the parent */
+  left: auto;
+  /* reset the left so it doesn’t conflict */
+  top: auto;
+  bottom: 100%;
 }
-span.teamwork {
-    display: inline-block; /* ✅ makes top/transform effective */
-    font-size: 1.4em;
-    cursor: help;
-    position: relative;    /* relative to the container */
-    /* top: 75%;              push down 50% of container height */
-    transform: translateY(5%); /* pull back by half of own height */
-    margin-left: 4px;
-}
-fw-players div.card-header > div.row > input,
-fw-players div.card-header > div.row > label,
-fw-club div.card-header > div.row input,
-fw-club div.card-header > div.row label {
-    margin-left: auto;    /* push to the right */
-    flex: 0 0 auto;       /* don't grow or shrink */
-    width: auto;          /* natural width */
-    min-width: 0;         /* allow shrinking below default min-width */
-}
-.row > .right-items,
-.row > div > .right-items {
-    display: inline-flex;  /* shrink to content */
-    gap: 0.5rem;
 
-    margin-left: auto;    /* push to the right */
-    flex: 0 0 auto;       /* don't grow or shrink */
-    width: auto;          /* natural width */
-    min-width: 0;         /* allow shrinking below default min-width */
-    align-self: center; /* optional: vertically center in the container */
+span.teamwork {
+  display: inline-block;
+  /* ✅ makes top/transform effective */
+  font-size: 1.4em;
+  cursor: help;
+  position: relative;
+  /* relative to the container */
+  /* top: 75%;              push down 50% of container height */
+  transform: translateY(5%);
+  /* pull back by half of own height */
+  margin-left: 4px;
 }
+
+fw-players div.card-header>div.row>input,
+fw-players div.card-header>div.row>label,
+fw-club div.card-header>div.row input,
+fw-club div.card-header>div.row label {
+  margin-left: auto;
+  /* push to the right */
+  flex: 0 0 auto;
+  /* don't grow or shrink */
+  width: auto;
+  /* natural width */
+  min-width: 0;
+  /* allow shrinking below default min-width */
+}
+
+.row>.right-items,
+.row>div>.right-items {
+  display: inline-flex;
+  /* shrink to content */
+  gap: 0.5rem;
+
+  margin-left: auto;
+  /* push to the right */
+  flex: 0 0 auto;
+  /* don't grow or shrink */
+  width: auto;
+  /* natural width */
+  min-width: 0;
+  /* allow shrinking below default min-width */
+  align-self: center;
+  /* optional: vertically center in the container */
+}
+
 input[type="checkbox"] {
-    accent-color: #3d453d;
-    margin-left: 6px;
+  accent-color: #3d453d;
+  margin-left: 6px;
 }
 
 input[type="checkbox"]#ignoreComposureForPenaltyTakers {
-    accent-color: #323932;
-    margin-left: 6px;
+  accent-color: #323932;
+  margin-left: 6px;
 }
 
 /* Row highlight */
@@ -317,6 +371,7 @@ input[type="checkbox"]#ignoreComposureForPenaltyTakers {
 i.fa-tag::before {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
+
 .badge i.fa-tag {
   font: 14px/1 FontAwesome;
 }
@@ -325,12 +380,16 @@ i.fa-tag::before {
 .FinalWhistlePlugin_detailedPropertyContainer {
   display: inline-flex;
   flex-direction: column;
-  line-height: 1;        /* keeps it tight */
+  line-height: 1;
+  /* keeps it tight */
   /*font-size: 0.6em;       shrink if needed */
-  text-align: center;    /* or left/right */
+  text-align: center;
+  /* or left/right */
   position: relative;
-  top: 50%;              /* move down by half the cell height */
-  transform: translateY(-34%); /* pull back up by half own height */
+  top: 50%;
+  /* move down by half the cell height */
+  transform: translateY(-34%);
+  /* pull back up by half own height */
   margin-left: 4px;
   cursor: help;
 }
@@ -338,15 +397,17 @@ i.fa-tag::before {
 .FinalWhistlePlugin_detailedPropertyContainer .top {
   font-weight: 600;
   font-size: 0.7em;
-  margin-bottom: -0.1em; /* fine-tune vertical spacing */
+  margin-bottom: -0.1em;
+  /* fine-tune vertical spacing */
 }
 
 .FinalWhistlePlugin_detailedPropertyContainer .bottom {
   font-size: 0.5em;
-  margin-top: -0.1em;    /* fine-tune vertical spacing */
+  margin-top: -0.1em;
+  /* fine-tune vertical spacing */
 }
 
-div.player-select > fw-player-card > div.p-block::after {
+div.player-select>fw-player-card>div.p-block::after {
   content: "";
   display: table;
   clear: both;
@@ -358,4 +419,26 @@ span.FinalWhistlePluginSpecialTalentModifiedTooltip {
   top: -5px;
   font: 7px/1 FontAwesome;
   cursor: help;
+}
+
+th#FinalWhistlePluginDetailsHeader {
+  text-align: center;
+}
+
+td.FinalWhistlePluginDetailsTD {
+  text-align: end;
+}
+
+td.FinalWhistlePluginDetailsTD i.bi-capsule {
+  color: #d2ffaa;
+}
+
+td.FinalWhistlePluginDetailsTD img.img-fluid {
+  max-height: 13px;
+}
+
+td.FinalWhistlePluginDetailsTD span.status-item {
+  position: relative;
+  display: inline-block;
+  bottom: 1px;
 }

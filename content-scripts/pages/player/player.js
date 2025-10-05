@@ -696,13 +696,13 @@ function showBuyingGuide(playerData) {
 function assembleBuyingGuide(identifier, playerData) {
     const position = playerData.position
     const experience = getPlayerExperience()
+    const playerAge = playerUtils.getPlayerAge().years
     const buyingGuideList = document.createElement("ol")
     buyingGuideList.id = identifier
 
     let personalitiesData = playerData.personalities
     const buyingGuideDescriptions = []
     if (personalitiesData) {
-        console.info("Appending personalities info to buying guide")
         Object.entries(personalitiesData).forEach(([personality, value]) => {
             try {
                 const description = personalitiesUtils.personalityDescription(
@@ -728,7 +728,23 @@ function assembleBuyingGuide(identifier, playerData) {
         }
     }
 
-    console.debug("buyingGuideDescriptions", buyingGuideDescriptions);
+    let hiddenSkillsData = playerData.hiddenSkills
+    if (playerAge < 21 && hiddenSkillsData) {
+        const youthSpecificDescriptions = []
+        // this can be "very_good", "good", "bad" or "very_bad"
+        const advancedDevelopmentAssesment = utils.classFromTalent(hiddenSkillsData.estimatedPotential, hiddenSkillsData.advancedDev)
+        if (["good", "very_good"].includes(advancedDevelopmentAssesment)) {
+            const description = "👍 His advanced development starts early in relation to his estimated potential, which means his development will speed up while he is still eligible to play in youths"
+            youthSpecificDescriptions.push(description)
+        }
+
+        if (youthSpecificDescriptions.length > 0) {
+            youthSpecificDescriptions.unshift("If you plan to improve your youth team:")
+        }
+        buyingGuideDescriptions.push(...youthSpecificDescriptions)
+    }
+
+    console.debug("buyingGuideDescriptions", buyingGuideDescriptions)
 
     const processed = buyingGuideDescriptions
         .filter(str => !str.startsWith("🤔")) // remove 🤔
@@ -887,6 +903,152 @@ function cleanUpNodeForPlayer(tableNode) {
     tableNode.querySelectorAll(`tr.${utils.pluginNodeClass}`).forEach(el => el.remove())
 }
 
+async function updateRecentStatistics(playedMatchesContainers, config) {
+    if (!playedMatchesContainers) {
+        throw new Error(`processPlayedMatches was called with invalid playedMatchesContainers (empty)`)
+    }
+
+    if (!config) {
+        throw new Error(`processPlayedMatches was called with invalid config (empty)`)
+    }
+
+    if (!config.matchPlayers || !config.matchLinkContainerQuery || !config.matchLinkElementQuery) {
+        throw new Error(`processPlayedMatches was called with invalid config, matchPlayers or query element(s) missing: ${JSON.stringify(config, null, 2)}`)
+    }
+
+    const detailsTDClass = utils.pluginNodeClass + "DetailsTD"
+
+    try {
+        for (const tr of playedMatchesContainers) {
+            const existingDetailsTD = tr.querySelector(`td.${detailsTDClass}`)
+            if (existingDetailsTD) {
+                existingDetailsTD.remove()
+            }
+
+            const matchLinkContainer = tr.querySelector(config.matchLinkContainerQuery)
+            const matchLinkElement = matchLinkContainer.querySelector(config.matchLinkElementQuery)
+            const matchID = utils.lastPathComponent(matchLinkElement.href)
+
+            const matchPlayer = config.matchPlayers.find(matchPlayer => matchPlayer.matchId === matchID)
+            const detailsTD = document.createElement("td")
+            detailsTD.classList.add(detailsTDClass)
+
+            let text = ""
+            if (!matchPlayer) {
+                text = "📂 no data"
+            } else {
+                const goals = matchPlayer.goals
+                if (goals) {
+                    const goalsContainer = document.createElement("span")
+                    goalsContainer.classList.add("status-item")
+
+                    const goalsCountElement = document.createElement("span")
+                    goalsCountElement.classList.add("goal-count")
+                    goalsCountElement.textContent = goals
+                    goalsContainer.appendChild(goalsCountElement)
+
+                    const football = document.createElement("i")
+                    football.classList.add("fa")
+                    football.classList.add("fa-futbol-o")
+                    goalsContainer.appendChild(football)
+
+                    detailsTD.appendChild(goalsContainer)
+                }
+
+                const cards = matchPlayer.cards
+                if (cards) {
+                    switch (cards) {
+                        case "🟨":
+                            const cardsContainer = document.createElement("span")
+                            cardsContainer.classList.add("status-item")
+
+                            const yellowCardImg = document.createElement("img")
+                            yellowCardImg.classList.add("img-fluid")
+                            yellowCardImg.classList.add("status-icon")
+                            yellowCardImg.src = "assets/images/yellow.png"
+
+                            cardsContainer.appendChild(yellowCardImg)
+                            detailsTD.appendChild(cardsContainer)
+                            break
+                        case "🟥":
+                            break
+                        default:
+                            console.warn("Unknown card:", cards)
+                    }
+                }
+
+                const injury = matchPlayer.injury
+                if (injury) {
+                    const injuryContainer = document.createElement("span")
+                    injuryContainer.classList.add("status-item")
+                    switch (injury) {
+                        case "light":
+                            const lightInjury = document.createElement("i")
+                            lightInjury.classList.add("bi")
+                            lightInjury.classList.add("bi-capsule")
+                            injuryContainer.appendChild(lightInjury)
+                            break
+                        case "severe":
+                            const severeInjury = document.createElement("img")
+                            severeInjury.classList.add("img-fluid")
+                            severeInjury.src = "assets/images/injury.png"
+                            injuryContainer.appendChild(severeInjury)
+                            break
+                        default:
+                            console.warn("Unknown injury type:", injury)
+                    }
+                    detailsTD.appendChild(injuryContainer)
+                }
+
+                if (detailsTD.children.length > 0) {
+                    text += " in "
+                }
+                text += matchPlayer.minutesPlayed + "'"
+            }
+            detailsTD.insertAdjacentText("beforeend", text)
+
+            tr.appendChild(detailsTD)
+        }
+    } catch (e) {
+        console.error(e.message)
+    }
+}
+
+function dateFromDateString(dateString) {
+    const [monthDay, year] = dateString.split(" ");  // ["07/30", "2025"]
+    const [month, day] = monthDay.split("/"); // ["07", "30"]
+
+    return new Date(Date.UTC(year, month - 1, day)); // month is 0-based
+}
+
+function stringFromDate(date) {
+    if (!(date instanceof Date)) {
+        throw new Error(`dateStorageFormat called with non-Date argument ${typeof date}: ${date}`);
+    }
+    return date.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    })
+}
+
+function formatDates(rows) {
+    const dateFormattedClass = `${utils.pluginNodeClass}_dateFormatted`
+    for (const row of rows) {
+        const dateElement = row.querySelector("td:has(i.fa.fa-calendar)")
+        const date = dateFromDateString(dateElement.textContent.trim())
+        if (dateElement && !dateElement.classList.contains(dateFormattedClass)) {
+            [...dateElement.childNodes].forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    node.remove()
+                }
+            })
+            dateElement.insertAdjacentText("beforeend", stringFromDate(date))
+            dateElement.classList.add(dateFormattedClass)
+        }
+    }
+}
+
 export async function processPlayerPage() {
     console.info(`⏳ ${utils.version} Processing player page for ${utils.lastPathComponent(window.location.pathname)}...`)
 
@@ -917,17 +1079,117 @@ export async function processPlayerPage() {
         appendComputedSkills(coreSkillsTable);
     }
 
-    if (isShowingStatistics()) {
-        console.debug("Showing Stats")
+    if (isShowingRecentStatistics()) {
+        const detailsHeaderID = utils.pluginNodeClass + "DetailsHeader"
+        const tableHeaderRow = document.querySelector("table.table-striped > thead > tr")
+        if (!tableHeaderRow) return // site not loaded yet
+        const exitingDetails = tableHeaderRow.querySelector(`th#${detailsHeaderID}`)
+        if (!exitingDetails) {
+            const tableHeaderLastTH = tableHeaderRow.querySelector("th:last-child")
+            const detailsTH = tableHeaderLastTH.cloneNode()
+            detailsTH.textContent = "Details"
+            detailsTH.id = detailsHeaderID
+            tableHeaderRow.appendChild(detailsTH)
+        }
+
+        const matchPlayers = await db.getMatchPlayersForPlayer(playerDataFromPage.id)
+        // console.info("matchPlayers", matchPlayers.map(m => `https://www.finalwhistle.org/en/match/${m.matchId}`))
+
         const playedMatchesContainers = document.querySelectorAll("table.table-striped > tr")
         console.debug("playedMatchesContainers", playedMatchesContainers)
+
         if (playedMatchesContainers.length > 0) {
+            formatDates(playedMatchesContainers)
+
+            const lastVisibleMatchRow = playedMatchesContainers[playedMatchesContainers.length - 1]
+            const lastVisibleMatchDateElement = lastVisibleMatchRow.querySelector("td:has(i.fa.fa-calendar)")
+            // console.info("lastVisibleMatchDateElement", lastVisibleMatchDateElement)
+            const lastVisibleMatchDateString = lastVisibleMatchDateElement.textContent.trim()
+            // console.info("lastVisibleMatchDateString", lastVisibleMatchDateString)
+            const lastVisibleMatchDate = new Date(lastVisibleMatchDateString)
+            // console.info("lastVisibleMatchDate", lastVisibleMatchDate.toISOString())
+            const olderRecordedMatchPlayers = matchPlayers.filter(mp => new Date(mp.date) < lastVisibleMatchDate).sort((a, b) => new Date(b.date) - new Date(a.date))
+
+            const table = document.querySelector("table.table-striped")
+            for (const matchPlayer of olderRecordedMatchPlayers) {
+                const cloneID = utils.pluginNodeClass + `_${matchPlayer.matchId}`
+                if (table.querySelector(`tr#${cloneID}`)) continue
+                const rowClone = lastVisibleMatchRow.cloneNode(true)
+                rowClone.id = cloneID
+
+                // Going from left to right
+                // Insert proper date
+                const dateElement = rowClone.querySelector("td:has(i.fa.fa-calendar)")
+                if (dateElement) {
+                    [...dateElement.childNodes].forEach(node => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.remove()
+                        }
+                    })
+                    dateElement.insertAdjacentText("beforeend", stringFromDate(new Date(matchPlayer.date)))
+                    table.appendChild(rowClone)
+                }
+
+                // Opponent name and link
+                const opponentCell = rowClone.querySelector("td:has(fw-club-hover)")
+                const opponentLinkElement = opponentCell.querySelector("fw-club-hover > div.hovercard > a")
+                const newOpponentHref = opponentLinkElement.getAttribute("href").replace(/\/\d+$/, `/${matchPlayer.opponentId}`)
+                opponentLinkElement.setAttribute("href", newOpponentHref)
+                const opponentNameSpan = opponentLinkElement.querySelector("span.club-name")
+                opponentNameSpan.textContent = matchPlayer.opponentName
+
+                const flagSpan = opponentLinkElement.querySelector("span:has(fw-flag)")
+                flagSpan.remove()
+
+                const matchLink = opponentCell.querySelector("span > a")
+                const newMatchHref = matchLink.getAttribute("href").replace(/\/[^/]+$/, `/${matchPlayer.matchId}`)
+                matchLink.setAttribute("href", newMatchHref)
+
+                // Existing match data indicator
+                const possibleMatchDataIndicator = opponentCell.querySelector("span.final-whistle-assistant-played-match-indicator")
+                if (possibleMatchDataIndicator) {
+                    possibleMatchDataIndicator.remove()
+                }
+
+                const competitionCell = opponentCell.nextElementSibling
+                console.info("competition:", matchPlayer.competition)
+
+                const goalsCell = competitionCell.nextElementSibling
+                goalsCell.textContent = matchPlayer.goals ?? "0"
+
+                const assistsCell = goalsCell.nextElementSibling
+                assistsCell.textContent = "-"
+
+                const tacklesCell = assistsCell.nextElementSibling
+                tacklesCell.textContent = "-"
+
+                const cardsCell = tacklesCell.nextElementSibling
+                if (matchPlayer.cards) {
+                    cardsCell.textContent = [...matchPlayer.cards].length
+                } else {
+                    cardsCell.textContent = "0"
+                }
+
+                const manOfTheMatchCell = cardsCell.nextElementSibling
+                manOfTheMatchCell.textContent = "-"
+
+                const ratingCell = manOfTheMatchCell.nextElementSibling
+                ratingCell.textContent = "-"
+            }
+
+            updateRecentStatistics(playedMatchesContainers, {
+                matchPlayers: matchPlayers,
+                matchLinkContainerQuery: "td:has(fw-club-hover)",
+                matchLinkElementQuery: "span > a"
+            })
+
             await addYAndSLabelsForMatchBadges(playedMatchesContainers, {
                 youthNodeQuery: "span.badge-youth",
                 seniorNodeQuery: "span.badge-senior",
                 commentStart: "Processing match badges for 🇸enior and 🇾outh matches",
                 commentFinished: "Match badges for 🇸enior and 🇾outh matches processed"
             })
+
             await processPlayedMatches(playedMatchesContainers, {
                 matchLinkContainerQuery: "td:has(fw-club-hover)",
                 matchLinkElementQuery: "span > a",
@@ -1021,6 +1283,11 @@ function isShowingOverview() {
 function isShowingStatistics() {
     const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
     return activeTab && activeTab.textContent.trim() === "Stats"
+}
+
+function isShowingRecentStatistics() {
+    const recentSelect = document.querySelector("fw-player-detail-statistics select.form-control.navigation-select")
+    return isShowingStatistics && recentSelect && recentSelect.value === "0: 0"
 }
 
 function isShowingReports() {

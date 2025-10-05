@@ -47,6 +47,14 @@ export function getMatch(id) {
     return browser.runtime.sendMessage({ type: "getMatch", id });
 }
 
+export function getMatchPlayersForPlayer(id) {
+    return browser.runtime.sendMessage({ type: "getMatchPlayersForPlayer", id });
+}
+
+export function bulkPutMatchPlayers(matchPlayers) {
+    return browser.runtime.sendMessage({ type: "bulkPutMatchPlayers", matchPlayers: matchPlayers });
+}
+
 export function getPlayer(id) {
     return browser.runtime.sendMessage({ type: "getPlayer", id });
 }
