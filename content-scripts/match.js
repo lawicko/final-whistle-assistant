@@ -23,6 +23,8 @@ export async function processMatch() {
     if (ignoredMatchTypesForPlayerCalculations.includes(competitionName)) {
         console.info(`⏩ ${competitionName} processing, player minutes and injuries will be skipped`)
     }
+    const competitionYouthSeniorSpan = competitionSymbol.parentNode.nextElementSibling.querySelector("span.badge")
+    const competitionYouthSenior = competitionYouthSeniorSpan.textContent.trim()
 
     const matchID = utils.lastPathComponent(window.location.href)
     const matchDate = dateElement.textContent.trim()
@@ -49,6 +51,7 @@ export async function processMatch() {
         id: matchID,
         date: matchDate,
         competition: competitionName,
+        competitionBadge: competitionYouthSenior,
         homeTeamID: homeTeamID,
         homeTeamName: homeTeamName,
         homeTeamDetails: homeTeamDetails,
@@ -184,6 +187,7 @@ function processMatchPlayers(matchData) {
         )
         mPlayer['date'] = matchData.date
         mPlayer['competition'] = matchData.competition
+        mPlayer['competitionBadge'] = matchData.competitionBadge
         mPlayer['opponentDetails'] = matchData.awayTeamDetails
         rows.push(mPlayer)
     }
@@ -197,6 +201,7 @@ function processMatchPlayers(matchData) {
         )
         mPlayer['date'] = matchData.date
         mPlayer['competition'] = matchData.competition
+        mPlayer['competitionBadge'] = matchData.competitionBadge
         mPlayer['opponentDetails'] = matchData.homeTeamDetails
         rows.push(mPlayer)
     }

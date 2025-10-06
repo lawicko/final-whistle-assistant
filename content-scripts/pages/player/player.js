@@ -1049,6 +1049,13 @@ function formatDates(rows) {
     }
 }
 
+function toSnakeCase(str) {
+    return str
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_");  // replace one or more spaces with underscore
+}
+
 export async function processPlayerPage() {
     console.info(`⏳ ${utils.version} Processing player page for ${utils.lastPathComponent(window.location.pathname)}...`)
 
@@ -1166,7 +1173,30 @@ export async function processPlayerPage() {
                 }
 
                 const competitionCell = opponentCell.nextElementSibling
-                console.info("competition:", matchPlayer.competition)
+                // console.info("competition:", matchPlayer.competition, matchPlayer.competitionBadge)
+                const badgeSpan = competitionCell.querySelector("span > span.badge")
+                if (matchPlayer.competitionBadge) {
+                    switch (matchPlayer.competitionBadge) {
+                        case "S":
+                            badgeSpan.classList.remove("badge-youth")
+                            badgeSpan.classList.add("badge-senior")
+                            break
+                        case "Y":
+                            badgeSpan.classList.remove("badge-senior")
+                            badgeSpan.classList.add("badge-youth")
+                            break
+                        default:
+                            console.warn("Unknown competition badge in DB:", matchPlayer.competitionBadge)
+                    }
+                    badgeSpan.textContent = matchPlayer.competitionBadge
+                } else {
+                    badgeSpan.remove()
+                }
+                const competitionNameSpan = badgeSpan.nextElementSibling
+                if (competitionNameSpan) { // matches not loaded yet?
+                    competitionNameSpan.textContent = " " + matchPlayer.competition
+                }
+                competitionCell.className = toSnakeCase(matchPlayer.competition)
 
                 const goalsCell = competitionCell.nextElementSibling
                 goalsCell.textContent = matchPlayer.goals ?? "0"
