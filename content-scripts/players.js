@@ -124,13 +124,22 @@ async function appendAdditionalInfo(checkboxesData) {
             teamwork = playerPersonalities['teamwork']
         }
 
+        let specialTalents
+        if (playerData && playerData.specialTalents) {
+            specialTalents = playerData.specialTalents
+        }
+
+        let footInfo
+        if (playerData && playerData.foot) {
+            footInfo = playerData.foot
+        }
+
         let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
         if (valueNodes.length < 8) { // Goalkeepers
-            const tdFoot = createFootCell(playerData.foot)
+            const tdFoot = createFootCell(footInfo ?? "")
             row.appendChild(tdFoot)
 
-            const specialTalents = playerData.specialTalents
-            const tdST = createSpecialTalentsCell(specialTalents)
+            const tdST = createSpecialTalentsCell(specialTalents ?? [])
             row.appendChild(tdST)
 
             let RE = listUtils.parseNumber(valueNodes[0]);
@@ -149,11 +158,10 @@ async function appendAdditionalInfo(checkboxesData) {
                 `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
             row.appendChild(tdDA);
         } else { // Outfielders
-            const tdFoot = createFootCell(playerData.foot)
+            const tdFoot = createFootCell(footInfo ?? "")
             row.appendChild(tdFoot)
 
-            const specialTalents = playerData.specialTalents
-            const tdST = createSpecialTalentsCell(specialTalents)
+            const tdST = createSpecialTalentsCell(specialTalents ?? [])
             row.appendChild(tdST)
 
             let SC = listUtils.parseNumber(valueNodes[0]);
