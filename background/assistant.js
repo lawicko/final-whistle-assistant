@@ -474,6 +474,13 @@ function handleOnMessage(msg, sender, sendResponse) {
         return true; // keep channel open
     }
 
+    if (db && msg.type === "updatePlayer") {
+        db.players.update(msg.playerID, msg.changes)
+            .then(player => sendResponse(player))
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // keep channel open
+    }
+
     if (db && msg.type === "updateMatch") {
         db.matches.update(msg.id, msg.changes)
             .then(match => sendResponse(match))

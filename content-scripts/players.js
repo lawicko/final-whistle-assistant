@@ -2,6 +2,7 @@ import * as utils from "./utils.js"
 import * as uiUtils from "./ui_utils.js"
 import * as listUtils from "./list_utils.js"
 import * as db from "./db_access.js"
+import { specialTalentsSymbols, specialTalentsDescriptions } from "./special_talents_utils.js"
 
 /**
  * Creates a <td> or <th> element with a hover-card.
@@ -31,9 +32,22 @@ function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
 // Adds the headers to the players table
 function createHeaders() {
     console.debug(`appending headers...`)
-    var firstRow = document.querySelector("table > tr:first-of-type");
+    const firstRow = document.querySelector("table > tr:first-of-type");
 
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
+
+    const headerClass = utils.pluginNodeClass + "PlayersTableColumnHeader"
+
+    const footTH = createHoverCardCell("th", "🦶🏻", "Foot")
+    footTH.classList.add(headerClass)
+    firstRow.appendChild(footTH)
+
+    const specialTalentsTH = createHoverCardCell("th", "", "Special Talents")
+    const specialTalentsBolt = document.createElement("i")
+    specialTalentsBolt.classList.add("fa", "fa-bolt")
+    specialTalentsTH.appendChild(specialTalentsBolt)
+    specialTalentsTH.classList.add(headerClass)
+    firstRow.appendChild(specialTalentsTH)
 
     if (!isShowingGoalkeepers()) {
         const thLS = createHoverCardCell("th", "LS", "Long Shot");
@@ -50,6 +64,35 @@ function createHeaders() {
         const thDA = createHoverCardCell("th", "DA", "Defensive Assistance");
         firstRow.appendChild(thDA);
     }
+}
+
+function createFootCell(foot) {
+    const cellClass = utils.pluginNodeClass + "PlayersTableCell"
+    const tdFoot = document.createElement("td")
+    tdFoot.classList.add(utils.pluginNodeClass)
+    tdFoot.classList.add(cellClass)
+
+    const span = document.createElement("span")
+    span.textContent = foot
+    tdFoot.appendChild(span)
+    return tdFoot
+}
+
+function createSpecialTalentsCell(specialTalents) {
+    const cellClass = utils.pluginNodeClass + "PlayersTableCell"
+    const tdST = document.createElement("td")
+    tdST.classList.add(utils.pluginNodeClass)
+    tdST.classList.add(cellClass)
+    if (specialTalents) {
+        for (const talent of specialTalents) {
+            const span = document.createElement("span")
+            span.classList.add("SpecialTalentSymbol")
+            span.textContent = specialTalentsSymbols[talent]
+            span.title = specialTalentsDescriptions[talent]
+            tdST.appendChild(span)
+        }
+    }
+    return tdST
 }
 
 // Calculates and adds the cells with the midfield dominance values for each player
@@ -83,6 +126,13 @@ async function appendAdditionalInfo(checkboxesData) {
 
         let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
         if (valueNodes.length < 8) { // Goalkeepers
+            const tdFoot = createFootCell(playerData.foot)
+            row.appendChild(tdFoot)
+
+            const specialTalents = playerData.specialTalents
+            const tdST = createSpecialTalentsCell(specialTalents)
+            row.appendChild(tdST)
+
             let RE = listUtils.parseNumber(valueNodes[0]);
             let GP = listUtils.parseNumber(valueNodes[1]);
             let IN = listUtils.parseNumber(valueNodes[2]);
@@ -99,6 +149,12 @@ async function appendAdditionalInfo(checkboxesData) {
                 `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
             row.appendChild(tdDA);
         } else { // Outfielders
+            const tdFoot = createFootCell(playerData.foot)
+            row.appendChild(tdFoot)
+
+            const specialTalents = playerData.specialTalents
+            const tdST = createSpecialTalentsCell(specialTalents)
+            row.appendChild(tdST)
 
             let SC = listUtils.parseNumber(valueNodes[0]);
             let OP = listUtils.parseNumber(valueNodes[1]);
@@ -213,7 +269,35 @@ export async function processPlayersPage() {
                 (cData) => { appendAdditionalInfo(cData) }
             )
         }
+
+        const footDisplay = getFootDisplay(tableNode)
+        if (footDisplay) {
+            await updateFootInfo()
+        }
+
         createHeaders()
         await appendAdditionalInfo(checkboxesData)
+    }
+}
+
+function getFootDisplay(table) {
+    return table.querySelector("th.pointer > i.bi-layout-split")
+}
+
+async function updateFootInfo() {
+    let rows = document.querySelectorAll("table > tr:has(fw-player-hover)")
+    const playersIDs = [...rows].map(row => listUtils.id(row))
+    const footInfo = [...rows].map(row => row.querySelector('td > div.opacity-08.ng-star-inserted').textContent.trim())
+    await db.bulkGetPlayers(playersIDs)
+    if (playersIDs.length != footInfo.length) {
+        console.warn("Tried to update foot info for the players, but the players from storage have different size than footInfo array. Aborting before we corrupt the DB.", playersIDs, footInfo)
+        return
+    }
+    for (let i = 0; i < playersIDs.length; i++) {
+        const playerID = playersIDs[i]
+        if (!playerID) continue
+
+        const fInfo = footInfo[i]
+        await db.updatePlayer(playerID, { foot: fInfo })
     }
 }

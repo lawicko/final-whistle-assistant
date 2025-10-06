@@ -75,6 +75,10 @@ export function bulkPutPlayers(playersArray) {
     return browser.runtime.sendMessage({ type: "bulkPutPlayers", data: playersArray })
 }
 
+export function updatePlayer(playerID, changes) {
+    return browser.runtime.sendMessage({ type: "updatePlayer", playerID: playerID, changes: changes })
+}
+
 export function updateMatch(id, changes) {
     return browser.runtime.sendMessage({ type: "updateMatch", id, changes });
 }

@@ -16,6 +16,38 @@ export const SpecialTalentsKeys = {
     Tough: "tough"
 }
 
+export const specialTalentsSymbols = {
+    [SpecialTalentsKeys.OneOnOne]: '⚔',
+    [SpecialTalentsKeys.Ambidextrous]: '🦶',
+    [SpecialTalentsKeys.Anticipator]: '👁',
+    [SpecialTalentsKeys.Dribbler]: '🌀',
+    [SpecialTalentsKeys.Jumper]: '🦘',
+    [SpecialTalentsKeys.Playmaker]: '🧠',
+    [SpecialTalentsKeys.Quick]: '🏃‍♂️',
+    [SpecialTalentsKeys.Scorer]: '⚽',
+    [SpecialTalentsKeys.SetPieceSpecialist]: '🎯',
+    [SpecialTalentsKeys.Stamina]: '🔋',
+    [SpecialTalentsKeys.Stopper]: '🛡️',
+    [SpecialTalentsKeys.SureHands]: '✋',
+    [SpecialTalentsKeys.Tough]: '💪'
+}
+
+export const specialTalentsDescriptions = {
+    [SpecialTalentsKeys.OneOnOne]: 'One On One: Better chances in 1 on 1 duels between attackers and goalkeeper. [+5 SC] [+5 RE]',
+    [SpecialTalentsKeys.Ambidextrous]: 'Ambidextrous: Equally skilled with both feet',
+    [SpecialTalentsKeys.Anticipator]: 'Anticipator: Improved reaction in defensive and goalkeeping situations. [+5 DP] [+4 GP]',
+    [SpecialTalentsKeys.Dribbler]: 'Dribbler: Has higher chance for successful dribbling [+4 BC]',
+    [SpecialTalentsKeys.Jumper]: 'Jumper: Bonus in aerial actions [+5 AE] [+5 IN]',
+    [SpecialTalentsKeys.Playmaker]: 'Playmaker: Can reduce opponent assistance and improves mid play [+4 PA]',
+    [SpecialTalentsKeys.Quick]: 'Quick: Less chances to be caught in offside, positional bonus [+5 OP] [+5 DP] [+4 GP]',
+    [SpecialTalentsKeys.Scorer]: 'Scorer: Has boost in Scoring skill [+5 SC]',
+    [SpecialTalentsKeys.SetPieceSpecialist]: "Set Piece Specialist: Has higher chance for successful set piece and GK's can defend better in set piece situations [+3 PA] [+3 SC] [+4 OR]",
+    [SpecialTalentsKeys.Stamina]: 'Stamina: Outfielder will play longer without impact on performance. Goalkeeper will have better consistency [+10 CO]',
+    [SpecialTalentsKeys.Stopper]: 'Stopper: Less chances to commit foul if playing aggressive and has bonus in tackling [+5 TA]',
+    [SpecialTalentsKeys.SureHands]: 'Sure Hands: Reduces fumbles and reduces the effect of power shot [+5 CT]',
+    [SpecialTalentsKeys.Tough]: 'Tough: Injury chance reduced'
+}
+
 export const SpecialTalentsDefinitions = {
     [SpecialTalentsKeys.OneOnOne]: {
         SC: 5,

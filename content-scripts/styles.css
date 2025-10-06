@@ -442,3 +442,11 @@ td.FinalWhistlePluginDetailsTD span.status-item {
   display: inline-block;
   bottom: 1px;
 }
+
+td.FinalWhistlePlugin span.SpecialTalentSymbol {
+  cursor: help;
+}
+
+th.FinalWhistlePluginPlayersTableColumnHeader, td.FinalWhistlePluginPlayersTableCell {
+  text-align: center;
+}
