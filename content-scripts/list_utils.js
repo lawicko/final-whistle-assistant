@@ -276,13 +276,13 @@ export function processTableRow(
 }
 
 const IgnoredTalentsOutfielders = [
-    specialTalentsUtils.SpecialTalentsKeys.OneOnOne,
-    specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
+    // specialTalentsUtils.SpecialTalentsKeys.OneOnOne,
+    // specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
 ]
 
 const IgnoredTalentsGoalKeepers = [
-    specialTalentsUtils.SpecialTalentsKeys.OneOnOne,
-    specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
+    // specialTalentsUtils.SpecialTalentsKeys.OneOnOne,
+    // specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
 ]
 
 function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
