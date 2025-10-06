@@ -6,7 +6,9 @@ export async function processMatch() {
     console.info(`⏳ ${utils.version} Processing match ${utils.lastPathComponent(window.location.pathname)}`)
     const dateElement = document.querySelector('div.col-md-2:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)')
     const homeTeamElement = document.querySelector('div.col-lg-6:nth-child(1) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
+    const homeTeamFlagElement = document.querySelector('div.col-lg-6:nth-child(1) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > fw-flag')
     const awayTeamElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
+    const awayTeamFlagElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > fw-flag')
     if (dateElement && dateElement.textContent && homeTeamElement && homeTeamElement.textContent && awayTeamElement && awayTeamElement.textContent) {
         console.info(`⚽ Processing match from`, dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', awayTeamElement.textContent.trim())
     } else {
@@ -26,8 +28,22 @@ export async function processMatch() {
     const matchDate = dateElement.textContent.trim()
     const homeTeamName = homeTeamElement.textContent.trim()
     const homeTeamID = utils.lastPathComponent(homeTeamElement.href)
+    const homeTeamNationalTeamLink = homeTeamFlagElement.querySelector("a").href
+    const homeTeamFlagClasses = Array.from(homeTeamFlagElement.querySelector("a > span").classList)
     const awayTeamName = awayTeamElement.textContent.trim()
     const awayTeamID = utils.lastPathComponent(awayTeamElement.href)
+    const awayTeamNationalTeamLink = awayTeamFlagElement.querySelector("a").href
+    const awayTeamFlagClasses = Array.from(awayTeamFlagElement.querySelector("a > span").classList)
+
+    const homeTeamDetails = {
+        flagClasses: homeTeamFlagClasses,
+        ...(homeTeamNationalTeamLink !== undefined && { nationalTeamLink: homeTeamNationalTeamLink })
+    }
+
+    const awayTeamDetails = {
+        flagClasses: awayTeamFlagClasses,
+        ...(awayTeamNationalTeamLink !== undefined && { nationalTeamLink: awayTeamNationalTeamLink })
+    }
 
     let matchData = {
         id: matchID,
@@ -35,8 +51,10 @@ export async function processMatch() {
         competition: competitionName,
         homeTeamID: homeTeamID,
         homeTeamName: homeTeamName,
+        homeTeamDetails: homeTeamDetails,
         awayTeamID: awayTeamID,
-        awayTeamName: awayTeamName
+        awayTeamName: awayTeamName,
+        awayTeamDetails: awayTeamDetails
     }
     const matchDataFromStorage = await db.getMatch(matchID)
     if (matchDataFromStorage) {
@@ -166,6 +184,7 @@ function processMatchPlayers(matchData) {
         )
         mPlayer['date'] = matchData.date
         mPlayer['competition'] = matchData.competition
+        mPlayer['opponentDetails'] = matchData.awayTeamDetails
         rows.push(mPlayer)
     }
     for (const p of matchData.finishingLineups.away) {
@@ -178,6 +197,7 @@ function processMatchPlayers(matchData) {
         )
         mPlayer['date'] = matchData.date
         mPlayer['competition'] = matchData.competition
+        mPlayer['opponentDetails'] = matchData.homeTeamDetails
         rows.push(mPlayer)
     }
 

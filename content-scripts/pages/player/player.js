@@ -1138,8 +1138,22 @@ export async function processPlayerPage() {
                 const opponentNameSpan = opponentLinkElement.querySelector("span.club-name")
                 opponentNameSpan.textContent = matchPlayer.opponentName
 
-                const flagSpan = opponentLinkElement.querySelector("span:has(fw-flag)")
-                flagSpan.remove()
+                // The flag and the national team links
+                const flagSpanContainer = opponentLinkElement.querySelector("span:has(fw-flag)")
+                const nationalDetails = matchPlayer.opponentDetails
+                if (nationalDetails) {
+                    const flagLinkElement = flagSpanContainer.querySelector("fw-flag > a")
+                    if (nationalDetails.nationalTeamLink) {
+                        flagLinkElement.href = nationalDetails.nationalTeamLink
+                    } else {
+                        flagLinkElement.removeAttribute("href")
+                    }
+                    const flagSpan = flagSpanContainer.querySelector("fw-flag > a > span")
+                    flagSpan.classList.remove(...flagSpan.classList)
+                    flagSpan.classList.add(...nationalDetails.flagClasses)
+                } else {
+                    flagSpanContainer.remove()
+                }
 
                 const matchLink = opponentCell.querySelector("span > a")
                 const newMatchHref = matchLink.getAttribute("href").replace(/\/[^/]+$/, `/${matchPlayer.matchId}`)
