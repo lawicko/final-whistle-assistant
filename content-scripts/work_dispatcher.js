@@ -33,14 +33,38 @@ const observationConfig = { attributes: false, childList: true, subtree: true, c
  */
 function createObserverCallback(targetNode, config, fn) {
     return async (mutationList, observer) => {
-        observer.disconnect();
+        observer.disconnect()
 
-        try {
-            await fn(mutationList, observer);
-        } catch (e) {
-            console.error("Observer callback error:", e);
+        console.info("createObserverCallback - mutationList:", mutationList)
+
+        let skipFunctionCall = false
+        outer: for (const mutationRecord of mutationList) {
+            const addedOrRemoved = [...mutationRecord.addedNodes, ...mutationRecord.removedNodes]
+            if (addedOrRemoved.length < 1 || addedOrRemoved.length > 1) continue
+            console.info("mutationRecord.addedNodes:", mutationRecord.addedNodes)
+            console.info("mutationRecord.removedNodes:", mutationRecord.removedNodes)
+            for (const node of addedOrRemoved) {
+                if (
+                    node.nodeType === Node.ELEMENT_NODE &&
+                    (node.matches("ngb-popover-window.popover[role=tooltip]") ||
+                    node.matches("div.hovercard-detail.hovercard-active"))
+                ) {
+                    console.info("skipping because of:", node)
+                    skipFunctionCall = true
+                    break outer
+                }
+            }
         }
-        // ❌ No observer.observe here
+
+        if (skipFunctionCall) {
+            observer.observe(targetNode, config)
+        } else {
+            try {
+                await fn(mutationList, observer)
+            } catch (e) {
+                console.error("Observer callback error:", e)
+            }
+        }
     };
 }
 
