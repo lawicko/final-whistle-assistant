@@ -9,31 +9,31 @@ async function applyCustomColorsForTags() {
         if (!colors) return
         // Inject CSS rule so future elements are styled too
         addCSS(`
-            i.denom1, span.denom1 i, div.denom1 {
+            i.denom1, span.denom1 i, div.denom1.ng-star-inserted {
                 color: ${colors.tagColor1} !important;
             }
-            i.denom2, span.denom2 i, div.denom2 {
+            i.denom2, span.denom2 i, div.denom2.ng-star-inserted {
                 color: ${colors.tagColor2} !important;
             }
-            i.denom3, span.denom3 i, div.denom3 {
+            i.denom3, span.denom3 i, div.denom3.ng-star-inserted {
                 color: ${colors.tagColor3} !important;
             }
-            i.denom4, span.denom4 i, div.denom4 {
+            i.denom4, span.denom4 i, div.denom4.ng-star-inserted {
                 color: ${colors.tagColor4} !important;
             }
-            i.denom5, span.denom5 i, div.denom5 {
+            i.denom5, span.denom5 i, div.denom5.ng-star-inserted {
                 color: ${colors.tagColor5} !important;
             }
-            i.denom6, span.denom6 i, div.denom6 {
+            i.denom6, span.denom6 i, div.denom6.ng-star-inserted {
                 color: ${colors.tagColor6} !important;
             }
-            i.denom7, span.denom7 i, div.denom7 {
+            i.denom7, span.denom7 i, div.denom7.ng-star-inserted {
                 color: ${colors.tagColor7} !important;
             }
-            i.denom8, span.denom8 i, div.denom8 {
+            i.denom8, span.denom8 i, div.denom8.ng-star-inserted {
                 color: ${colors.tagColor8} !important;
             }
-            i.denom9, span.denom9 i, div.denom9 {
+            i.denom9, span.denom9 i, div.denom9.ng-star-inserted {
                 color: ${colors.tagColor9} !important;
             }
         `, "final-whistle-custom-tag-colors");
