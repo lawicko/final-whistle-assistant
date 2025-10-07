@@ -46,8 +46,12 @@ function createObserverCallback(targetNode, config, fn) {
             for (const node of addedOrRemoved) {
                 if (
                     node.nodeType === Node.ELEMENT_NODE &&
-                    (node.matches("ngb-popover-window.popover[role=tooltip]") ||
-                    node.matches("div.hovercard-detail.hovercard-active"))
+                    (
+                        node.matches("ngb-popover-window.popover[role=tooltip]") ||
+                        node.matches("div.hovercard-detail.hovercard-active") ||
+                        node.matches("div.ngx-spinner.ng-star-inserted") ||
+                        node.matches("div.ngx-bar.ng-star-inserted")
+                    )
                 ) {
                     // console.info("skipping because of:", node)
                     skipFunctionCall = true
