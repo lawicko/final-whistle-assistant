@@ -478,6 +478,24 @@ function getPlayerClubData() {
 }
 
 /**
+ * Gets the foot data of the player.
+ * @returns {string} "L" or "R"
+ */
+function getPlayerFoot() {
+    const additionalDetailsTable = document.querySelector('table:has(fw-club-hover)')
+    if (!additionalDetailsTable) return
+    const footRow = additionalDetailsTable.querySelector("tr:last-of-type")
+    const footInfo = footRow.querySelector("td").textContent.trim()
+    switch (footInfo) {
+        case "Right Footed": return "R"
+        case "Left Footed": return "L"
+        default:
+            console.warn("Unknown footInfo:", footInfo)
+            return undefined
+    }
+}
+
+/**
  * Returns the player personalities table if it's present on the page.
  * @returns {Object} player personalities table node.
  */
@@ -623,6 +641,7 @@ function getPlayerData() {
     const position = getPlayerPosition()
     const name = getPlayerName()
     const clubData = getPlayerClubData()
+    const foot = getPlayerFoot()
     const { rating, talent } = getPlayerRating()
 
     const personalitiesTable = getPersonalitiesTable()
@@ -652,6 +671,7 @@ function getPlayerData() {
         id: playerID,
         name: name,
         position: position,
+        foot: foot,
         rating: rating,
         talent: talent,
         teamId: clubData ? clubData.id : null,
