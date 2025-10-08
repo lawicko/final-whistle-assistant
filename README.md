@@ -9,7 +9,7 @@ I created this browser extension to address some of the problems that, in my opi
 The extension is split into functionalities which you can switch on or off on the options screen. Some of the functionalities are just small UI tweaks like button positioning or color customisations. Others are much bigger and require you to visit matches or scout players to work properly. By default, all functionalities are enabled. Read on to learn about each functionality and decide if you want to keep them all on or disable some of them.
 
 ## Academy Buttons
-The goal of this module is to move the **Hire** and **Fire** buttons apart to prevent accidental misclicks. It was inspired by one of the posts from the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103)
+The goal of this feature is to move the **Hire** and **Fire** buttons apart to prevent accidental misclicks. It was inspired by one of the posts from the [Requested Features List topic](https://www.finalwhistle.org/en/forum/topic/125/page/103)
 
 ![Academy Buttons](images/academy_buttons.jpg)
 
@@ -74,7 +74,7 @@ This is again inspired by the [Requested Features List topic](https://www.finalw
 ![Calendar - Fixtures](images/calendar02.jpg)
 
 ## Match Data Gathering
-The extension can gather match data, including injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Currently the quick matches and friendlies are ignored since, to my understanding, they don't contribute to injuries. **To add match data to your records visit the match page and switch the lineups from starting to finishing**.
+The extension can gather match data, including goals, cards, injuries and minutes played by your players. The idea behind this functionality is to have some data to predict when the next injury may happen. Non official matches like quick matches and friendlies are ignored for the injuries calculations since, to my understanding, they don't contribute to injuries. **To add match data to your records visit the match page and switch the lineups from starting to finishing**.
 
 For visualizing which matches are already stored there are visual indicators on various screens in the game when the match report links are visible, these include:
  - fixtures page (own and other clubs)
@@ -93,7 +93,7 @@ With this information you should be able to record all the matches you need or t
 
 **Note: as of version 3.2.0 saving the statistics and the full match reports is not yet inplemented.**
 
-[Go to Player page section](#player) to see how the data gathered in the match module is utilized there to display the additional information about injuries and minutes played by your players.
+[Go to Player page section](#player) to see how the data gathered from the match pages is utilized there to display the additional information about injuries and minutes played by your players.
 
 ## Player
 Player page has been enhanced to include additional information, and the highlight of it is the injury tracker. Then there are additional fields in the computed skills table for midfield dominance and offensive/defensive assistance. This is useful not only for your own players but also if you look up a transfer listed player. Speaking of transfer listed players, there is also a mini buying guide below the _Bid_ button that evaluates player personalities and special talents for his designated position.
@@ -101,33 +101,39 @@ Player page has been enhanced to include additional information, and the highlig
 ### Injuries and Minutes Played
 Injuries and minutes played functionality displays additional information below the player status:
 
-![Player module tooltips](images/player02.png)
+![Player page injuries](images/player02.png)
 
 For this to work correctly you need to make sure to visit as many match reports as you can and always switch the lineup from starting to finishing, only then the information about injuries and minutes played are visible. Rememeber that this is not the exact value used in the game but rather an estimation based on assumptions and approximations. For instance, I assume that in the game where a player gets injuried all the minutes are counted towards the minutes before that injury, even though it is likely that the player continues to play with the injury until the end of the match. Nevertheless I feel this should still give us pretty good idea about how many minutes a player can usually play before getting injuried, and plan our season accordingly.
 
 In case your player has not been injured, you will see how many minutes he played without injury:
 
-![Player module tooltips](images/player03.png)
+![Player page no injuries](images/player03.png)
 
 In case your player has been injuried multiple times, the section becomes expandable, just click on it and it will reveal all the injuries and minutes. You can see that with enough data we can start to draw some conclusions on when the next injury is likely to come:
 
-![Player module tooltips](images/player04.png)
+![Player page injuries extended](images/player04.png)
 
 ### Computed Skills Additions
 Additional rows are added for the midfield dominance calculation and offensive/defensive assistance. It shows both current and potential values for those skills and takes personalities into account. In case of midfield dominance you will clearly see how universal midfielders beat OMs and DMs in that department. For the assistance, you will see how positive and negative teamwork personality influences the results (if the player has teamwork personality).
 
-![Player module](images/player_computed_skills.png)
+![Player page computed skills](images/player_computed_skills.png)
 
 **Note: special talents are not taken into account yet.**
 
 If you are interested how the number in the table were achieved there are tooltips explaining the formulas used for calculations. Hover over the numeric values to see the formulas. They appear on the right of the table and should not obstruct anything else.
 
-![Player module tooltips](images/player01.png)
+![Player page tooltips](images/player01.png)
 
 ### Buying Guide
 A mini buying guide appears below the bid button for transfer listed players. It scans through player personalities and special talents and assesses how good or bad the personality is for his designated position, and how useful is his special talent.
 
-![Player buying guide](images/player_buying_guide.png)
+![Player page buying guide](images/player_buying_guide.png)
+
+### Stats
+Stats tab has been improved with information gathered from the match reports. You will see additional **Details** column on the right and all the recorded matches will be displayed for the player - not only the last 20.
+
+![Player Stats improvements](images/player_stats_01.png)
+
 
 ## Players
 The players page was enhanced by adding more information in form of additional columns in the players table as well as symbols for representing player properties that are normally only visible on the player page.
@@ -152,6 +158,10 @@ You can switch them on or off with the checkboxes above the player list. The col
 If you hover over the numeric values you will see the formulas that are used for calculations. These values are color coded in the following way: the maximum for a given skill is calculated, and then the current value, and then both are normalized to x/100 and coloring for the core skills is used. For instance, if a player has 54 OP and 74 BC and teamwork +2, the sum of OP and BC is taken (128) and the benefits from teamwork are added (128 * 25% = 32) which gives us the final result of 160. The maximum offensive assistance would be 200 so the property will be color coded to brilliant becasue 160/200 = 8/10.
 
 ![Players Color Coding](images/players_color_coding.png)
+
+The foot and special talents information are also clearly visible without having to click on the column:
+
+![Players Color Coding](images/players_foot_special_talents.png)
 
 ## Row Highlighting
 Row highlighting allows you to highlight any row on your or your opponent squad page. It can be useful when analyzing lineups for the upcoming games or just managing your players. It comes with 2 flavours:
@@ -203,11 +213,8 @@ Use extension options to enable/disable the functionality how you see fit, or to
 
 ![Firefox settings page](images/options_firefox.png)
 
-### Import/Export Storage
-Use this to import/export your settings (modules and colors).
-
-### Modules
-The extension is split into modules, each module is responsible for different functionality and you can turn each module on or off here.
+### Features
+The extension is split into features, each is responsible for different functionality and you can turn each feature on or off here.
 
 ### Tag Colors
 Customise your tag colors. See [Tags section](#tags) for details.
@@ -218,5 +225,7 @@ Customise your lineup symbols colors. See [Lineup section](#lineup-symbols) for 
 ### Transfer List Detail Colors
 Customise your transfer list detail colors. See [Transfers section](#transfers) for details.
 
-### Local Data
-This setting can be used to backup your local data. Local data is all the data you gathered by visiting you players pages, match reports etc. You build this over time by browsing the game website. The extension works best if you visit all the match reports of your team that you can + the matches of your rivals that you want (switching the lineup from starting to finishing) and all the players that you have on your team + rival players you are interested in. This allows the extension to visualize the injuries, minutes played, suggest penalty takers etc. Once you do all that you don't want this data to be lost - this is why I added the option to export it from the extension. I recommend you do the following: once you visit all the match reports and player pages you want, got to the settings and copy the content of this field into a file, and store it somewhere safe - for example Dropbox or another cloud storage service. This way you are sure that if something goes wrong and you loose the data, you can always restore it from backup. To do that you can paste the contet of your backup directly into the field and press the save button below. This is also useful for moving your data across browsers (Firefox and Chromium) or different machines.
+### Database
+Use this to import/export your database - this is where all your data is stored together with all the settings from the settings page.
+
+The data in the database is all the data you gathered by visiting you players pages, match reports etc. You build this over time by browsing the game website. The extension works best if you visit all the match reports of your team that you can + the matches of your rivals that you want (switching the lineup from starting to finishing) and all the players that you have on your team + rival players you are interested in. This allows the extension to visualize the injuries, minutes played, suggest penalty takers etc. Once you do all that you don't want this data to be lost - this is why I added the option to export it from the extension. I recommend you do the following: once you visit all the match reports and player pages you want, got to the settings and export it somewhere safe - for example Dropbox or another cloud storage service. This way you are sure that if something goes wrong and you loose the data, you can always restore it from backup. To do that you can drag and drop your saved database into the drop zone on the options page. This is also useful for moving your data across browsers (Firefox and Chromium) or different machines.
