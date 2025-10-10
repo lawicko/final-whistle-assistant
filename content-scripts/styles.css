@@ -450,3 +450,18 @@ td.FinalWhistlePlugin span.SpecialTalentSymbol {
 th.FinalWhistlePluginPlayersTableColumnHeader, td.FinalWhistlePluginPlayersTableCell {
   text-align: center;
 }
+
+div#FinalWhistlePluginLineupHeader {
+  display: flex;
+  padding: 5px;
+  font-size: .8rem;
+  background-color: #00000036;
+}
+
+div#FinalWhistlePluginLineupHeader > div:not(.p-name) {
+  text-align: center;
+}
+
+div.player-select.player-in-lineup {
+  background-color: #00000050;
+}

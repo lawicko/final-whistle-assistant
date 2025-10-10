@@ -1,8 +1,7 @@
 import {
-    storage,
-    isString,
     lastPathComponent,
-    version
+    version,
+    pluginNodeClass
 } from "./utils.js";
 
 import {
@@ -10,6 +9,7 @@ import {
     applyArrogance,
     applyComposure,
     applySportsmanship,
+    hasActiveFormation,
     hasActiveSetPieces,
     removeNoDataSymbol,
     personalitiesSymbols
@@ -688,8 +688,20 @@ function applyLeadership(element, leadership) {
 }
 
 export async function processLineupPage() {
-    console.log("Processing lineup page...");
+    console.log("Processing lineup page...")
+    if (hasActiveFormation()) {
+        fixHeader({
+            formationContainerSelector: "fw-formation div[touranchor='lineup.select']",
+            firstPlayerCardSelector: "div.player-select > fw-player-card",
+            columnLabels: ["Name", "S", "A", "Pos", "R"]
+        })
+    }
     if (hasActiveSetPieces()) {
+        fixHeader({
+            formationContainerSelector: "fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12",
+            firstPlayerCardSelector: "div.container-block > fw-player-card",
+            columnLabels: ["Name", " ", "A", "Pos", "R"]
+        })
         try {
             const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
             if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
@@ -701,4 +713,53 @@ export async function processLineupPage() {
             console.error(err.message);
         }
     }
+}
+
+function fixHeader(config) {
+    console.info("👨‍🔧 Fixing header")
+    const formationContainer = document.querySelector(config.formationContainerSelector)
+
+    const lineupHeaderID = pluginNodeClass + "LineupHeader"
+    const existingCustomHeader = formationContainer.querySelector(`div#${lineupHeaderID}`)
+    if (existingCustomHeader) existingCustomHeader.remove()
+
+    const firstPlayerCard = formationContainer.querySelector(config.firstPlayerCardSelector)
+
+    let columnNames = []
+    const brokenHeader = firstPlayerCard.querySelector("div.p-block-header")
+    if (brokenHeader) {
+        columnNames = [...brokenHeader.querySelectorAll("div.header-skill > span")].map(span => span.textContent.trim())
+        brokenHeader.style.display = "none"
+    }
+    columnNames.unshift(...config.columnLabels)
+    columnNames.reverse()
+    const formIndicators = document.querySelectorAll("fw-formation div[touranchor='lineup.select'] > div.player-select > fw-player-card div.p-block > div.p-block-top div.form-indicator-top")
+    for (const formIndicator of formIndicators) {
+        formIndicator.parentNode.appendChild(formIndicator)
+    }
+
+    const firstPlayerContainer = document.querySelector(config.formationContainerSelector + " > " + config.firstPlayerCardSelector + " > div.p-block > div.p-block-top")
+    const newHeader = document.createElement("div")
+    newHeader.id = lineupHeaderID
+    newHeader.classList.add("col-12") // this adds width: 100%
+    const columnSizes = []
+    for (const child of firstPlayerContainer.children) {
+        if (child.classList.contains('form-indicator-top')) continue
+
+        columnSizes.push(child.getBoundingClientRect().width)
+        const clone = child.cloneNode(false)
+        newHeader.appendChild(clone)
+    }
+    columnSizes.reverse()
+    // console.info("columnSizes:", [...columnSizes])
+
+    const columnHeaders = newHeader.querySelectorAll("div")
+    for (const columnHeader of columnHeaders) {
+        const originalWidth = columnSizes.pop()
+        const skillLabel = columnNames.pop()
+        columnHeader.textContent = skillLabel
+        columnHeader.style.width = `${originalWidth}px`
+    }
+
+    formationContainer.prepend(newHeader)
 }
