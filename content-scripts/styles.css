@@ -465,3 +465,10 @@ div#FinalWhistlePluginLineupHeader > div:not(.p-name) {
 div.player-select.player-in-lineup {
   background-color: #00000050;
 }
+
+/* Fix for the player badge 3 letters, LWB or RWB */
+fw-players div.card-body table.table > tr > td > span.badge-position,
+fw-transfer-market table.table > tbody >  tr > td > span.badge-position {
+  padding-inline: unset;
+  padding-block: .25em;
+}
