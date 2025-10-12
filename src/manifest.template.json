@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Final Whistle Assistant",
-    "version": "4.1.1",
+    "version": "4.1.2",
     "description": "Displays additional information when browsing FinalWhistle website.",
     "icons": {
         "48": "icons/fwa-logo-48.png",
