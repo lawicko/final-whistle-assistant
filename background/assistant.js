@@ -120,6 +120,11 @@ async function initializeDB(defaultOptions) {
         settings: defaultOptions.features
     }
 
+    const shortcuts = {
+        category: "shortcuts",
+        settings: {}
+    }
+
     const newColors = {
         category: "colors",
         settings: {
@@ -162,7 +167,8 @@ async function initializeDB(defaultOptions) {
         newCheckboxes,
         newRowHighligthData,
         features,
-        newColors
+        newColors,
+        shortcuts
     ]
 
     if (!getDB()) initDB("👨‍💻 initializeDB")
@@ -343,6 +349,21 @@ function handleOnMessage(msg, sender, sendResponse) {
 
     // Database access
     const db = getDB()
+    if (db && msg.type === "getShortcuts") {
+        db.settings.get("shortcuts")
+            .then(shortcuts => sendResponse(shortcuts.settings))
+            .catch(err => sendResponse({ error: err.message }))
+        return true; // keep channel open
+    }
+    if (db && msg.type === "putShortcuts") {
+        db.settings.put({
+            category: "shortcuts",
+            settings: msg.data
+        })
+            .then(shortcuts => sendResponse(shortcuts.settings))
+            .catch(err => sendResponse({ error: err.message }))
+        return true; // keep channel open
+    }
     if (db && msg.type === "getColors") {
         db.settings.get("colors")
             .then(colors => sendResponse(colors.settings))
@@ -614,7 +635,8 @@ async function handleInstalled(details) {
             specialTalents: true,
             sportsmanship: true,
             teamwork: true
-        }
+        },
+        shortcuts: {}
     }
 
     await initializeDB(defaultOptions)
@@ -655,6 +677,8 @@ async function handleInstalled(details) {
             }
         }
 
+        const shortcuts = await getDB().settings.get("shortcuts")
+
         console.info("☁️ Saving settings to storage")
         await getDB().settings.put({
             category: "features",
@@ -672,6 +696,12 @@ async function handleInstalled(details) {
             category: "tresholds",
             settings: tresholds
         })
+        if (!shortcuts) {
+            await getDB().settings.put({
+                category: "shortcuts",
+                settings: defaultOptions.shortcuts
+            })
+        }
         console.info("📥 Saved")
         const allSettings = await getDB().settings.toArray()
 

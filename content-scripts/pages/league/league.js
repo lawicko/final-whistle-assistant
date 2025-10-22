@@ -1,4 +1,6 @@
 import { processPlayedMatches } from '../../match_data_gathering_indicators.js'
+import { pluginNodeClass } from '../../utils.js'
+import * as db from '../../db_access.js'
 
 export async function processLeaguePage() {
     console.info("⚽📊 Processing league page")
@@ -13,6 +15,31 @@ export async function processLeaguePage() {
                 commentStart: `⚽ Processing matches in the league fixtures`,
                 commentFinished: `🔴🟠🟡🟢 Processed matches in the league fixtures, missing data indicators added`
             })
+        }
+    }
+
+    const leagueSelector = document.querySelector("fw-league > div.card > h5.card-header div.input-group > select.navigation-senior-select")
+    if (leagueSelector) {
+        const currentSelection = leagueSelector.value
+        // console.info("Current league selection:", currentSelection)
+
+        const leagueControlRow = document.querySelector("fw-league > div.card > div.card-body > div.row > div > div.d-flex")
+        if (leagueControlRow) {
+            let setLeagueButtonID = pluginNodeClass + "SetLeagueButton"
+            if (!leagueControlRow.querySelector(`button#${setLeagueButtonID}`)) {
+                const setLeagueButton = document.createElement("button")
+                setLeagueButton.id = setLeagueButtonID
+                setLeagueButton.textContent = "Set League Shortcut"
+                setLeagueButton.addEventListener("click", async () => {
+                    console.debug(`Will bind ${window.location.href} for ${currentSelection}`)
+                    let shortcutsData = await db.getShortcuts() ?? {}
+                    console.debug("Current shortcuts data:", shortcutsData)
+                    shortcutsData["LEAGUE_" + currentSelection] = window.location.href
+                    console.debug("Updated shortcuts data:", shortcutsData)
+                    await db.putShortcuts(shortcutsData)
+                })
+                leagueControlRow.appendChild(setLeagueButton)
+            }
         }
     }
 }

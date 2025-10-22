@@ -474,3 +474,29 @@ fw-club-squad table.table tr > td > span.badge-position {
   padding-inline: unset;
   padding-block: .25em;
 }
+
+button#FinalWhistlePluginSetLeagueButton {
+  white-space: nowrap; /* Prevents text wrapping */
+  border: 1px solid #ae9836;
+  flex: 0 0 auto;
+  position: relative;
+  padding: .25rem .5rem;
+  font-size: .875rem;
+  border-radius: var(--bs-border-radius-sm);
+  font-weight: 400;
+  line-height: 1.5;
+  display: inline-flex;
+  margin-left: .5rem;
+  background-color: #a8db08;
+  align-items: center;
+}
+
+a#LEAGUE_SENIOR > i {
+  color: #517d47;
+  padding: .5rem 1rem;
+}
+
+a#LEAGUE_YOUTH > i {
+  color: #456578;
+  padding: .5rem 1rem;
+}

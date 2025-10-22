@@ -13,6 +13,7 @@ import { processOpponentClubPage } from "./pages/club_opponent/club_opponent.js"
 import { processTransferPage } from './pages/transfer/transfer.js'
 import { processTrainingPage } from "./pages/training/training.js"
 import * as dbUtils from './db_utils.js'
+import { setNavBarItems } from './universal.js';
 
 // How long to wait after the last mutation before processing the DOM (in ms)
 const DEBOUNCE_WAIT_MS = 150;
@@ -173,6 +174,7 @@ const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.AcademyButtonsSeparation)) {
             processAcademyButtons();
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
@@ -181,6 +183,7 @@ const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.MatchBadgeEnhancement)) {
             await processFixturesPage();
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
@@ -189,6 +192,7 @@ const debouncedProcessLeaguePage = makeDebouncedWithReconnect(
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.MatchDataGathering)) {
             await processLeaguePage();
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
@@ -197,6 +201,7 @@ const debouncedProcessMatchPage = makeDebouncedWithReconnect(
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.MatchDataGathering)) {
             await processMatch();
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
@@ -205,6 +210,7 @@ const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.PlayerPageAdditions)) {
             await processPlayerPage();
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
@@ -219,26 +225,30 @@ const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.RowHighlighting)) {
             await addTableRowsHighlighting();
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessOpponentClubPage = makeDebouncedWithReconnect(
     async () => {
         await processOpponentClubPage()
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessLineupPage = makeDebouncedWithReconnect(
     async () => {
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.LineupPageAdditions)) {
-            await processLineupPage();
+            await processLineupPage()
         }
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
     async () => {
         await processTrainingPage()
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 )
 
@@ -248,5 +258,6 @@ const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
             await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false });
         }
         await processTransferPage()
+        await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
-);
+)

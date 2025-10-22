@@ -3,6 +3,14 @@ if (typeof browser == "undefined") {
     globalThis.browser = chrome
 }
 
+export function getShortcuts() {
+    return browser.runtime.sendMessage({ type: "getShortcuts" });
+}
+
+export function putShortcuts(shortcutsData) {
+    return browser.runtime.sendMessage({ type: "putShortcuts", data: shortcutsData });
+}
+
 export function getColors() {
     return browser.runtime.sendMessage({ type: "getColors" });
 }
