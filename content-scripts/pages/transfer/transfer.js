@@ -32,6 +32,18 @@ export async function processTransferPage() {
         if (!personalities) continue
 
         const insertionPoint = row.querySelector("td:has(fw-player-hover)")
+
+        const hiddenSkills = loadedPlayerData["hiddenSkills"]
+        if (window.location.href.endsWith('#Bids') && hiddenSkills) {
+            // Custom binoculars
+            const customBinocularsClass = `${utils.pluginNodeClass}CustomBinoculars`
+            const existingBinoculars = insertionPoint.querySelector(`span.scouted`)
+            if (!existingBinoculars) {
+                const customBinoculars = getScoutedBinoculars(customBinocularsClass)
+                insertionPoint.appendChild(customBinoculars)
+            }
+        }
+
         const teamwork = personalities["teamwork"]
         if (teamwork) {
             uiUtils.applyTeamwork(insertionPoint, teamwork)
@@ -59,7 +71,6 @@ export async function processTransferPage() {
         }
 
         // Hidden skills
-        const hiddenSkills = loadedPlayerData["hiddenSkills"]
         if (hiddenSkills) {
             listUtils.updateHiddenSkillsDetails({
                 insertionPoint: insertionPoint,
@@ -77,6 +88,15 @@ export async function processTransferPage() {
         const resultsElement = footerElement.parentNode.querySelector("div:has(table.table)")
         footerElement.parentNode.insertBefore(footerElement, resultsElement)
     }
+}
+
+function getScoutedBinoculars(customClass) {
+    const binoculars = document.createElement("span")
+    binoculars.classList.add('scouted', 'ms-1', customClass)
+    const iElement = document.createElement("i")
+    iElement.classList.add("fa", "fa-binoculars")
+    binoculars.appendChild(iElement)
+    return binoculars
 }
 
 async function applyCustomColorsForTLDetails() {

@@ -500,3 +500,7 @@ a#LEAGUE_YOUTH > i {
   color: #456578;
   padding: .5rem 1rem;
 }
+
+span.FinalWhistlePluginCustomBinoculars {
+  color: silver;
+}
