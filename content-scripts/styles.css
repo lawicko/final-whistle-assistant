@@ -468,11 +468,15 @@ div.player-select.player-in-lineup {
 
 /* Fix for the player badge 3 letters, LWB or RWB */
 fw-players div.card-body table.table > tr > td > span.badge-position,
-fw-transfer-market table.table > tbody >  tr > td > span.badge-position,
+fw-transfer table.table tr > td > span.badge-position,
 fw-training table.table tr > td > span.badge-position,
 fw-club-squad table.table tr > td > span.badge-position {
   padding-inline: unset;
   padding-block: .25em;
+}
+
+fw-player-details table.table > tr > td > span.badge-position {
+  width: auto;
 }
 
 button#FinalWhistlePluginSetLeagueButton {
