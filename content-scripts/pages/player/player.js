@@ -1220,43 +1220,62 @@ export async function processPlayerPage() {
                 }
                 competitionCell.className = toSnakeCase(matchPlayer.competition)
 
-                const goalsCell = competitionCell.nextElementSibling
-                goalsCell.textContent = matchPlayer.goals ?? "0"
+                if (playerDataFromPage.position === "GK") {
+                    const savesCell = competitionCell.nextElementSibling
+                    savesCell.textContent = "-"
 
-                const assistsCell = goalsCell.nextElementSibling
-                assistsCell.textContent = "-"
+                    const cardsCell = savesCell.nextElementSibling
+                    if (matchPlayer.cards) {
+                        cardsCell.textContent = [...matchPlayer.cards].length
+                    } else {
+                        cardsCell.textContent = "0"
+                    }
 
-                const tacklesCell = assistsCell.nextElementSibling
-                tacklesCell.textContent = "-"
+                    const manOfTheMatchCell = cardsCell.nextElementSibling
+                    manOfTheMatchCell.textContent = "-"
 
-                const cardsCell = tacklesCell.nextElementSibling
-                if (matchPlayer.cards) {
-                    cardsCell.textContent = [...matchPlayer.cards].length
+                    const ratingCell = manOfTheMatchCell.nextElementSibling
+                    ratingCell.textContent = "-"
                 } else {
-                    cardsCell.textContent = "0"
+                    const goalsCell = competitionCell.nextElementSibling
+                    goalsCell.textContent = matchPlayer.goals ?? "0"
+
+                    const assistsCell = goalsCell.nextElementSibling
+                    assistsCell.textContent = "-"
+
+                    const tacklesCell = assistsCell.nextElementSibling
+                    tacklesCell.textContent = "-"
+
+                    const cardsCell = tacklesCell.nextElementSibling
+                    if (matchPlayer.cards) {
+                        cardsCell.textContent = [...matchPlayer.cards].length
+                    } else {
+                        cardsCell.textContent = "0"
+                    }
+
+                    const manOfTheMatchCell = cardsCell.nextElementSibling
+                    manOfTheMatchCell.textContent = "-"
+
+                    const ratingCell = manOfTheMatchCell.nextElementSibling
+                    ratingCell.textContent = "-"
                 }
-
-                const manOfTheMatchCell = cardsCell.nextElementSibling
-                manOfTheMatchCell.textContent = "-"
-
-                const ratingCell = manOfTheMatchCell.nextElementSibling
-                ratingCell.textContent = "-"
             }
 
-            updateRecentStatistics(playedMatchesContainers, {
+            const updatedMatchesContainers = document.querySelectorAll("table.table-striped > tr")
+            updateRecentStatistics(updatedMatchesContainers, {
                 matchPlayers: matchPlayers,
                 matchLinkContainerQuery: "td:has(fw-club-hover)",
                 matchLinkElementQuery: "span > a"
             })
 
-            await addYAndSLabelsForMatchBadges(playedMatchesContainers, {
+            await addYAndSLabelsForMatchBadges(updatedMatchesContainers, {
                 youthNodeQuery: "span.badge-youth",
                 seniorNodeQuery: "span.badge-senior",
                 commentStart: "Processing match badges for 🇸enior and 🇾outh matches",
                 commentFinished: "Match badges for 🇸enior and 🇾outh matches processed"
             })
 
-            await processPlayedMatches(playedMatchesContainers, {
+            await processPlayedMatches(updatedMatchesContainers, {
                 matchLinkContainerQuery: "td:has(fw-club-hover)",
                 matchLinkElementQuery: "span > a",
                 commentStart: `⚽ Processing matches payed by the player`,
