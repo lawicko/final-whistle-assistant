@@ -30,20 +30,35 @@ export async function processMatch() {
     const matchDate = dateElement.textContent.trim()
     const homeTeamName = homeTeamElement.textContent.trim()
     const homeTeamID = utils.lastPathComponent(homeTeamElement.href)
-    const homeTeamNationalTeamLink = homeTeamFlagElement.querySelector("a").href
-    const homeTeamFlagClasses = Array.from(homeTeamFlagElement.querySelector("a > span").classList)
+    let homeTeamNationalTeamLink = undefined
+    let homeTeamFlagClasses = undefined
+    if (homeTeamFlagElement) {
+        homeTeamNationalTeamLink = homeTeamFlagElement.querySelector("a")?.href ?? undefined
+        const cl = homeTeamFlagElement.querySelector("a > span")?.classList ?? undefined
+        if (cl) {
+            homeTeamFlagClasses = Array.from(cl)
+        }
+    }
+
     const awayTeamName = awayTeamElement.textContent.trim()
     const awayTeamID = utils.lastPathComponent(awayTeamElement.href)
-    const awayTeamNationalTeamLink = awayTeamFlagElement.querySelector("a").href
-    const awayTeamFlagClasses = Array.from(awayTeamFlagElement.querySelector("a > span").classList)
+    let awayTeamNationalTeamLink = undefined
+    let awayTeamFlagClasses = undefined
+    if (awayTeamFlagElement) {
+        awayTeamNationalTeamLink = awayTeamFlagElement.querySelector("a")?.href ?? undefined
+        const cl = awayTeamFlagElement.querySelector("a > span")?.classList ?? undefined
+        if (cl) {
+            awayTeamFlagClasses = Array.from(cl)
+        }
+    }
 
     const homeTeamDetails = {
-        flagClasses: homeTeamFlagClasses,
+        ...(homeTeamFlagClasses !== undefined && { flagClasses: homeTeamFlagClasses }),
         ...(homeTeamNationalTeamLink !== undefined && { nationalTeamLink: homeTeamNationalTeamLink })
     }
 
     const awayTeamDetails = {
-        flagClasses: awayTeamFlagClasses,
+        ...(awayTeamFlagClasses !== undefined && { flagClasses: awayTeamFlagClasses }),
         ...(awayTeamNationalTeamLink !== undefined && { nationalTeamLink: awayTeamNationalTeamLink })
     }
 
