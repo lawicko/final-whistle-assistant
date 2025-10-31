@@ -1177,7 +1177,9 @@ export async function processPlayerPage() {
                     }
                     const flagSpan = flagSpanContainer.querySelector("fw-flag > a > span")
                     flagSpan.classList.remove(...flagSpan.classList)
-                    flagSpan.classList.add(...nationalDetails.flagClasses)
+                    if (nationalDetails.flagClasses) {
+                        flagSpan.classList.add(...nationalDetails.flagClasses)
+                    }
                 } else {
                     flagSpanContainer.remove()
                 }
