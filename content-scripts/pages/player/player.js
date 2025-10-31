@@ -1135,7 +1135,18 @@ export async function processPlayerPage() {
             // console.info("lastVisibleMatchDateString", lastVisibleMatchDateString)
             const lastVisibleMatchDate = new Date(lastVisibleMatchDateString)
             // console.info("lastVisibleMatchDate", lastVisibleMatchDate.toISOString())
+
+            const sortedMP = matchPlayers.sort((a, b) => new Date(b.date) - new Date(a.date))
+            if (sortedMP.length > 0) {
+                console.log("There are matches in the DB that don't have a date property - these matches likely come from earlier version of the extension and they will not be visible in the table. I will print the links to those matches below so you can click through them and complete your match data. Remember to switch to the finishing lineup for each match. After that reload the page and all matches should show on the list.")
+            }
+            for (const mp of sortedMP) {
+                if (!mp.date) {
+                    console.log(`https://www.finalwhistle.org/en/match/${mp.matchId}`)
+                }
+            }
             const olderRecordedMatchPlayers = matchPlayers.filter(mp => new Date(mp.date) < lastVisibleMatchDate).sort((a, b) => new Date(b.date) - new Date(a.date))
+            // console.info("olderRecordedMatchPlayers", olderRecordedMatchPlayers)
 
             const table = document.querySelector("table.table-striped")
             for (const matchPlayer of olderRecordedMatchPlayers) {
