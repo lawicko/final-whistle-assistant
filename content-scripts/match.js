@@ -144,12 +144,17 @@ export async function processMatch() {
         )
 
         matchData["startingLineups"] = startingLineups
+
+        const statistics = readStatistics()
+        // console.info("statistics:", statistics)
+        matchData["statistics"] = statistics
+
         await db.putMatch(matchData)
-        console.info(`🧍🧍🧍📥 Saved the starting lineups to storage`)
+        console.info(`🧍🧍🧍📥 Saved the starting lineups and 📊 statistics to storage`)
     }
 
     if (displaysFinishingLineups) {
-        console.info(`⚽🧍🧍🧍 Processing finishing lineups`);
+        console.info(`⚽🧍🧍🧍 Processing finishing lineups`)
         const finishingLineups = await processLineups(
             finishingLineupContainers,
             finishingSubstitutesContainers,
@@ -172,6 +177,55 @@ export async function processMatch() {
     }
 
     console.info(`✅ Match processing finished`)
+}
+
+function readStatistics() {
+    const matchStatisticsTable = document.querySelector('fw-match-statistics table.match-stats-table')
+    if (matchStatisticsTable) {
+        console.info(`📊 Processing statistics`)
+        const rows = matchStatisticsTable.querySelectorAll("tr")
+        let statistics = {}
+        let currentSection = undefined
+        rows.forEach(row => {
+            if (row.classList.contains('section-header')) {
+                currentSection = readStatsSectionHeader(row)
+                statistics[currentSection] = {}
+            } else {
+                const rowData = readStatsRow(row)
+                statistics[currentSection][rowData.title] = { home: rowData.home, away: rowData.away }
+            }
+        })
+        return statistics
+    } else {
+        console.warn("Tried to read statistics, but could not find the statistics table in DOM")
+    }
+}
+
+function readStatsSectionHeader(row) {
+    const span = row.querySelector('td > span')
+    if (span) {
+        return  span.textContent.trim()
+    }
+
+    const b = row.querySelector('td > b')
+    if (b) {
+        return b.textContent.trim()
+    }
+}
+
+function readStatsRow(row) {
+    let cell = row.querySelector('td')
+    let str = cell.querySelector('span').textContent.trim()
+    const homeValue = parseInt(str.match(/\d+(\.\d+)?/)[0])
+
+    cell = cell.nextElementSibling
+    const title = cell.textContent.trim()
+
+    cell = cell.nextElementSibling
+    str = cell.querySelector('span').textContent.trim()
+    const awayValue = parseInt(str.match(/\d+(\.\d+)?/)[0])
+
+    return { title: title, home: homeValue, away: awayValue }
 }
 
 function processMatchPlayers(matchData) {
