@@ -159,6 +159,11 @@ async function saveOptions() {
         tagsEnhancement: document.getElementById('tagsEnhancement').checked
     };
 
+    // Collect all overrides
+    const overrides = {
+        preferOriginalSpecialTalentsColumn: document.getElementById('preferOriginalSpecialTalentsColumn').checked
+    }
+
     // Collect all colors
     const colors = {};
     const colorInputs = document.querySelectorAll('input[type="color"]');
@@ -166,10 +171,14 @@ async function saveOptions() {
         colors[input.id] = input.value
     });
 
-    // Save both to storage
+    // Save to storage
     await getDB().settings.put({
         category: "features",
         settings: features
+    })
+    await getDB().settings.put({
+        category: "overrides",
+        settings: overrides
     })
     await getDB().settings.put({
         category: "colors",
@@ -188,6 +197,17 @@ async function restoreOptions() {
                 const el = document.getElementById(key);
                 if (el) el.checked = features[key];
             });
+        }
+    }
+
+    const loadedOverrides = await getDB().settings.get("overrides")
+    if (loadedOverrides) {
+        const overrides = loadedOverrides.settings
+        if (overrides) {
+            Object.keys(overrides).forEach((key) => {
+                const el = document.getElementById(key)
+                if (el) el.checked = overrides[key]
+            })
         }
     }
 

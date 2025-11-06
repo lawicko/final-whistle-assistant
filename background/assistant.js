@@ -120,6 +120,11 @@ async function initializeDB(defaultOptions) {
         settings: defaultOptions.features
     }
 
+    const overrides = {
+        category: "overrides",
+        settings: defaultOptions.overrides
+    }
+
     const shortcuts = {
         category: "shortcuts",
         settings: {}
@@ -167,6 +172,7 @@ async function initializeDB(defaultOptions) {
         newCheckboxes,
         newRowHighligthData,
         features,
+        overrides,
         newColors,
         shortcuts
     ]
@@ -394,6 +400,21 @@ function handleOnMessage(msg, sender, sendResponse) {
             .catch(err => sendResponse({ error: err.message }))
         return true; // keep channel open
     }
+    if (db && msg.type === "getOverrides") {
+        db.settings.get("overrides")
+            .then(overrides => sendResponse(overrides.settings))
+            .catch(err => sendResponse({ error: err.message }))
+        return true; // keep channel open
+    }
+    if (db && msg.type === "putOverrides") {
+        db.settings.put({
+            category: "overrides",
+            settings: msg.data
+        })
+            .then(overrides => sendResponse(overrides.settings))
+            .catch(err => sendResponse({ error: err.message }))
+        return true; // keep channel open
+    }
     if (db && msg.type === "getTresholds") {
         db.settings.get("tresholds")
             .then(tresholds => sendResponse(tresholds.settings))
@@ -592,6 +613,9 @@ async function handleInstalled(details) {
             rowHighlighting: true,
             tagsEnhancement: true
         },
+        overrides: {
+            preferOriginalSpecialTalentsColumn: false
+        },
         colors: {
             advancedDevelopmentBad: "#FFD700",
             advancedDevelopmentGood: "#4CBB17",
@@ -643,15 +667,25 @@ async function handleInstalled(details) {
 
     try {
         const loadedFeatuers = await getDB().settings.get("features")
-        const features = loadedFeatuers.settings
+        const features = loadedFeatuers?.settings || {}
         for (const key in defaultOptions.features) {
             if (!(key in features)) {
                 console.info(`Found a missing key (${key}) in the features settings loaded from storage, assigned the value from the default features (${defaultOptions.features[key]})`)
                 features[key] = defaultOptions.features[key];
             }
         }
+
+        const loadedOverrides = await getDB().settings.get("overrides")
+        const overrides = loadedOverrides?.settings || {}
+        for (const key in defaultOptions.overrides) {
+            if (!(key in overrides)) {
+                console.info(`Found a missing key (${key}) in the overrides settings loaded from storage, assigned the value from the default overrides (${defaultOptions.overrides[key]})`)
+                overrides[key] = defaultOptions.overrides[key];
+            }
+        }
+
         const loadedColors = await getDB().settings.get("colors")
-        const colors = loadedColors.settings
+        const colors = loadedColors?.settings || {}
         for (const key in defaultOptions.colors) {
             if (!(key in colors)) {
                 console.info(`Found a missing key (${key}) in the colors settings loaded from storage, assigned the value from the default colors (${defaultOptions.colors[key]})`)
@@ -660,7 +694,7 @@ async function handleInstalled(details) {
         }
 
         const loadedCheckboxes = await getDB().settings.get("checkboxes")
-        const checkboxes = loadedCheckboxes.settings
+        const checkboxes = loadedCheckboxes?.settings || {}
         for (const key in defaultOptions.checkboxes) {
             if (!(key in checkboxes)) {
                 console.info(`Found a missing key (${key}) in the checkboxes settings loaded from storage, assigned the value from the default checkboxes (${defaultOptions.checkboxes[key]})`)
@@ -669,7 +703,7 @@ async function handleInstalled(details) {
         }
 
         const loadedTresholds = await getDB().settings.get("tresholds")
-        const tresholds = loadedTresholds.settings
+        const tresholds = loadedTresholds?.settings || {}
         for (const key in defaultOptions.tresholds) {
             if (!(key in tresholds)) {
                 console.info(`Found a missing key (${key}) in the tresholds settings loaded from storage, assigned the value from the default tresholds (${defaultOptions.tresholds[key]})`)
@@ -683,6 +717,10 @@ async function handleInstalled(details) {
         await getDB().settings.put({
             category: "features",
             settings: features
+        })
+        await getDB().settings.put({
+            category: "overrides",
+            settings: overrides
         })
         await getDB().settings.put({
             category: "colors",

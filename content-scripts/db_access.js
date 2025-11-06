@@ -27,6 +27,14 @@ export function putFeatures(featuresData) {
     return browser.runtime.sendMessage({ type: "putFeatures", data: featuresData });
 }
 
+export function getOverrides() {
+    return browser.runtime.sendMessage({ type: "getOverrides" });
+}
+
+export function putOverrides(overridesData) {
+    return browser.runtime.sendMessage({ type: "putOverrides", data: overridesData });
+}
+
 export function getTresholds() {
     return browser.runtime.sendMessage({ type: "getTresholds" });
 }
