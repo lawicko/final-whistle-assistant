@@ -30,7 +30,7 @@ function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
 }
 
 // Adds the headers to the players table
-function createHeaders() {
+async function createHeaders() {
     console.debug(`appending headers...`)
     const firstRow = document.querySelector("table > tr:first-of-type");
 
@@ -38,16 +38,21 @@ function createHeaders() {
 
     const headerClass = utils.pluginNodeClass + "PlayersTableColumnHeader"
 
-    const footTH = createHoverCardCell("th", "🦶🏻", "Foot")
-    footTH.classList.add(headerClass)
-    firstRow.appendChild(footTH)
+    // const footTH = createHoverCardCell("th", "🦶🏻", "Foot")
+    // footTH.classList.add(headerClass)
+    // firstRow.appendChild(footTH)
+    const overrides = await db.getOverrides()
+    if (!overrides['preferOriginalSpecialTalentsColumn']) {
+        const originalSTHeader = firstRow.querySelector('th[title="Special Talents"]')
+        if (originalSTHeader) originalSTHeader.remove()
 
-    const specialTalentsTH = createHoverCardCell("th", "", "Special Talents")
-    const specialTalentsBolt = document.createElement("i")
-    specialTalentsBolt.classList.add("fa", "fa-bolt")
-    specialTalentsTH.appendChild(specialTalentsBolt)
-    specialTalentsTH.classList.add(headerClass)
-    firstRow.appendChild(specialTalentsTH)
+        const specialTalentsTH = createHoverCardCell("th", "", "Special Talents")
+        const specialTalentsBolt = document.createElement("i")
+        specialTalentsBolt.classList.add("fa", "fa-bolt")
+        specialTalentsTH.appendChild(specialTalentsBolt)
+        specialTalentsTH.classList.add(headerClass)
+        firstRow.appendChild(specialTalentsTH)
+    }
 
     if (!isShowingGoalkeepers()) {
         const thLS = createHoverCardCell("th", "LS", "Long Shot");
@@ -101,6 +106,7 @@ async function appendAdditionalInfo(checkboxesData) {
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
     let rows = document.querySelectorAll("table > tr:has(fw-player-hover)")
+    const overrides = await db.getOverrides()
     for (const row of rows) {
         const playerID = listUtils.id(row)
         const loadedPlayerData = await db.getPlayer(playerID)
@@ -136,11 +142,15 @@ async function appendAdditionalInfo(checkboxesData) {
 
         let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
         if (valueNodes.length < 8) { // Goalkeepers
-            const tdFoot = createFootCell(footInfo ?? "")
-            row.appendChild(tdFoot)
+            // const tdFoot = createFootCell(footInfo ?? "")
+            // row.appendChild(tdFoot)
+            if (!overrides['preferOriginalSpecialTalentsColumn']) {
+                const originalSTCell = row.querySelector('td:has(fw-player-talent)')
+                if (originalSTCell) originalSTCell.remove()
 
-            const tdST = createSpecialTalentsCell(specialTalents ?? [])
-            row.appendChild(tdST)
+                const tdST = createSpecialTalentsCell(specialTalents ?? [])
+                row.appendChild(tdST)
+            }
 
             let RE = listUtils.parseNumber(valueNodes[0]);
             let GP = listUtils.parseNumber(valueNodes[1]);
@@ -158,11 +168,15 @@ async function appendAdditionalInfo(checkboxesData) {
                 `denom${assistanceCalculations.defensiveAssistanceDenominationNormalized}`);
             row.appendChild(tdDA);
         } else { // Outfielders
-            const tdFoot = createFootCell(footInfo ?? "")
-            row.appendChild(tdFoot)
-
-            const tdST = createSpecialTalentsCell(specialTalents ?? [])
-            row.appendChild(tdST)
+            // const tdFoot = createFootCell(footInfo ?? "")
+            // row.appendChild(tdFoot)
+            if (!overrides['preferOriginalSpecialTalentsColumn']) {
+                const originalSTCell = row.querySelector('td:has(fw-player-talent)')
+                if (originalSTCell) originalSTCell.remove()
+                    
+                const tdST = createSpecialTalentsCell(specialTalents ?? [])
+                row.appendChild(tdST)
+            }
 
             let SC = listUtils.parseNumber(valueNodes[0]);
             let OP = listUtils.parseNumber(valueNodes[1]);
@@ -283,7 +297,7 @@ export async function processPlayersPage() {
             await updateFootInfo()
         }
 
-        createHeaders()
+        await createHeaders()
         await appendAdditionalInfo(checkboxesData)
     }
 }
