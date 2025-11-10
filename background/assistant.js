@@ -3,11 +3,13 @@ import {
     formatError,
     getStoredString,
     isEmpty,
+    lastPathComponent,
     optionsStorage,
     storage,
     version
 } from '../content-scripts/utils.js';
 
+import { calculateDataGatheringProgressForMatch } from '../content-scripts/match_utils.js'
 import { checkDataIntegrityFor } from './data_integrity.js'
 import { getDB, initDB } from './database.js'
 
@@ -15,7 +17,7 @@ if (!getDB()) initDB("👨‍💻 Assistant wake up")
 
 if (typeof browser == "undefined") {
     // Chrome does not support the browser namespace yet.
-    globalThis.browser = chrome;
+    globalThis.browser = chrome
 }
 
 async function initializeDB(defaultOptions) {
@@ -280,6 +282,7 @@ async function handleMigrationAndBumpLocalDataVersion(localStorageVersion) {
 // menus
 const parentMenuID = "parentMenu"
 const colorPlayerRowMenuID = "colorPlayerRowMenuID"
+const analyseRowMenuID = "analyseRowMenuID"
 const clearAllRowsOnThisPageMenuID = "clearAllRowsOnThisPageMenuID"
 const clearAllRowsOnThisPageMenuAction = "clearAllRowsOnThisPageMenuAction"
 const clearAllRowHighlightsMenuID = "clearAllRowHighlightsMenuID"
@@ -305,6 +308,22 @@ const playerRowColorRaw = {
 // Handle clicks on the menu
 function handleContextMenuClicked(info, tab) {
     switch (info.menuItemId) {
+        case analyseRowMenuID:
+            console.info("contextMenus.onClicked analyseRowMenuID")
+            browser.tabs.create({
+                url: browser.runtime.getURL("analysis.html")
+            }, (newTab) => {
+                browser.tabs.onUpdated.addListener(function listener(tabId, info) {
+                    if (tabId === newTab.id && info.status === "complete") {
+                        browser.tabs.onUpdated.removeListener(listener)
+
+                        browser.tabs.sendMessage(newTab.id, {
+                            type: "render",
+                            html: "<h1>Hello from background!</h1>"
+                        })
+                    }
+                })
+            })
         case clearAllRowsOnThisPageMenuID:
             console.info("contexMenus.onClicked clearAllRowsOnThisPageMenuID")
             browser.tabs.sendMessage(tab.id, { action: clearAllRowsOnThisPageMenuAction })
@@ -537,16 +556,26 @@ function handleOnMessage(msg, sender, sendResponse) {
         return true; // keep channel open
     }
 
-    console.warn("Will return null for message: ",msg)
+    console.warn("Will return null for message: ", msg)
     return Promise.resolve(null)
 }
 browser.runtime.onMessage.addListener(handleOnMessage)
 
 // WebNavigation
-const filter = { url: [{ hostContains: "finalwhistle.org" }] };
+const filter = { url: [{ hostContains: "finalwhistle.org" }] }
 
-function handleNav(tabId, url) {
-    console.info(`🧭 Navigation in tab ${tabId}: ${url}`);
+async function handleNav(tabId, url) {
+    console.info(`🧭 Navigation in tab ${tabId}: ${url}`)
+
+    const isOnMatchPage = url.includes("match/")
+    let progress = 0
+    if (isOnMatchPage) {
+        const matchID = lastPathComponent(url)
+        const matchDataFromStorage = await getDB().matches.get(matchID) ?? {}
+        progress = calculateDataGatheringProgressForMatch(matchDataFromStorage) ?? 0
+    }
+    // TODO: change the progress to 100
+    browser.contextMenus.update(analyseRowMenuID, { enabled: isOnMatchPage && progress >= 50 })
     browser.tabs.sendMessage(tabId, { url: url })
 }
 
@@ -754,6 +783,14 @@ async function handleInstalled(details) {
     });
 
     // Create submenu items
+    browser.contextMenus.create({
+        id: analyseRowMenuID,
+        parentId: parentMenuID,
+        title: "Analyse match",
+        contexts: ["all"],
+        enabled: false
+    });
+
     browser.contextMenus.create({
         id: colorPlayerRowMenuID,
         parentId: parentMenuID,
