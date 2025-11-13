@@ -44,7 +44,7 @@ function getHrefList(selector) {
     return playerLinks.map(a => a.href);
 }
 
-function proposeAnchors(anchors) {
+async function proposeAnchors(anchors) {
     // Do we already have it?
     if (document.querySelector('#proposed-anchors')) {
         return
@@ -74,11 +74,19 @@ function proposeAnchors(anchors) {
         console.debug('appending takerSpan to proposedAnchors')
         proposedAnchors.appendChild(anchorListItem)
 
-        if (anchor.sportsmanship > 0) {
+        if (anchor.sportsmanship > 0 || anchor.sportsmanship < 0) {
             const sportsmanshipSpan = document.createElement("span");
             sportsmanshipSpan.classList.add('sportsmanship')
             sportsmanshipSpan.textContent = " " + personalitiesSymbols["sportsmanship"]
             switch (anchor.sportsmanship) {
+                case -2:
+                    sportsmanshipSpan.classList.add('doubleNegative');
+                    sportsmanshipSpan.title = "This players sportsmanship is very questionable, you want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen.";
+                    break;
+                case -1:
+                    sportsmanshipSpan.classList.add('negative');
+                    sportsmanshipSpan.title = "This players sportsmanship is questionable, you may want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen.";
+                    break;
                 case 1:
                     sportsmanshipSpan.classList.add('positive');
                     sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls.";
@@ -114,10 +122,45 @@ function proposeAnchors(anchors) {
     proposedAnchorsHeader.textContent = "Recommended anchors "
     const questionMarkSpan = document.createElement("span")
     questionMarkSpan.textContent = "\uf29c"
-    questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
+    questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedAnchorsHeader.appendChild(questionMarkSpan)
-
     targetHeader.parentNode.parentNode.insertBefore(proposedAnchorsHeader, proposedAnchors)
+
+    // Ignore negative sportsmanship
+    const checkbox = document.createElement("input")
+    checkbox.type = "checkbox"
+    checkbox.id = "ignoreSportsmanshipForAnchors"
+    const checkboxes = await db.getCheckboxes()
+    checkbox.checked = checkboxes["ignoreSportsmanshipForAnchors"]
+    checkbox.addEventListener("change", async () => {
+        const cd = await db.getCheckboxes()
+        if (checkbox.checked) {
+            cd["ignoreSportsmanshipForAnchors"] = true
+        } else {
+            cd["ignoreSportsmanshipForAnchors"] = false
+        }
+        await db.putCheckboxes(cd)
+        removeProposedAnchorsControls()
+    })
+
+    const label = document.createElement("label")
+    label.appendChild(checkbox)
+    const labelSpan = document.createElement("span")
+    labelSpan.textContent = " Ignore sportsmanship"
+    label.appendChild(labelSpan)
+    label.htmlFor = "ignoreSportsmanshipForAnchors"
+    proposedAnchorsHeader.appendChild(label)
+}
+
+function removeProposedAnchorsControls() {
+    if (document.querySelector('#proposed-anchors-header')) {
+        console.debug("removing #proposed-anchors-header")
+        document.querySelector('#proposed-anchors-header').remove()
+    }
+    if (document.querySelector('#proposed-anchors')) {
+        console.debug("removing #proposed-anchors")
+        document.querySelector('#proposed-anchors').remove()
+    }
 }
 
 // This may be used for both corners and free kicks, so we need to make a destinction when inserting the list
@@ -598,14 +641,20 @@ async function processLineup() {
         }
     }
 
+    const checkboxes = await db.getCheckboxes()
+
     // Propose anchors
-    const withoutFouls = anchors.filter(player => player.sportsmanship >= 0)
-    withoutFouls.sort((a, b) => {
+    const ignoreSportsmanship = checkboxes["ignoreSportsmanshipForAnchors"] || false
+    let anchorsToPropose = anchors.sort((a, b) => {
         const AEDiff = b.AE - a.AE
         if (AEDiff !== 0) return AEDiff
         return b.sportsmanship - a.sportsmanship
     })
-    proposeAnchors(withoutFouls.slice(0, 3))
+    if (!ignoreSportsmanship) {
+        const withoutFouls = anchorsToPropose.filter(player => player.sportsmanship >= 0)
+        await proposeAnchors(withoutFouls.slice(0, 3))
+    }
+    await proposeAnchors(anchors.slice(0, 3))
 
     // Propose cross takers
     crossingPlayers.sort((a, b) => {
@@ -614,7 +663,6 @@ async function processLineup() {
     proposeCrossTakers(crossingPlayers.slice(0, 3))
 
     // Propose penalty takers
-    const checkboxes = await db.getCheckboxes()
     const ignoreComposure = checkboxes["ignoreComposureForPenaltyTakers"] || false
 
     if (ignoreComposure) {

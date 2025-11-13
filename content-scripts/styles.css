@@ -69,7 +69,16 @@ h6#proposed-anchors-header>span {
   font: 14px/1 FontAwesome;
 }
 
+h6#proposed-anchors-header label,
+h6#proposed-anchors-header label {
+  display: block;
+}
+
 h6#proposed-penalty-takers-header label span {
+  font-size: 0.8rem;
+}
+
+h6#proposed-anchors-header label span {
   font-size: 0.8rem;
 }
 
