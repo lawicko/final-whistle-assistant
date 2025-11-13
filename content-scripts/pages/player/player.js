@@ -1326,7 +1326,15 @@ export async function processPlayerPage() {
     }
 
     if (isShowingOverview() || isShowingReports()) { // only save for Overview or Reports
+        // console.info(`fromStorage:`,currentPlayerRepresentationInStorage)
+        // console.info(`fromPage:`,playerDataFromPage)
         currentPlayerRepresentationInStorage = utils.mergeObjects(currentPlayerRepresentationInStorage, playerDataFromPage)
+
+        // Bug? Skills Calculations/Special Talent #48
+        if (isShowingOverview() && !playerDataFromPage.specialTalents) {
+            delete currentPlayerRepresentationInStorage['specialTalents']
+        }
+
         // console.info(`Will save player data to storage`, currentPlayerRepresentationInStorage)
         await db.putPlayer(currentPlayerRepresentationInStorage)
 
