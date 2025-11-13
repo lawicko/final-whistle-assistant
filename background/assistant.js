@@ -12,6 +12,7 @@ import {
 import { calculateDataGatheringProgressForMatch } from '../content-scripts/match_utils.js'
 import { checkDataIntegrityFor } from './data_integrity.js'
 import { getDB, initDB } from './database.js'
+import { analyseMatch } from '../content-scripts/match_analyser.js';
 
 if (!getDB()) initDB("👨‍💻 Assistant wake up")
 
@@ -306,24 +307,44 @@ const playerRowColorRaw = {
 }
 
 // Handle clicks on the menu
-function handleContextMenuClicked(info, tab) {
+async function handleContextMenuClicked(info, tab) {
     switch (info.menuItemId) {
         case analyseRowMenuID:
             console.info("contextMenus.onClicked analyseRowMenuID")
-            browser.tabs.create({
-                url: browser.runtime.getURL("analysis.html")
-            }, (newTab) => {
+
+            try {
+                // Ask the content script in that tab for info
+                const response = await browser.tabs.sendMessage(tab.id, {
+                    type: "getMatchID"
+                });
+
+                console.info("Received match ID:", response);
+
+                const newTab = await browser.tabs.create({
+                    url: browser.runtime.getURL("analysis.html")
+                });
+
+                const matchDataFromStorage = await getDB().matches.get(response);
+                if (!matchDataFromStorage) return;
+
+                // console.info("Saved match report:", matchDataFromStorage.report);
+                const analysisData = await analyseMatch(matchDataFromStorage.report);
+                console.info("analyseMatch result:", analysisData)
+
                 browser.tabs.onUpdated.addListener(function listener(tabId, info) {
                     if (tabId === newTab.id && info.status === "complete") {
-                        browser.tabs.onUpdated.removeListener(listener)
+                        browser.tabs.onUpdated.removeListener(listener);
 
                         browser.tabs.sendMessage(newTab.id, {
                             type: "render",
-                            html: "<h1>Hello from background!</h1>"
-                        })
+                            analysisData
+                        });
                     }
-                })
-            })
+                });
+            } catch (err) {
+                console.error("Could not get info from tab:", err);
+            }
+            break
         case clearAllRowsOnThisPageMenuID:
             console.info("contexMenus.onClicked clearAllRowsOnThisPageMenuID")
             browser.tabs.sendMessage(tab.id, { action: clearAllRowsOnThisPageMenuAction })
@@ -575,7 +596,7 @@ async function handleNav(tabId, url) {
         progress = calculateDataGatheringProgressForMatch(matchDataFromStorage) ?? 0
     }
     // TODO: change the progress to 100
-    browser.contextMenus.update(analyseRowMenuID, { enabled: isOnMatchPage && progress >= 50 })
+    browser.contextMenus.update(analyseRowMenuID, { enabled: isOnMatchPage && progress >= 75 })
     browser.tabs.sendMessage(tabId, { url: url })
 }
 

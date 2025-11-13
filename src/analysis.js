@@ -5,6 +5,9 @@ if (typeof browser == "undefined") {
 
 browser.runtime.onMessage.addListener((msg) => {
     if (msg.type === "render") {
-        document.getElementById("app").innerHTML = msg.html
+        document.getElementById("activity-indicator").remove()
+        const element = document.createElement('span')
+        element.textContent = `${msg["analysisData"]["foo"]}`
+        document.body.appendChild(element)
     }
 });

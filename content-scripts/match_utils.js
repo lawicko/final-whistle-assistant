@@ -30,6 +30,12 @@ export function calculateDataGatheringProgressForMatch(matchDataFromStorage) {
         return progress
     }
 
+    if (matchDataFromStorage.report) {
+        progress += 25
+    } else {
+        return progress
+    }
+
     return progress
 }
 

@@ -162,8 +162,16 @@ export async function processMatch() {
         )
 
         matchData["finishingLineups"] = finishingLineups
+
+        let willSaveMatchReport = false
+        const matchReportElementPremium = document.querySelector('div.match-view-premium')
+        if (matchReportElementPremium && matchReportElementPremium.hasChildNodes()) {
+            matchData["report"] = matchReportElementPremium.innerHTML
+            willSaveMatchReport = true
+        }
+
         await db.putMatch(matchData)
-        console.info(`⚽🧍🧍📥 Saved the finishing lineups to storage`)
+        console.info(`⚽🧍🧍📥 Saved the finishing lineups${ willSaveMatchReport ? " and match report" : "" } to storage`)
 
         const matchPlayers = processMatchPlayers(matchData)
         await db.bulkPutMatchPlayers(matchPlayers)
@@ -204,7 +212,7 @@ function readStatistics() {
 function readStatsSectionHeader(row) {
     const span = row.querySelector('td > span')
     if (span) {
-        return  span.textContent.trim()
+        return span.textContent.trim()
     }
 
     const b = row.querySelector('td > b')
@@ -458,3 +466,9 @@ async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
     await db.bulkPutPlayers(updatedPlayers)
     console.info(`📥 Saved injuries and minutes played to storage`)
 }
+
+browser.runtime.onMessage.addListener((message, sender) => {
+    if (message.type === "getMatchID") {
+        return Promise.resolve(utils.lastPathComponent(window.location.href));
+    }
+});

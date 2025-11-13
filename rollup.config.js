@@ -14,6 +14,7 @@ const copyCommonFiles = targets.flatMap((target) => [
     { src: 'content-scripts/styles.css', dest: `dist/${target}` },
     { src: 'src/analysis.html', dest: `dist/${target}` },
     { src: 'src/analysis.js', dest: `dist/${target}` },
+    { src: 'src/analysis.css', dest: `dist/${target}` },
     { src: 'dist/background-scripts.bundle.js', dest: `dist/${target}` },
     { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}` },
     { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
@@ -165,6 +166,7 @@ function watchAnalyser() {
         buildStart() {
             this.addWatchFile(path.resolve('src/analysis.html'));
             this.addWatchFile(path.resolve('src/analysis.js'));
+            this.addWatchFile(path.resolve('src/analysis.css'));
         }
     };
 }
