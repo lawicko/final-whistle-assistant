@@ -12,7 +12,6 @@ import {
 import { calculateDataGatheringProgressForMatch } from '../content-scripts/match_utils.js'
 import { checkDataIntegrityFor } from './data_integrity.js'
 import { getDB, initDB } from './database.js'
-import { analyseMatch } from '../content-scripts/match_analyser.js';
 
 if (!getDB()) initDB("👨‍💻 Assistant wake up")
 
@@ -314,22 +313,15 @@ async function handleContextMenuClicked(info, tab) {
 
             try {
                 // Ask the content script in that tab for info
-                const response = await browser.tabs.sendMessage(tab.id, {
-                    type: "getMatchID"
+                const analysisData = await browser.tabs.sendMessage(tab.id, {
+                    type: "parseMatch"
                 });
 
-                console.info("Received match ID:", response);
+                // console.info("Received parsed match:", analysisData);
 
                 const newTab = await browser.tabs.create({
                     url: browser.runtime.getURL("analysis.html")
                 });
-
-                const matchDataFromStorage = await getDB().matches.get(response);
-                if (!matchDataFromStorage) return;
-
-                // console.info("Saved match report:", matchDataFromStorage.report);
-                const analysisData = await analyseMatch(matchDataFromStorage.report);
-                console.info("analyseMatch result:", analysisData)
 
                 browser.tabs.onUpdated.addListener(function listener(tabId, info) {
                     if (tabId === newTab.id && info.status === "complete") {

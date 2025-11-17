@@ -55,7 +55,7 @@ export async function analyseMatch(matchReportAsString) {
     let results = []
     const parser = new DOMParser()
     for (const opportunity of opportunities) {
-        console.info("opportunity:", opportunity)
+        // console.info("opportunity:", opportunity)
         const doc = parser.parseFromString(opportunity, 'text/html');
 
         // minute

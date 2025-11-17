@@ -1,6 +1,7 @@
 import * as utils from './utils.js'
 import * as uiUtils from './ui_utils.js'
 import * as db from './db_access.js'
+import { analyseMatch } from './match_analyser.js';
 
 export async function processMatch() {
     console.info(`⏳ ${utils.version} Processing match ${utils.lastPathComponent(window.location.pathname)}`)
@@ -171,7 +172,7 @@ export async function processMatch() {
         }
 
         await db.putMatch(matchData)
-        console.info(`⚽🧍🧍📥 Saved the finishing lineups${ willSaveMatchReport ? " and match report" : "" } to storage`)
+        console.info(`⚽🧍🧍📥 Saved the finishing lineups${willSaveMatchReport ? " and match report" : ""} to storage`)
 
         const matchPlayers = processMatchPlayers(matchData)
         await db.bulkPutMatchPlayers(matchPlayers)
@@ -467,8 +468,23 @@ async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
     console.info(`📥 Saved injuries and minutes played to storage`)
 }
 
-browser.runtime.onMessage.addListener((message, sender) => {
-    if (message.type === "getMatchID") {
-        return Promise.resolve(utils.lastPathComponent(window.location.href));
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "parseMatch") {
+        (async () => {
+            const matchID = utils.lastPathComponent(window.location.href);
+            const matchDataFromStorage = await db.getMatch(matchID);
+
+            if (!matchDataFromStorage) {
+                console.error("No match with this ID in the DB:", matchID);
+                sendResponse(null); // respond explicitly
+                return;
+            }
+
+            const analysisData = await analyseMatch(matchDataFromStorage.report);
+            // console.info("analyseMatch result:", analysisData);
+            sendResponse(analysisData);
+        })();
+
+        return true; // keep channel open for async sendResponse
     }
-});
+})
