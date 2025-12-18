@@ -41,6 +41,7 @@ async function createHeaders() {
     // const footTH = createHoverCardCell("th", "🦶🏻", "Foot")
     // footTH.classList.add(headerClass)
     // firstRow.appendChild(footTH)
+
     const overrides = await db.getOverrides()
     if (!overrides['preferOriginalSpecialTalentsColumn']) {
         const originalSTHeader = firstRow.querySelector('th[title="Special Talents"]')
@@ -55,6 +56,16 @@ async function createHeaders() {
     }
 
     if (!isShowingGoalkeepers()) {
+        const formTH = createHoverCardCell("th", "Exp", "Experience")
+        formTH.classList.add(headerClass)
+        // Find the form TH and insert before it
+        const allThs = firstRow.querySelectorAll('th')
+        allThs.forEach((th) => {
+            if (th.textContent.trim() === 'Form') {
+                th.parentNode.insertBefore(formTH, th)
+            }
+        })
+
         const thLS = createHoverCardCell("th", "LS", "Long Shot");
         firstRow.appendChild(thLS);
 
@@ -140,6 +151,17 @@ async function appendAdditionalInfo(checkboxesData) {
             footInfo = playerData.foot
         }
 
+        let experienceData
+        if (playerData && playerData.experience) {
+            experienceData = playerData.experience
+        }
+
+        let savedDate
+        if (playerData && playerData.timestamp) {
+            savedDate = new Date(playerData.timestamp)
+            savedDate = savedDate.toLocaleString()
+        }
+
         let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
         if (valueNodes.length < 8) { // Goalkeepers
             // const tdFoot = createFootCell(footInfo ?? "")
@@ -170,10 +192,11 @@ async function appendAdditionalInfo(checkboxesData) {
         } else { // Outfielders
             // const tdFoot = createFootCell(footInfo ?? "")
             // row.appendChild(tdFoot)
+
             if (!overrides['preferOriginalSpecialTalentsColumn']) {
                 const originalSTCell = row.querySelector('td:has(fw-player-talent)')
                 if (originalSTCell) originalSTCell.remove()
-                    
+
                 const tdST = createSpecialTalentsCell(specialTalents ?? [])
                 row.appendChild(tdST)
             }
@@ -202,6 +225,32 @@ async function appendAdditionalInfo(checkboxesData) {
             const assistanceCalculations = uiUtils.calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: teamwork });
 
             if (!isShowingGoalkeepers()) {
+                // Find the form cell and insert before it
+                const formCell = row.querySelector('fw-player-form').parentNode
+                let expContent
+                let expClass
+                let expHoverDescription
+                if (experienceData && experienceData.value && experienceData.description) {
+                    expContent = experienceData.description
+                    expClass = `denom${experienceData.value}`
+                    expHoverDescription = `Experience level`
+                    if (savedDate) {
+                        expHoverDescription += ` from ${savedDate}`
+                    }
+                } else {
+                    expContent = '📂'
+                    expClass = `denom4`
+                    expHoverDescription = `Experience level - please visit the player profile to fetch the data necessary for displaying accurate description here`
+                }
+                const tdExp = createHoverCardCell(
+                    "td",
+                    expContent,
+                    expHoverDescription,
+                    expClass
+                )
+                tdExp.classList.add(utils.pluginNodeClass + "PlayersTableCell")
+                row.insertBefore(tdExp, formCell)
+
                 const tdLS = createHoverCardCell(
                     "td",
                     Math.trunc(longShot),

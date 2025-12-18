@@ -643,6 +643,8 @@ function getPlayerData() {
     const clubData = getPlayerClubData()
     const foot = getPlayerFoot()
     const { rating, talent } = getPlayerRating()
+    const experience = getPlayerExperience()
+    const timestamp = new Date().toISOString()
 
     const personalitiesTable = getPersonalitiesTable()
     let personalitiesData
@@ -674,6 +676,8 @@ function getPlayerData() {
         foot: foot,
         rating: rating,
         talent: talent,
+        experience: experience,
+        timestamp: timestamp,
         teamId: clubData ? clubData.id : null,
         ...(personalitiesData !== undefined && { personalities: personalitiesData }),
         ...(specialTalentsData !== undefined && { specialTalents: specialTalentsData }),
@@ -715,7 +719,7 @@ function showBuyingGuide(playerData) {
  */
 function assembleBuyingGuide(identifier, playerData) {
     const position = playerData.position
-    const experience = getPlayerExperience()
+    const experience = playerData.experience
     const playerAge = playerUtils.getPlayerAge().years
     const buyingGuideList = document.createElement("ol")
     buyingGuideList.id = identifier
