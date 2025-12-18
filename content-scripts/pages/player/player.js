@@ -743,7 +743,9 @@ function assembleBuyingGuide(identifier, playerData) {
     if (specialTalentsData) {
         console.info("Appending special talents info to buying guide")
         for (const talent of specialTalentsData) {
+            // console.info("Appending special talent:", talent, ", position:", position)
             const description = specialTalentsUtils.specialTalentDescription(talent, position)
+            // console.info("Appending special talent description:", description)
             buyingGuideDescriptions.push(description)
         }
     }

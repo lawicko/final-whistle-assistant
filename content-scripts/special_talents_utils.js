@@ -185,6 +185,7 @@ function anticipatorDescription(positionKey) {
         case PositionsKeys.RWB:
         case PositionsKeys.LB:
         case PositionsKeys.RB:
+        case PositionsKeys.CB:
             return "👍 Anticipator talent is especially useful for players with defensive duties on the pitch"
         case PositionsKeys.GK:
             return "👍 Anticipator talent is especially useful for goalkeepers because it increases GP"
