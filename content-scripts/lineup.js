@@ -532,8 +532,8 @@ async function processLineup() {
         const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
         var reasonablePenaltyKick = false
         if (skills.length == 8) { // goalkeepers have only 6 skills
-            const SC = skills[0].querySelector('span[class^="denom"]').textContent.trim();
-            const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
+            const SC = skills[0].querySelector('span[class*="denom"]').textContent.trim();
+            const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim();
             const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
             const composure_treshold = tresholds.composure ?? 50
             if (!tresholds) {
@@ -592,7 +592,7 @@ async function processLineup() {
             const arrogance_treshold = tresholds.arrogance ?? 50
             console.debug('arrogance_treshold: ', arrogance_treshold)
             if (skills.length == 8) { // goalkeepers have only 6 skills
-                const DP = skills[7].querySelector('span[class^="denom"]').textContent.trim();
+                const DP = skills[7].querySelector('span[class*="denom"]').textContent.trim();
                 if (DP > arrogance_treshold) {
                     console.debug(`DP = ${DP} reasonable, setting reasonableDP to true for ${name}`);
                     reasonableDP = true
@@ -631,12 +631,12 @@ async function processLineup() {
 
         // calculate the cross skill and use AE for anchors
         if (skills.length == 8) { // goalkeepers have only 6 skills
-            const BC = skills[2].querySelector('span[class^="denom"]').textContent.trim();
-            const PA = skills[3].querySelector('span[class^="denom"]').textContent.trim();
+            const BC = skills[2].querySelector('span[class*="denom"]').textContent.trim();
+            const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim();
             const cross = Math.floor(0.7 * PA + 0.3 * BC)
             crossingPlayers.push({ name: name, cross: cross })
 
-            const AE = skills[4].querySelector('span[class^="denom"]').textContent.trim();
+            const AE = skills[4].querySelector('span[class*="denom"]').textContent.trim();
             anchors.push({ name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
     }
