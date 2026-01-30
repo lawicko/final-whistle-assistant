@@ -165,7 +165,7 @@ export async function processMatch() {
         matchData["finishingLineups"] = finishingLineups
 
         let willSaveMatchReport = false
-        const matchReportElementPremium = document.querySelector('div.match-view-premium')
+        const matchReportElementPremium = document.querySelector('div.match-view-premium') || document.querySelector('div.match-view')
         if (matchReportElementPremium && matchReportElementPremium.hasChildNodes()) {
             matchData["report"] = matchReportElementPremium.innerHTML
             willSaveMatchReport = true
