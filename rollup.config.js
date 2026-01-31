@@ -162,8 +162,8 @@ function createManifestForTarget(target) {
                             replacement = `{ "scripts": ["background-scripts.bundle.js"], "type": "module" }`;
                             break;
                         case "safari":
-                            replacement = `{ "scripts": ["background-scripts.safari.bundle.js"] }`;
-                            // replacement = `{ "service_worker": "background-scripts.bundle.js" }`;
+                            // replacement = `{ "scripts": ["background-scripts.safari.bundle.js"], "persistent": false }`;
+                            replacement = `{ "service_worker": "background-scripts.safari.bundle.js" }`;
                             break;
                         default:
                             replacement = `{ "service_worker": "background-scripts.bundle.js", "type": "module" }`;

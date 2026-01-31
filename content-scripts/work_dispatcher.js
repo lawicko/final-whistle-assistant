@@ -163,6 +163,7 @@ browser.runtime.onMessage.addListener((message) => {
     lastMessageFromBackground = message;
     console.debug("work_dispatcher: runtime.onMessage assigned lastMessageFromBackground to:", message)
     dispatchWork(message)
+    return true;
 });
 
 // Start observing once
