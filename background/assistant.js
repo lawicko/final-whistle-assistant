@@ -598,18 +598,21 @@ browser.webNavigation.onCompleted.addListener(details => {
     handleNav(details.tabId, details.url);
 }, filter);
 
-// SPA history updates (pushState / replaceState)
-browser.webNavigation.onHistoryStateUpdated.addListener(details => {
-    console.debug(`🧭 onHistoryStateUpdated`);
-    handleNav(details.tabId, details.url);
-}, filter)
+if (browser.webNavigation.onHistoryStateUpdated) {
+    // SPA history updates (pushState / replaceState)
+    browser.webNavigation.onHistoryStateUpdated.addListener(details => {
+        console.debug(`🧭 onHistoryStateUpdated`);
+        handleNav(details.tabId, details.url);
+    }, filter)
+}
 
-// Optional: catch hash-only changes
-browser.webNavigation.onReferenceFragmentUpdated.addListener(details => {
-    console.debug(`🧭 onReferenceFragmentUpdated`);
-    handleNav(details.tabId, details.url);
-}, filter)
-
+if (browser.webNavigation.onReferenceFragmentUpdated) {
+    // Optional: catch hash-only changes
+    browser.webNavigation.onReferenceFragmentUpdated.addListener(details => {
+        console.debug(`🧭 onReferenceFragmentUpdated`);
+        handleNav(details.tabId, details.url);
+    }, filter)
+}
 
 // Service worker lifecycle
 function handleStartup() {
@@ -622,7 +625,9 @@ function handleSuspend() {
     console.info("⏸️ Suspending service worker")
 }
 
-browser.runtime.onSuspend.addListener(handleSuspend);
+if (browser.runtime.onSuspend) {
+    browser.runtime.onSuspend.addListener(handleSuspend);
+}
 
 async function handleInstalled(details) {
     console.info(`📦 Installed (${details.reason})`);

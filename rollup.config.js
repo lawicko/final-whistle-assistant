@@ -5,21 +5,32 @@ import copy from 'rollup-plugin-copy';
 import fs from 'fs';
 import path from 'path';
 
-const targets = ['chromium', 'firefox', 'firefox_dev'];
+const targets = ['chromium', 'firefox', 'firefox_dev', 'safari'];
 const configs = targets.flatMap((target) =>
     createManifestForTarget(target)
 )
-const copyCommonFiles = targets.flatMap((target) => [
-    { src: 'icons/*', dest: `dist/${target}/icons` },
-    { src: 'content-scripts/styles.css', dest: `dist/${target}` },
-    { src: 'src/analysis.html', dest: `dist/${target}` },
-    { src: 'src/analysis.js', dest: `dist/${target}` },
-    { src: 'src/analysis.css', dest: `dist/${target}` },
-    { src: 'dist/background-scripts.bundle.js', dest: `dist/${target}` },
-    { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}` },
-    { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
-    { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` }
-])
+const copyCommonFiles = targets.flatMap((target) => {
+    const isSafari = target === "safari";
+
+    return [
+        { src: 'icons/*', dest: `dist/${target}/icons` },
+        { src: 'content-scripts/styles.css', dest: `dist/${target}` },
+        { src: 'src/analysis.html', dest: `dist/${target}` },
+        { src: 'src/analysis.js', dest: `dist/${target}` },
+        { src: 'src/analysis.css', dest: `dist/${target}` },
+        ...(isSafari
+            ? [
+                { src: 'dist/background-scripts.safari.bundle.js', dest: `dist/${target}` },
+                { src: 'dist/background-scripts.safari.bundle.js.map', dest: `dist/${target}` },
+            ]
+            : [
+                { src: 'dist/background-scripts.bundle.js', dest: `dist/${target}` },
+                { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}` },
+            ]),
+        { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
+        { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` }
+    ]
+})
 
 const copyOptions = targets.flatMap((target) => [
     { src: 'dist/options.bundle.js', dest: `dist/${target}/options` },
@@ -35,6 +46,25 @@ export default [
         output: {
             file: "dist/background-scripts.bundle.js",
             format: "esm", // ES module for MV3 service_worker
+            sourcemap: true
+        },
+        plugins: [
+            resolve(),
+            commonjs(),
+            copy({
+                targets: copyCommonFiles,
+                hook: 'writeBundle'
+            }),
+            watchStylesheet()
+        ]
+    },
+    // Background script (IIFE)
+    {
+        input: "background/background.js",
+        output: {
+            file: "dist/background-scripts.safari.bundle.js",
+            format: "iife",
+            name: "BackgroundScript",
             sourcemap: true
         },
         plugins: [
@@ -121,32 +151,51 @@ function createManifestForTarget(target) {
                     const raw = fs.readFileSync('src/manifest.template.json', 'utf8');
 
                     let replacement
-                    if (target.includes("firefox")) {
-                        replacement = `{
-                            "scripts": ["../background-scripts.bundle.js"],
-                            "type": "module"
-                        }`
-                    } else {
-                        replacement = `{ "service_worker": "../background-scripts.bundle.js", "type": "module" }`
+                    function getBrowser(target) {
+                        if (target.includes("firefox")) return "firefox";
+                        if (target.includes("safari")) return "safari";
+                        return "chromium";
+                    }
+
+                    switch (getBrowser(target)) {
+                        case "firefox":
+                            replacement = `{ "scripts": ["background-scripts.bundle.js"], "type": "module" }`;
+                            break;
+                        case "safari":
+                            replacement = `{ "scripts": ["background-scripts.safari.bundle.js"] }`;
+                            // replacement = `{ "service_worker": "background-scripts.bundle.js" }`;
+                            break;
+                        default:
+                            replacement = `{ "service_worker": "background-scripts.bundle.js", "type": "module" }`;
                     }
 
                     const replaced = raw.replace(/__BACKGROUND_CONTENT__/g, replacement);
                     // console.log(`🔧 replaced: ${replaced}`);
                     const manifest = JSON.parse(replaced);
-                    if (target === 'firefox_dev') {
-                        manifest.name += " (DEV)"
-                        manifest.browser_specific_settings = {
-                            gecko: {
-                                id: 'lawicko@gmail.com'
-                            }
-                        };
-                    }
-                    if (target === 'firefox') {
-                        manifest.browser_specific_settings = {
-                            gecko: {
-                                id: '{ced6d24e-3379-4594-be2f-af52229c80f2}'
-                            }
-                        };
+                    switch (target) {
+                        case "firefox_dev":
+                            manifest.name += " (DEV)"
+                            manifest.browser_specific_settings = {
+                                gecko: {
+                                    id: 'lawicko@gmail.com'
+                                }
+                            };
+                            break;
+                        case "firefox":
+                            manifest.browser_specific_settings = {
+                                gecko: {
+                                    id: '{ced6d24e-3379-4594-be2f-af52229c80f2}'
+                                }
+                            };
+                            break;
+                        case "safari":
+                            const safariPermissions = manifest.permissions.filter(item => item !== "clipboardRead");
+                            manifest.permissions = safariPermissions
+
+                            delete manifest.options_ui.open_in_tab
+                            break;
+                        default:
+                            break;
                     }
 
                     fs.mkdirSync(`dist/${target}`, { recursive: true });
