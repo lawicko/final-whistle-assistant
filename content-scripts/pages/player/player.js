@@ -825,7 +825,7 @@ function getPlayerExperience() {
     const experienceLabelTD = Array.from(tds).find(td => td.textContent.trim() === "Experience")
     const experienceValueTD = experienceLabelTD.nextElementSibling
     const descriptionSpan = experienceValueTD.querySelector("span")
-    const denomClass = [...descriptionSpan.classList].find(c => c.startsWith("denom"))
+    const denomClass = [...descriptionSpan.classList].find(c => c.includes("denom"))
     const number = parseInt(denomClass.slice(5), 10)
     return { value: number, description: descriptionSpan.textContent.trim() }
 }
