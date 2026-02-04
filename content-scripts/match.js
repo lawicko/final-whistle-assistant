@@ -330,10 +330,10 @@ async function processLineups(lineups, substitutes, isFinishingLineup = false) {
 
     const homeLineupContainer = lineupContainersArray[0]
     const homeSubstitutesContainer = substitutes[0]
-    const homeFirstEleven = homeLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+    const homeFirstEleven = homeLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2')
     let homeSubstitutes
     if (homeSubstitutesContainer) {
-        homeSubstitutes = homeSubstitutesContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+        homeSubstitutes = homeSubstitutesContainer.querySelectorAll('.d-flex.align-items-center.mb-2')
     }
     const homePlayers = [...homeFirstEleven, ...(homeSubstitutes ?? [])]
     console.debug('homePlayers: ', homePlayers)
@@ -341,10 +341,10 @@ async function processLineups(lineups, substitutes, isFinishingLineup = false) {
 
     const awayLineupContainer = lineupContainersArray[1]
     const awaySubstitutesContainer = substitutes[1]
-    const awayFirstEleven = awayLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+    const awayFirstEleven = awayLineupContainer.querySelectorAll('.d-flex.align-items-center.mb-2')
     let awaySubstitutes
     if (awaySubstitutesContainer) {
-        awaySubstitutes = awaySubstitutesContainer.querySelectorAll('.d-flex.align-items-center.mb-2.ng-star-inserted')
+        awaySubstitutes = awaySubstitutesContainer.querySelectorAll('.d-flex.align-items-center.mb-2')
     }
     const awayPlayers = [...awayFirstEleven, ...(awaySubstitutes ?? [])]
     console.debug('awayPlayers: ', awayPlayers)
