@@ -318,21 +318,7 @@ async function handleContextMenuClicked(info, tab) {
                 });
 
                 // console.info("Received parsed match:", analysisData);
-
-                const newTab = await browser.tabs.create({
-                    url: browser.runtime.getURL("analysis.html")
-                });
-
-                browser.tabs.onUpdated.addListener(function listener(tabId, info) {
-                    if (tabId === newTab.id && info.status === "complete") {
-                        browser.tabs.onUpdated.removeListener(listener);
-
-                        browser.tabs.sendMessage(newTab.id, {
-                            type: "render",
-                            analysisData
-                        });
-                    }
-                });
+                openNewTabWithAnalysisData(analysisData)
             } catch (err) {
                 console.error("Could not get info from tab:", err);
             }
@@ -352,12 +338,32 @@ async function handleContextMenuClicked(info, tab) {
 }
 browser.contextMenus.onClicked.addListener(handleContextMenuClicked)
 
+async function openNewTabWithAnalysisData(analysisData) {
+    const newTab = await browser.tabs.create({
+        url: browser.runtime.getURL("analysis.html")
+    });
+
+    browser.tabs.onUpdated.addListener(function listener(tabId, info) {
+        if (tabId === newTab.id && info.status === "complete") {
+            browser.tabs.onUpdated.removeListener(listener);
+
+            browser.tabs.sendMessage(newTab.id, {
+                type: "render",
+                analysisData
+            });
+        }
+    });
+}
+
 // Receive messages from content script
 function handleOnMessage(msg, sender, sendResponse) {
     console.debug("received message: ", msg)
     if (msg.type === "contextMenuConfig") {
         browser.contextMenus.update(colorPlayerRowMenuID, { enabled: msg.enabled })
         return
+    }
+    if (msg.type === "openAnalyzer") {
+        openNewTabWithAnalysisData(msg.analysisData)
     }
 
     // Database utils
@@ -576,6 +582,7 @@ browser.runtime.onMessage.addListener(handleOnMessage)
 
 // WebNavigation
 const filter = { url: [{ hostContains: "finalwhistle.org" }] }
+const abelfwFilter = { url: [{ hostContains: "abelfw.org" }] }
 
 async function handleNav(tabId, url) {
     console.info(`🧭 Navigation in tab ${tabId}: ${url}`)
@@ -597,6 +604,11 @@ browser.webNavigation.onCompleted.addListener(details => {
     console.debug(`🧭 onCompleted`);
     handleNav(details.tabId, details.url);
 }, filter);
+
+browser.webNavigation.onCompleted.addListener(details => {
+    console.info(`🧭 loaded integration with abelfw.org`);
+    console.info(`🧭 Navigation in tab ${details.tabId}: ${details.url}`)
+}, abelfwFilter);
 
 if (browser.webNavigation.onHistoryStateUpdated) {
     // SPA history updates (pushState / replaceState)

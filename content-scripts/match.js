@@ -2,6 +2,7 @@ import * as utils from './utils.js'
 import * as uiUtils from './ui_utils.js'
 import * as db from './db_access.js'
 import { analyseMatch } from './match_analyser.js';
+import * as integrationUtils from "./integrations/integrations_utls.js"
 
 export async function processMatch() {
     console.info(`⏳ ${utils.version} Processing match ${utils.lastPathComponent(window.location.pathname)}`)
@@ -165,10 +166,12 @@ export async function processMatch() {
         matchData["finishingLineups"] = finishingLineups
 
         let willSaveMatchReport = false
-        const matchReportElementPremium = document.querySelector('div.match-view-premium') || document.querySelector('div.match-view')
-        if (matchReportElementPremium && matchReportElementPremium.hasChildNodes()) {
-            matchData["report"] = matchReportElementPremium.innerHTML
+        const matchReportElement = document.querySelector('div.match-view-premium') || document.querySelector('div.match-view')
+        if (matchReportElement && matchReportElement.hasChildNodes()) {
+            matchData["report"] = matchReportElement.innerHTML
             willSaveMatchReport = true
+            addExternalAnalyzeButtonIfNeeded()
+            addAnalyzeButtonIfNeeded()
         }
 
         await db.putMatch(matchData)
@@ -468,19 +471,85 @@ async function saveInjuriesAndMinutesPlayedForLineups(lineups, date) {
     console.info(`📥 Saved injuries and minutes played to storage`)
 }
 
+function getFastForwardButton() {
+    const button = Array.from(document.querySelectorAll('.btn.btn-outline-success.disabled-state'))
+        .find(btn => btn.title.trim() === 'Fast Forward')
+    return button
+}
+
+function addExternalAnalyzeButtonIfNeeded() {
+    const fastForwardButton = getFastForwardButton()
+    // console.info("EXTERNAL-ANALYZE fastForwardButton:", fastForwardButton)
+    
+    if (document.getElementById("EXTERNAL-ANALYZE-BUTTON") || fastForwardButton == undefined) return
+    // console.info("EXTERNAL-ANALYZE preconditions met")
+
+    // Create the new button
+    const newButton = document.createElement('button')
+    newButton.id = "EXTERNAL-ANALYZE-BUTTON"
+    newButton.title = "Analyze this match with Trevor"
+    newButton.className = '.btn btn-outline-success'
+    newButton.textContent = 'Trevor';
+    newButton.addEventListener('click', async () => {
+        const text = integrationUtils.selectAllAsText()
+        const compressed = await integrationUtils.compressToBrotliBase64(text)
+
+        // For now still use the clipboard workaround
+        const result = integrationUtils.copyRenderedPageToClipboard();
+        if (result) {
+            console.debug("Page copied to clipboard!");
+            window.open(`https://www.abelfw.org/trevor_ng?mr=${compressed}`, '_blank');
+        } else {
+            console.error("Could not copy rendered page to clipboard :(");
+        }
+    });
+
+    // Insert as a sibling (after the Scout button)
+    fastForwardButton.insertAdjacentElement('afterend', newButton)
+}
+
+function addAnalyzeButtonIfNeeded() {
+    const fastForwardButton = getFastForwardButton()
+    
+    if (document.getElementById("ANALYZE-BUTTON") || fastForwardButton == undefined) return
+    // console.info("ANALYZE preconditions met")
+
+    // Create the new button
+    const newButton = document.createElement('button')
+    newButton.id = "ANALYZE-BUTTON"
+    newButton.title = "Analyze this match"
+    newButton.className = '.btn btn-outline-success'
+    newButton.textContent = 'Analyze';
+    newButton.addEventListener('click', handleAnalyzeButton);
+
+    // Insert as a sibling (after the Scout button)
+    fastForwardButton.insertAdjacentElement('afterend', newButton)
+}
+
+async function handleAnalyzeButton() {
+    const matchID = utils.lastPathComponent(window.location.href);
+    const analysisData = await analysisDataFromMatchID(matchID)
+    browser.runtime.sendMessage({ type: "openAnalyzer", analysisData: analysisData });
+}
+
+async function analysisDataFromMatchID(matchID) {
+    const matchDataFromStorage = await db.getMatch(matchID);
+
+    if (!matchDataFromStorage) {
+        console.error("No match with this ID in the DB:", matchID);
+        sendResponse(null); // respond explicitly
+        return;
+    }
+
+    const analysisData = await analyseMatch(matchDataFromStorage.report);
+    return analysisData
+}
+
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "parseMatch") {
         (async () => {
             const matchID = utils.lastPathComponent(window.location.href);
-            const matchDataFromStorage = await db.getMatch(matchID);
-
-            if (!matchDataFromStorage) {
-                console.error("No match with this ID in the DB:", matchID);
-                sendResponse(null); // respond explicitly
-                return;
-            }
-
-            const analysisData = await analyseMatch(matchDataFromStorage.report);
+            const analysisData = await analysisDataFromMatchID(matchID)
             // console.info("analyseMatch result:", analysisData);
             sendResponse(analysisData);
         })();

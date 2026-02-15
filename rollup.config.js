@@ -28,7 +28,8 @@ const copyCommonFiles = targets.flatMap((target) => {
                 { src: 'dist/background-scripts.bundle.js.map', dest: `dist/${target}` },
             ]),
         { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
-        { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` }
+        { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` },
+        { src: 'content-scripts/integrations/*', dest: `dist/${target}` }
     ]
 })
 
@@ -95,7 +96,8 @@ export default [
                 hook: 'writeBundle'
             }),
             watchStylesheet(),
-            watchAnalyser()
+            watchAnalyser(),
+            watchIntegrations()
         ]
     },
 
@@ -244,6 +246,16 @@ function watchOptions() {
         buildStart() {
             this.addWatchFile(path.resolve('options/options.css'));
             this.addWatchFile(path.resolve('options/options.html'));
+        }
+    };
+}
+
+function watchIntegrations() {
+    return {
+        name: 'watch-training-simulation',
+        buildStart() {
+            this.addWatchFile(path.resolve('content-scripts/integrations/training_simulation_badger.js'));
+            this.addWatchFile(path.resolve('content-scripts/integrations/external_analyzer_trevor.js'));
         }
     };
 }

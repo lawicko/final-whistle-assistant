@@ -18,11 +18,29 @@
             "css": [
                 "styles.css"
             ]
+        },
+        {
+            "matches": [
+                "*://*.abelfw.org/badgerpaste*"
+            ],
+            "js": [
+                "training_simulation_badger.js"
+            ]
+        },
+        {
+            "matches": [
+                "*://*.abelfw.org/trevor_ng*"
+            ],
+            "js": [
+                "external_analyzer_trevor.js"
+            ]
         }
     ],
     "background": __BACKGROUND_CONTENT__,
     "host_permissions": [
-        "*://*.finalwhistle.org/*"
+        "*://*.finalwhistle.org/*",
+        "*://*.abelfw.org/badgerpaste*",
+        "*://*.abelfw.org/trevor_ng*"
     ],
     "permissions": [
         "clipboardRead",

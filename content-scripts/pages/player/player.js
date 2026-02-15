@@ -6,6 +6,7 @@ import * as playerUtils from "./player_utils.js"
 import { processPlayedMatches } from '../../match_data_gathering_indicators.js'
 import { addYAndSLabelsForMatchBadges } from '../../y_and_s_labels_for_match_badges.js'
 import * as db from "../../db_access.js"
+import * as integrationUtils from "../../integrations/integrations_utls.js"
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -689,6 +690,40 @@ function getBidButton() {
     return document.querySelector("button:has(> i.fa-gavel)")
 }
 
+function getScoutButton() {
+    const button = Array.from(document.querySelectorAll('.btn.btn-sm.btn-secondary.me-1'))
+        .find(btn => btn.textContent.trim() === 'Scout')
+    return button
+}
+
+function addTrainingSimulationButtonIfNeeded() {
+    if (document.getElementById("TRAINING-SIMULATION-BUTTON")) return
+
+    const scoutButton = getScoutButton()
+    // Create the new button
+    const newButton = document.createElement('button')
+    newButton.id = "TRAINING-SIMULATION-BUTTON"
+    newButton.title = "Simulate the training progress with Badger"
+    newButton.className = 'btn btn-sm btn-secondary me-1'
+    newButton.textContent = 'Training simulation'; // Change this to whatever you want
+    newButton.addEventListener('click', async () => {
+        const text = integrationUtils.selectAllAsText()
+        const compressed = await integrationUtils.compressToBrotliBase64(text)
+
+        // For now still use the clipboard workaround
+        const result = integrationUtils.copyRenderedPageToClipboard();
+        if (result) {
+            console.debug("Page copied to clipboard!");
+            window.open(`https://www.abelfw.org/badgerpaste?pp=${compressed}`, '_blank');
+        } else {
+            console.error("Could not copy rendered page to clipboard :(");
+        }
+    });
+
+    // Insert as a sibling (after the Scout button)
+    scoutButton.insertAdjacentElement('afterend', newButton)
+}
+
 function isPendingSale() {
     const bidButton = getBidButton()
     return bidButton && bidButton.textContent.trim().startsWith("Place bid")
@@ -1109,7 +1144,8 @@ export async function processPlayerPage() {
     const coreSkillsTable = getCoreSkillsTable()
     if (coreSkillsTable && coreSkillsTable.rows && coreSkillsTable.rows.length > 1) {
         cleanUpNodeForPlayer(coreSkillsTable)
-        appendComputedSkills(coreSkillsTable);
+        appendComputedSkills(coreSkillsTable)
+        addTrainingSimulationButtonIfNeeded()
     }
 
     if (isShowingRecentStatistics()) {
