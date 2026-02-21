@@ -492,16 +492,19 @@ function addExternalAnalyzeButtonIfNeeded() {
     newButton.textContent = 'Trevor';
     newButton.addEventListener('click', async () => {
         const text = integrationUtils.selectAllAsText()
-        const compressed = await integrationUtils.compressToBrotliBase64(text)
+        const compressed = await integrationUtils.compressAndBase64(text, 'gzip')
+        window.open(`https://www.abelfw.org/trevor_ng?mr=${compressed}`, '_blank')
+        // For dev environment
+        // window.open(`https://dev.abelfw.org/trevor_ng?mr=${compressed}`, '_blank');
 
-        // For now still use the clipboard workaround
-        const result = integrationUtils.copyRenderedPageToClipboard();
-        if (result) {
-            console.debug("Page copied to clipboard!");
-            window.open(`https://www.abelfw.org/trevor_ng?mr=${compressed}`, '_blank');
-        } else {
-            console.error("Could not copy rendered page to clipboard :(");
-        }
+        // The clipboard workaround
+        // const result = integrationUtils.copyRenderedPageToClipboard();
+        // if (result) {
+        //     console.debug("Page copied to clipboard!");
+            
+        // } else {
+        //     console.error("Could not copy rendered page to clipboard :(");
+        // }
     });
 
     // Insert as a sibling (after the Scout button)

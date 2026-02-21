@@ -17,7 +17,8 @@ observer.observe(document.body, {
 });
 
 function process(element) {
-    if (element) { pasteToElement(element); }
+    // disable since badger now supports parameters
+    // if (element) { pasteToElement(element); }
 }
 
 async function pasteToElement(element) {

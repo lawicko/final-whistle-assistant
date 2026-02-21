@@ -17,15 +17,16 @@ export function selectAllAsText() {
     return pageText;
 }
 
-export async function compressToBrotliBase64(text) {
+// compression can be brotli, gzip etc.
+export async function compressAndBase64(text, compression) {
     try {
         // 1. Convert text to bytes
         const encoder = new TextEncoder();
         const bytes = encoder.encode(text);
         const stream = new Blob([bytes]).stream();
 
-        // 2. Use the native Brotli compression (Firefox 147+)
-        const compressionStream = new CompressionStream('brotli');
+        // 2. Use the native compression Note that brotli is only available starting Firefox 147
+        const compressionStream = new CompressionStream(compression);
         const compressedStream = stream.pipeThrough(compressionStream);
 
         // 3. Collect chunks into an array
@@ -50,12 +51,12 @@ export async function compressToBrotliBase64(text) {
         }
         const base64String = btoa(binary);
 
-        console.debug("Compression to brotli + base64 Successfull!");
+        console.debug(`Compression to ${compression} + base64 Successfull!`);
 
         return base64String;
 
     } catch (err) {
-        console.error("Brotli error (Check if your broser support brotli compression", err);
+        console.error("Compression error (Check if your broser support the chosen compression", err);
     }
 }
 
