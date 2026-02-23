@@ -363,7 +363,7 @@ export function updateDetailedProperty(element, propertyDescription, propertyVal
 }
 
 export function hasActiveFormation() {
-    const link = document.querySelector('ul.nav-tabs > li.nav-item > a.nav-link.active');
+    const link = document.querySelector('ul.nav-tabs > li.nav-item a.nav-link.active');
     if (!link) {
         console.debug(`hasActiveFormation: No link element`)
     }
@@ -372,7 +372,7 @@ export function hasActiveFormation() {
 }
 
 export function hasActiveSetPieces() {
-    const link = document.querySelector('ul.nav-tabs > li.nav-item > a.nav-link.active');
+    const link = document.querySelector('ul.nav-tabs > li.nav-item a.nav-link.active');
     if (!link) {
         console.debug(`hasActiveSetPieces: No link element`)
     }
