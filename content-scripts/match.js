@@ -9,8 +9,8 @@ export async function processMatch() {
     const dateElement = document.querySelector('div.col-md-2:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)')
     const homeTeamElement = document.querySelector('div.col-lg-6:nth-child(1) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
     const homeTeamFlagElement = document.querySelector('div.col-lg-6:nth-child(1) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > fw-flag')
-    const awayTeamElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
-    const awayTeamFlagElement = document.querySelector('div.col-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > fw-flag')
+    const awayTeamElement = document.querySelector('div.col-lg-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > a:nth-child(2)')
+    const awayTeamFlagElement = document.querySelector('div.col-lg-6:nth-child(2) > div:nth-child(1) > div:nth-child(1) > h5:nth-child(1) > fw-flag')
     if (dateElement && dateElement.textContent && homeTeamElement && homeTeamElement.textContent && awayTeamElement && awayTeamElement.textContent) {
         console.info(`⚽ Processing match from`, dateElement.textContent.trim(), 'between', homeTeamElement.textContent.trim(), 'and', awayTeamElement.textContent.trim())
     } else {
