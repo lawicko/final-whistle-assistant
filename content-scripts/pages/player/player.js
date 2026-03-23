@@ -723,7 +723,7 @@ function addTrainingSimulationButtonIfNeeded() {
     });
 
     // Insert as a sibling (after the Scout button)
-    scoutButton.insertAdjacentElement('afterend', newButton)
+    scoutButton?.insertAdjacentElement('afterend', newButton)
 }
 
 function isPendingSale() {
