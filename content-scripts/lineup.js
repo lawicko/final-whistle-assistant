@@ -12,7 +12,8 @@ import {
     hasActiveFormation,
     hasActiveSetPieces,
     removeNoDataSymbol,
-    personalitiesSymbols
+    personalitiesSymbols,
+    questionMarkSymbol
 } from "./ui_utils";
 import * as db from "./db_access.js"
 
@@ -121,7 +122,7 @@ async function proposeAnchors(anchors) {
     proposedAnchorsHeader.id = 'proposed-anchors-header'
     proposedAnchorsHeader.textContent = "Recommended anchors "
     const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = "\uf29c"
+    questionMarkSpan.textContent = questionMarkSymbol
     questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedAnchorsHeader.appendChild(questionMarkSpan)
     targetHeader.parentNode.parentNode.insertBefore(proposedAnchorsHeader, proposedAnchors)
@@ -213,7 +214,7 @@ function proposeCrossTakers(takers) {
     proposedCornerTakersHeader.id = 'proposed-corner-takers-header'
     proposedCornerTakersHeader.textContent = "Recommended corner takers "
     const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = "\uf29c"
+    questionMarkSpan.textContent = questionMarkSymbol
     questionMarkSpan.title = "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedCornerTakersHeader.appendChild(questionMarkSpan)
     targetHeader.parentNode.parentNode.insertBefore(proposedCornerTakersHeader, proposedCrossTakers)
@@ -290,7 +291,7 @@ async function proposePenaltyTakers(takers) {
         header.textContent = text + " ";
 
         const questionMark = document.createElement("span");
-        questionMark.textContent = "\uf29c"; // your icon char
+        questionMark.textContent = questionMarkSymbol;
         questionMark.title = tooltip;
 
         header.appendChild(questionMark);
@@ -384,7 +385,7 @@ async function insertComposureTresholdInput(parent) {
     // Inject into the page
     parent.appendChild(input)
     const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = " \uf29c "
+    questionMarkSpan.textContent = ` ${questionMarkSymbol} `
     questionMarkSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ${personalitiesSymbols["composure"]} symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
     parent.appendChild(questionMarkSpan)
 
@@ -444,7 +445,7 @@ async function insertArroganceTresholdInput(parent) {
     // Inject into the page
     parent.appendChild(input)
     const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = "  \uf29c "
+    questionMarkSpan.textContent = `  ${questionMarkSymbol} `
     questionMarkSpan.title = `Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, ${personalitiesSymbols["arrogance"]} symbol will appear next to his name.`
     parent.appendChild(questionMarkSpan)
 }
@@ -781,12 +782,12 @@ function fixHeader(config) {
     }
     columnNames.unshift(...config.columnLabels)
     columnNames.reverse()
-    const formIndicators = document.querySelectorAll("fw-formation div[touranchor='lineup.select'] > div.player-select > fw-player-card div.p-block > div.p-block-top div.form-indicator-top")
+    const formIndicators = document.querySelectorAll("fw-formation div[touranchor='lineup.select'] div.player-select > fw-player-card div.p-block > div.p-block-top div.form-indicator-top")
     for (const formIndicator of formIndicators) {
         formIndicator.parentNode.appendChild(formIndicator)
     }
 
-    const firstPlayerContainer = document.querySelector(config.formationContainerSelector + " > " + config.firstPlayerCardSelector + " > div.p-block > div.p-block-top")
+    const firstPlayerContainer = document.querySelector(config.formationContainerSelector + " " + config.firstPlayerCardSelector + " > div.p-block > div.p-block-top")
     const newHeader = document.createElement("div")
     newHeader.id = lineupHeaderID
     newHeader.classList.add("col-12") // this adds width: 100%

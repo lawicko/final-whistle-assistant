@@ -4,13 +4,13 @@ import * as listUtils from "../../list_utils.js"
 import * as db from "../../db_access.js"
 
 export async function processTransferPage() {
-    console.info(`💸 Processing transfer page`)
-    let rows = document.querySelectorAll("table.table > tbody> tr") // main /transfer
-    const fromBidsTab = document.querySelectorAll("fw-transfer-bids table.table > tr:has(fw-player-hover)")
+    console.info(`${utils.version} 💸 Processing transfer page`)
+    let rows = document.querySelectorAll("table.transfer-market-table > tbody> tr") // main /transfer
+    const fromBidsTab = document.querySelectorAll("fw-transfer-bids table.table > tbody > tr:has(fw-player-hover)")
     if (fromBidsTab.length > 0) {
         rows = [...rows, ...fromBidsTab]
     }
-    const fromWatchlist = document.querySelectorAll("fw-transfer-watchlist table.table > tr:has(fw-player-hover)")
+    const fromWatchlist = document.querySelectorAll("fw-transfer-watchlist table.transfer-watchlist-table > tbody > tr:has(fw-player-hover)")
     if (fromWatchlist.length > 0) {
         rows = [...rows, ...fromWatchlist]
     }
@@ -22,11 +22,10 @@ export async function processTransferPage() {
             .trim()
         const ageFromListing = listUtils.age(row)
 
-        // console.info(`Processing ${playerName} (${playerID})`)
+        console.debug(`Processing ${playerName} (${playerID})`)
 
         const loadedPlayerData = await db.getPlayer(playerID)
         if (!loadedPlayerData) continue
-
         console.debug("We have a record on ", playerName, "(", playerID, "):", loadedPlayerData)
         const personalities = loadedPlayerData["personalities"]
         if (!personalities) continue
@@ -94,7 +93,7 @@ function getScoutedBinoculars(customClass) {
     const binoculars = document.createElement("span")
     binoculars.classList.add('scouted', 'ms-1', customClass)
     const iElement = document.createElement("i")
-    iElement.classList.add("fa", "fa-binoculars")
+    iElement.classList.add("bi", "bi-binoculars")
     binoculars.appendChild(iElement)
     return binoculars
 }
@@ -120,7 +119,7 @@ async function applyCustomColorsForTLDetails() {
             }
         `, "final-whistle-custom-transfer-list-colors");
     } catch (err) {
-        console.error("Failed to apply custom colors for tags:", err);
+        console.error("Failed to apply custom colors for transfer list details:", err);
     }
 }
 

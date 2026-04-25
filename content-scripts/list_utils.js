@@ -202,9 +202,11 @@ export function processTableRow(
     additionalInfoInsertionPointCallback,
     accountForSpecialTalents = false
 ) {
-    // Select the first <a> inside a <td> whose href contains "/player/"
-    const playerLink = row.querySelector('td a[href*="/player/"]');
+    // console.info("checkboxesData", checkboxesData)
+    // Select the first <a> inside the container whose href contains "/player/"
+    const playerLink = row.querySelector('a[href*="/player/"]');
     // Match the number after /player/
+    // console.info("Before processing player - link:", playerLink)
     if (!playerLink) { // When the user hovers over the player name, the hover card shows up
         return
     }
@@ -219,7 +221,7 @@ export function processTableRow(
         console.debug(`Found stored player data for: ${playerName}`, playerData)
         let playerPersonalities = playerData["personalities"]
         if (!playerPersonalities) {
-            console.debug(`No personalities in player profile for ${playerName}.`)
+            console.info(`No personalities in player profile for ${playerName}.`)
             uiUtils.addNoDataSymbol(insertionPoint)
         } else {
             uiUtils.removeNoDataSymbol(insertionPoint)
@@ -228,8 +230,10 @@ export function processTableRow(
             const showTeamwork = checkboxesData['teamwork'] ?? false
             if (teamwork) {
                 if (showTeamwork) {
+                    // console.info("applying teamwork to insertionPoint:", insertionPoint)
                     uiUtils.applyTeamwork(insertionPoint, teamwork)
                 } else {
+                    // console.info("clearing teamwork to insertionPoint:", insertionPoint)
                     clearTeamwork(insertionPoint)
                 }
             }
@@ -237,8 +241,10 @@ export function processTableRow(
             const showSportsmanship = checkboxesData['sportsmanship'] ?? false
             if (sportsmanship) {
                 if (showSportsmanship) {
+                    // console.info("applying sportsmanship to insertionPoint:", insertionPoint)
                     uiUtils.applySportsmanship(insertionPoint, sportsmanship)
                 } else {
+                    // console.info("clearing sportsmanship to insertionPoint:", insertionPoint)
                     clearSportsmanship(insertionPoint)
                 }
             }
@@ -326,7 +332,7 @@ function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
             if (!tooltipNode) {
                 tooltipNode = document.createElement("span")
                 tooltipNode.classList.add(stTooltipClass)
-                tooltipNode.textContent = "\uf29c"
+                tooltipNode.textContent = uiUtils.questionMarkSymbol
                 tooltipNode.title = tooltips[index]
                 valueNodes[index].after(tooltipNode)
             }

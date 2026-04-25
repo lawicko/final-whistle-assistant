@@ -423,10 +423,9 @@ div.player-select>fw-player-card>div.p-block::after {
 }
 
 span.FinalWhistlePluginSpecialTalentModifiedTooltip {
-  position: relative;
-  left: -3px;
-  top: -5px;
-  font: 7px/1 FontAwesome;
+  position: absolute;
+  right: -3px;
+  font-size: 0.6em;
   cursor: help;
 }
 
@@ -460,6 +459,11 @@ th.FinalWhistlePluginPlayersTableColumnHeader, td.FinalWhistlePluginPlayersTable
   text-align: center;
 }
 
+th.FinalWhistlePluginPlayersTableColumnHeader.experience-header, td.FinalWhistlePluginPlayersTableCell.experience-cell {
+  padding-left: 30px;
+  text-align: left;
+}
+
 div#FinalWhistlePluginLineupHeader {
   display: flex;
   padding: 5px;
@@ -468,7 +472,8 @@ div#FinalWhistlePluginLineupHeader {
 }
 
 div#FinalWhistlePluginLineupHeader > div:not(.p-name) {
-  text-align: center;
+  display: flex;
+  justify-content: flex-end;
 }
 
 div.player-select.player-in-lineup {
@@ -490,7 +495,7 @@ fw-player-details table.table > tr > td > span.badge-position {
 
 button#FinalWhistlePluginSetLeagueButton {
   white-space: nowrap; /* Prevents text wrapping */
-  border: 1px solid #ae9836;
+  border: 2px solid rgba(var(--bs-success-rgb),.82);
   flex: 0 0 auto;
   position: relative;
   padding: .25rem .5rem;
@@ -500,7 +505,6 @@ button#FinalWhistlePluginSetLeagueButton {
   line-height: 1.5;
   display: inline-flex;
   margin-left: .5rem;
-  background-color: #a8db08;
   align-items: center;
 }
 
@@ -516,4 +520,59 @@ a#LEAGUE_YOUTH > i {
 
 span.FinalWhistlePluginCustomBinoculars {
   color: silver;
+}
+
+.player-selected {
+  background-color: #ffffff22 !important;
+}
+
+span.fixture-squad-dot, span.player-matches-squad-dot {
+  font-size: 0.55em;
+  font-weight: bold;
+  color: black;
+}
+
+.squad-list-table > thead > tr > th {
+  color: inherit
+}
+
+span.final-whistle-assistant-played-match-indicator {
+  display: inline-block;
+  margin-left: 10px;
+  position: relative;
+  top: 2.3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: help;
+}
+
+table.league-round-table--results td:has(span.final-whistle-assistant-played-match-indicator) {
+  white-space: nowrap;
+}
+
+table.league-round-table--results span.final-whistle-assistant-played-match-indicator {
+  margin-left: 0px;
+  margin-right: 3px;
+  top: 0px;
+}
+
+span.academy-output-status.status-blue {
+  background-color: #277da1;
+  color: #ffffff;
+}
+
+span.academy-output-status.status-green {
+  background-color: #198754;
+  color: #ffffff;
+}
+
+span.academy-output-status.status-red {
+  background-color: #f94144;
+  color: #ffffff;
+}
+
+span.academy-output-status.status-yellow {
+  background-color: #f9c74f;
+  color: #ffffff;
 }

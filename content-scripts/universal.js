@@ -1,4 +1,5 @@
 import * as db from './db_access.js'
+import { version } from './utils.js'
 
 export async function setNavBarItems() {
     const shortcuts = await db.getShortcuts()
@@ -24,7 +25,8 @@ function shortcutForConfig(config) {
 }
 
 function addShortcutToNavbar(shortcutElement) {
-    const navbar = document.querySelector("fw-app fw-nav-bar2 > nav div.navbar-left > div.nav-item-group")
+    console.info(`${version} ⏭️ Adding shortcuts to NavBar`)
+    const navbar = document.querySelector("ul.navbar-nav")
     if (navbar) {
         const existingElement = navbar.querySelector(`#${shortcutElement.id}`)
         if (!existingElement) {

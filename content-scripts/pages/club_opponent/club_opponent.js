@@ -8,18 +8,18 @@ import * as dbUtils from '../../db_utils.js'
 
 async function updateAdditionalInfo(checkboxesData) {
     console.info("updating additional info")
-    let rows = document.querySelectorAll("table > tr");
+    let rows = document.querySelectorAll("table > tbody > tr");
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i]
-        const playerID = utils.lastPathComponent(row.querySelector("td > a").href)
+        const playerID = utils.lastPathComponent(row.querySelector("td > div.squad-player-name-row > a").href)
         const loadedPlayerData = await db.getPlayer(playerID)
         listUtils.processTableRow(
             row,
             loadedPlayerData,
             checkboxesData,
             (row) => playerID,
-            (row) => row.querySelector("td > a").textContent.trim(),
-            (row) => row.querySelector("td:has(a)")
+            (row) => row.querySelector("td > div.squad-player-name-row > a").textContent.trim(),
+            (row) => row.querySelector(uiUtils.playerStatusQuery)
         )
     }
 }
@@ -31,7 +31,7 @@ export async function processOpponentClubPage() {
 
     console.info(`${utils.version} 🛡️ Processing opponent club page`)
 
-    const controlCheckboxesInsertionPoint = document.querySelector("fw-club div.card-header > div.row")
+    const controlCheckboxesInsertionPoint = document.querySelector(uiUtils.navTabsQuery)
 
     const pattern = /club\/\d+#(.+)/
     const match = window.location.href.match(pattern)

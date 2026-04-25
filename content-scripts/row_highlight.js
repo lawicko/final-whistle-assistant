@@ -196,14 +196,14 @@ const keyDownListener = (event) => {
     }
 }
 
-async function processTableRows(tableNode, config = {
+async function processTableRows(rows, config = {
     basicHighlight: true,
     persistentHighlight: true
 }) {
     console.info(`${version} ✨ Adding row highlighting`)
     const rowHighlightData = await db.getRowHighlights() ?? {}
-    for (let i = 1; i < tableNode.rows.length; i++) {
-        const tr = tableNode.rows[i]
+    for (let i = 0; i < rows.length; i++) {
+        const tr = rows[i]
         if (config.basicHighlight) {
             const pluginRowHighlightClass = "player-selected"
             tr.onclick = function () {
@@ -251,8 +251,21 @@ export async function addTableRowsHighlighting(config = {
     let tableNode = document.querySelector("table.table")
     if (tableNode != undefined && tableNode.rows.length > 1) {
         console.debug(`Found the following table: `, tableNode)
+        let rows = tableNode.querySelectorAll("tbody tr");
 
-        processTableRows(tableNode, config)
+        processTableRows(rows, config)
+    }
+}
+
+export async function addTableRowsHighlightingForTraining(config = {
+    basicHighlight: true,
+    persistentHighlight: true
+}) {
+    let trainingFeed = document.querySelector("div.training-feed")
+    if (!trainingFeed) { return } // site not loaded yet
+    let rows = trainingFeed.querySelectorAll("article.training-feed-row")
+    if (rows.length > 1) {
+        processTableRows(rows, config)
     }
 }
 

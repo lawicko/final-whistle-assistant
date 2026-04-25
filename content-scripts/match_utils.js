@@ -45,14 +45,6 @@ export function createProgressDot(value) {
     }
     const span = document.createElement('span');
     span.classList.add("final-whistle-assistant-played-match-indicator")
-    span.style.display = 'inline-block';
-    span.style.marginLeft = '10px';
-    span.style.position = 'relative';
-    span.style.top = '2.3px';
-    span.style.width = '14px';
-    span.style.height = '14px';
-    span.style.borderRadius = '50%';
-    span.style.cursor = 'help';
 
     let tooltipText = "Final Whistle Assistant has no data for this match."
     let fillColor = 'rgb(184, 165, 182)'

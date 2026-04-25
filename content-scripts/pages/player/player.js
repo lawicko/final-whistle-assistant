@@ -10,6 +10,7 @@ import * as integrationUtils from "../../integrations/integrations_utls.js"
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
+    let tbodyNode = tableNode.querySelector("tbody")
     let midfieldDominanceMax = 100 + 200
     let constitutionTreshold = 50
 
@@ -140,29 +141,14 @@ function appendComputedSkills(tableNode) {
     console.debug("contribution (potential)= ", midfieldDominanceContributionPotential, "denomination = ", midfieldDominanceDenominationPotential, " normalized: ", midfieldDominanceDenominationNormalizedPotential)
 
     // Midfield Dominance
-    var trMD = document.createElement("tr")
-    trMD.className = utils.pluginNodeClass
-
-    var tdMDLabel = document.createElement("td")
-    tdMDLabel.className = "opacity-06"
-    tdMDLabel.textContent = "Midfield Dominance"
-    trMD.appendChild(tdMDLabel)
-
-    var tdMDCurrent = document.createElement("td")
-    const mdCurrentDiv = document.createElement('div');
-    mdCurrentDiv.className = `denom${midfieldDominanceDenominationNormalized}`;
-    mdCurrentDiv.textContent = midfieldDominanceContribution;
-    tdMDCurrent.appendChild(mdCurrentDiv);
-    trMD.appendChild(tdMDCurrent)
-
-    var tdMDPot = document.createElement("td")
-    const mdPotDiv = document.createElement('div');
-    mdPotDiv.className = `denom${midfieldDominanceDenominationNormalizedPotential}`;
-    mdPotDiv.textContent = midfieldDominanceContributionPotential;
-    tdMDPot.appendChild(mdPotDiv);
-    trMD.appendChild(tdMDPot)
-
-    tableNode.appendChild(trMD)
+    const trMD = createComputedPropertyRow(
+        "Midfield Dominance",
+        midfieldDominanceDenominationNormalized,
+        midfieldDominanceContribution,
+        midfieldDominanceDenominationNormalizedPotential,
+        midfieldDominanceContributionPotential
+    )
+    tbodyNode.appendChild(trMD)
 
     // Assistance calculations
     let personalities = {}
@@ -175,57 +161,27 @@ function appendComputedSkills(tableNode) {
     const resultPotential = uiUtils.calculateAssistance({ OP: OP_POT, BC: BC_POT, TA: TA_POT, DP: DP_POT, teamwork: personalities["teamwork"] });
 
     // Offensive Assistance
-    var trOA = document.createElement("tr")
-    trOA.className = utils.pluginNodeClass
-
-    var tdOALabel = document.createElement("td")
-    tdOALabel.className = "opacity-06"
-    tdOALabel.textContent = "Offensive Assistance"
-    trOA.appendChild(tdOALabel)
-
-    var tdOACurrent = document.createElement("td")
-    const oaCurrentDiv = document.createElement('div');
-    oaCurrentDiv.className = `denom${resultCurrents.offensiveAssistanceDenominationNormalized}`;
-    oaCurrentDiv.textContent = resultCurrents.offensiveAssistance;
-    tdOACurrent.appendChild(oaCurrentDiv);
-    trOA.appendChild(tdOACurrent)
-
-    var tdOAPot = document.createElement("td")
-    const oaPotDiv = document.createElement('div');
-    oaPotDiv.className = `denom${resultPotential.offensiveAssistanceDenominationNormalized}`;
-    oaPotDiv.textContent = resultPotential.offensiveAssistance;
-    tdOAPot.appendChild(oaPotDiv);
-    trOA.appendChild(tdOAPot)
-
-    tableNode.appendChild(trOA)
+    var trOA = createComputedPropertyRow(
+        "Offensive Assistance",
+        resultCurrents.offensiveAssistanceDenominationNormalized,
+        resultCurrents.offensiveAssistance,
+        resultPotential.offensiveAssistanceDenominationNormalized,
+        resultPotential.offensiveAssistance
+    )
+    tbodyNode.appendChild(trOA)
 
     // Defensive Assistance
-    var trDA = document.createElement("tr")
-    trDA.className = utils.pluginNodeClass
-
-    var tdDALabel = document.createElement("td")
-    tdDALabel.className = "opacity-06"
-    tdDALabel.textContent = "Defensive Assistance"
-    trDA.appendChild(tdDALabel)
-
-    var tdDACurrent = document.createElement("td")
-    const daCurrentDiv = document.createElement('div');
-    daCurrentDiv.className = `denom${resultCurrents.defensiveAssistanceDenominationNormalized}`;
-    daCurrentDiv.textContent = resultCurrents.defensiveAssistance;
-    tdDACurrent.appendChild(daCurrentDiv);
-    trDA.appendChild(tdDACurrent)
-
-    var tdDAPot = document.createElement("td")
-    const daPotDiv = document.createElement('div');
-    daPotDiv.className = `denom${resultPotential.defensiveAssistanceDenominationNormalized}`;
-    daPotDiv.textContent = resultPotential.defensiveAssistance;
-    tdDAPot.appendChild(daPotDiv);
-    trDA.appendChild(tdDAPot)
-
-    tableNode.appendChild(trDA)
+    var trDA = createComputedPropertyRow(
+        "Defensive Assistance",
+        resultCurrents.defensiveAssistanceDenominationNormalized,
+        resultCurrents.defensiveAssistance,
+        resultPotential.defensiveAssistanceDenominationNormalized,
+        resultPotential.defensiveAssistance
+    )
+    tbodyNode.appendChild(trDA)
 
     // Tool-tips
-    let updatedCells = tableNode.querySelectorAll("tr td")
+    let updatedCells = tbodyNode.querySelectorAll("tr td")
 
     const headingValueText = `Math.floor(0.65 * ${SC} + 0.35 * ${AE}) =\nMath.floor(${(0.65 * SC).toFixed(2)} + ${(0.35 * AE).toFixed(2)}) =\nMath.floor(${((0.65 * SC) + (0.35 * AE)).toFixed(2)}) = ${Math.floor((0.65 * SC) + (0.35 * AE))}`
     const headingPotentialText = `Math.floor(0.65 * ${SC_POT} + 0.35 * ${AE_POT}) =\nMath.floor(${(0.65 * SC_POT).toFixed(2)} + ${(0.35 * AE_POT).toFixed(2)}) =\nMath.floor(${((0.65 * SC_POT) + (0.35 * AE_POT)).toFixed(2)}) = ${Math.floor((0.65 * SC_POT) + (0.35 * AE_POT))}`
@@ -258,6 +214,36 @@ function appendComputedSkills(tableNode) {
     const daValueText = `TA + DP =\n${TA} + ${DP} = ${resultCurrents.defensiveAssistance}${resultCurrents.defensiveAssistanceModifierDetails}`
     const daPotentialText = `TA_POT + DP_POT = \n${TA_POT} + ${DP_POT} = ${resultPotential.defensiveAssistance}${resultPotential.defensiveAssistanceModifierDetails}`
     addHoverCardToCell(updatedCells, "Defensive Assistance", "TA + DP", daValueText, daPotentialText)
+}
+
+function createComputedPropertyRow(label, currentDenomination, currentTextContent, potentialDenomination, potentialTextContent) {
+    var tr = document.createElement("tr")
+    tr.className = utils.pluginNodeClass
+
+    var tdLabel = document.createElement("td")
+    tdLabel.className = "text-body-secondary"
+    var tdSpan = document.createElement("span")
+    tdSpan.textContent = label
+    tdLabel.appendChild(tdSpan)
+    tr.appendChild(tdLabel)
+
+    var tdCurrent = document.createElement("td")
+    tdCurrent.className = "text-end"
+    const tdCurrentSpan = document.createElement('span');
+    tdCurrentSpan.className = `denom${currentDenomination}`;
+    tdCurrentSpan.textContent = currentTextContent;
+    tdCurrent.appendChild(tdCurrentSpan);
+    tr.appendChild(tdCurrent)
+
+    var tdPot = document.createElement("td")
+    tdPot.className = "text-end"
+    const tdPotSpan = document.createElement('span');
+    tdPotSpan.className = `denom${potentialDenomination}`;
+    tdPotSpan.textContent = potentialTextContent;
+    tdPot.appendChild(tdPotSpan);
+    tr.appendChild(tdPot)
+
+    return tr
 }
 
 function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText, potentialTooltipText) {
@@ -396,7 +382,7 @@ async function showInjuries(currentPlayerData) {
             const headerCellMinutes = document.createElement('th')
             headerCellMinutes.classList.add('table-header-minutes')
             const questionMarkSpan = document.createElement("span")
-            questionMarkSpan.textContent = " \uf29c"
+            questionMarkSpan.textContent = uiUtils.questionMarkSymbol
             questionMarkSpan.title = "Indicates how many minutes player has played until he sustained the injury (if this is his first known injury this number may be smaller than in reality because of the time the extension started collecting data)"
             headerCellMinutes.appendChild(document.createTextNode('Minutes'))
             headerCellMinutes.appendChild(questionMarkSpan)
@@ -628,7 +614,7 @@ function getHiddenSkillsData(hiddenSkillsTable) {
 
 function getPlayerRating() {
     // Grab all <td> elements from the first table
-    const tds = document.querySelectorAll("table.table > tr > td")
+    const tds = document.querySelectorAll("table.table > tbody > tr > td")
 
     // Find the one whose textContent includes "/"
     const ratingTD = Array.from(tds).find(td => td.textContent.includes("/"))
@@ -687,7 +673,7 @@ function getPlayerData() {
 }
 
 function getBidButton() {
-    return document.querySelector("button:has(> i.fa-gavel)")
+    return document.querySelector("button:has(> i.bi-hammer)")
 }
 
 function getScoutButton() {
@@ -843,7 +829,7 @@ function getPlayerPosition() {
  * @returns {string} player name
  */
 function getPlayerName() {
-    const headerElement = document.querySelector("div.card-header > div.row div.fw-header")
+    const headerElement = document.querySelector("fw-player-details div.player-detail-header-title span")
     if (!headerElement) return
     let playerName = headerElement.textContent.trim()
     playerName = playerName.replace(/\s+/g, " ") // removes repeated spaces
@@ -856,11 +842,11 @@ function getPlayerName() {
  */
 function getPlayerExperience() {
     // Grab all <td> elements from the first table
-    const tds = document.querySelectorAll("table.table > tr > td")
+    const tds = document.querySelectorAll("table.table > tbody > tr > th")
 
     // Find the one whose textContent includes "Experience"
-    const experienceLabelTD = Array.from(tds).find(td => td.textContent.trim() === "Experience")
-    const experienceValueTD = experienceLabelTD.nextElementSibling
+    const experienceLabelTH = Array.from(tds).find(th => th.textContent.trim() === "Experience")
+    const experienceValueTD = experienceLabelTH.nextElementSibling
     const descriptionSpan = experienceValueTD.querySelector("span")
     const denomClass = [...descriptionSpan.classList].find(c => c.includes("denom"))
     const number = parseInt(denomClass.slice(5), 10)
@@ -1098,15 +1084,12 @@ function stringFromDate(date) {
 function formatDates(rows) {
     const dateFormattedClass = `${utils.pluginNodeClass}_dateFormatted`
     for (const row of rows) {
-        const dateElement = row.querySelector("td:has(i.fa.fa-calendar)")
+        const dateElement = row.querySelector("td:has(i.bi.bi-calendar3)")
         const date = dateFromDateString(dateElement.textContent.trim())
         if (dateElement && !dateElement.classList.contains(dateFormattedClass)) {
-            [...dateElement.childNodes].forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    node.remove()
-                }
-            })
-            dateElement.insertAdjacentText("beforeend", stringFromDate(date))
+            const dateSpan = dateElement.querySelector("span span")
+            dateSpan.textContent = stringFromDate(date)
+            // dateElement.insertAdjacentText("beforeend", stringFromDate(date))
             dateElement.classList.add(dateFormattedClass)
         }
     }
@@ -1150,9 +1133,9 @@ export async function processPlayerPage() {
         addTrainingSimulationButtonIfNeeded()
     }
 
-    if (isShowingRecentStatistics()) {
+    if (isShowingMatches()) {
         const detailsHeaderID = utils.pluginNodeClass + "DetailsHeader"
-        const tableHeaderRow = document.querySelector("table.table-striped > thead > tr")
+        const tableHeaderRow = document.querySelector("table.player-detail-matches-table > thead > tr")
         if (!tableHeaderRow) return // site not loaded yet
         const exitingDetails = tableHeaderRow.querySelector(`th#${detailsHeaderID}`)
         if (!exitingDetails) {
@@ -1166,14 +1149,14 @@ export async function processPlayerPage() {
         const matchPlayers = await db.getMatchPlayersForPlayer(playerDataFromPage.id)
         // console.info("matchPlayers", matchPlayers.map(m => `https://www.finalwhistle.org/en/match/${m.matchId}`))
 
-        const playedMatchesContainers = document.querySelectorAll("table.table-striped > tr")
-        console.debug("playedMatchesContainers", playedMatchesContainers)
+        const playedMatchesContainers = document.querySelectorAll("table.player-detail-matches-table > tbody > tr")
+        // console.info("playedMatchesContainers", playedMatchesContainers)
 
         if (playedMatchesContainers.length > 0) {
             formatDates(playedMatchesContainers)
 
             const lastVisibleMatchRow = playedMatchesContainers[playedMatchesContainers.length - 1]
-            const lastVisibleMatchDateElement = lastVisibleMatchRow.querySelector("td:has(i.fa.fa-calendar)")
+            const lastVisibleMatchDateElement = lastVisibleMatchRow.querySelector("td:has(i.bi.bi-calendar3)")
             // console.info("lastVisibleMatchDateElement", lastVisibleMatchDateElement)
             const lastVisibleMatchDateString = lastVisibleMatchDateElement.textContent.trim()
             // console.info("lastVisibleMatchDateString", lastVisibleMatchDateString)
@@ -1192,24 +1175,22 @@ export async function processPlayerPage() {
             const olderRecordedMatchPlayers = matchPlayers.filter(mp => new Date(mp.date) < lastVisibleMatchDate).sort((a, b) => new Date(b.date) - new Date(a.date))
             // console.info("olderRecordedMatchPlayers", olderRecordedMatchPlayers)
 
-            const table = document.querySelector("table.table-striped")
+            const tBody = document.querySelector("table.player-detail-matches-table > tbody")
+            // console.info("tbody to append new cells", tBody)
             for (const matchPlayer of olderRecordedMatchPlayers) {
                 const cloneID = utils.pluginNodeClass + `_${matchPlayer.matchId}`
-                if (table.querySelector(`tr#${cloneID}`)) continue
+                if (tBody.querySelector(`tr#${cloneID}`)) continue
                 const rowClone = lastVisibleMatchRow.cloneNode(true)
                 rowClone.id = cloneID
 
                 // Going from left to right
                 // Insert proper date
-                const dateElement = rowClone.querySelector("td:has(i.fa.fa-calendar)")
+                const dateElement = rowClone.querySelector("td:has(i.bi.bi-calendar3)")
                 if (dateElement) {
-                    [...dateElement.childNodes].forEach(node => {
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            node.remove()
-                        }
-                    })
-                    dateElement.insertAdjacentText("beforeend", stringFromDate(new Date(matchPlayer.date)))
-                    table.appendChild(rowClone)
+                    const dateSpan = dateElement.querySelector("span span")
+                    dateSpan.textContent = stringFromDate(new Date(matchPlayer.date))
+                    console.debug("appending row clone", rowClone)
+                    tBody.appendChild(rowClone)
                 }
 
                 // Opponent name and link
@@ -1251,29 +1232,34 @@ export async function processPlayerPage() {
 
                 const competitionCell = opponentCell.nextElementSibling
                 // console.info("competition:", matchPlayer.competition, matchPlayer.competitionBadge)
-                const badgeSpan = competitionCell.querySelector("span > span.badge")
+                const badgeSpan = competitionCell.querySelector("span.player-matches-squad-dot")
                 if (matchPlayer.competitionBadge) {
                     switch (matchPlayer.competitionBadge) {
                         case "S":
-                            badgeSpan.classList.remove("badge-youth")
-                            badgeSpan.classList.add("badge-senior")
+                            badgeSpan.classList.remove("player-matches-squad-dot--youth")
+                            badgeSpan.classList.add("player-matches-squad-dot--senior")
                             break
                         case "Y":
-                            badgeSpan.classList.remove("badge-senior")
-                            badgeSpan.classList.add("badge-youth")
+                            badgeSpan.classList.remove("player-matches-squad-dot--senior")
+                            badgeSpan.classList.add("player-matches-squad-dot--youth")
                             break
                         default:
                             console.warn("Unknown competition badge in DB:", matchPlayer.competitionBadge)
                     }
-                    badgeSpan.textContent = matchPlayer.competitionBadge
                 } else {
                     badgeSpan.remove()
                 }
                 const competitionNameSpan = badgeSpan.nextElementSibling
                 if (competitionNameSpan) { // matches not loaded yet?
+                    const classes = competitionNameSpan.classList;
+
+                    if (classes.length > 0) {
+                        const lastClass = classes[classes.length - 1];
+                        competitionNameSpan.classList.remove(lastClass);
+                    }
                     competitionNameSpan.textContent = " " + matchPlayer.competition
+                    competitionNameSpan.classList.add(toSnakeCase(matchPlayer.competition))
                 }
-                competitionCell.className = toSnakeCase(matchPlayer.competition)
 
                 if (playerDataFromPage.position === "GK") {
                     const savesCell = competitionCell.nextElementSibling
@@ -1316,7 +1302,7 @@ export async function processPlayerPage() {
                 }
             }
 
-            const updatedMatchesContainers = document.querySelectorAll("table.table-striped > tr")
+            const updatedMatchesContainers = document.querySelectorAll("table.player-detail-matches-table > tbody > tr")
             updateRecentStatistics(updatedMatchesContainers, {
                 matchPlayers: matchPlayers,
                 matchLinkContainerQuery: "td:has(fw-club-hover)",
@@ -1324,8 +1310,8 @@ export async function processPlayerPage() {
             })
 
             await addYAndSLabelsForMatchBadges(updatedMatchesContainers, {
-                youthNodeQuery: "span.badge-youth",
-                seniorNodeQuery: "span.badge-senior",
+                youthNodeQuery: "span.player-matches-squad-dot--youth",
+                seniorNodeQuery: "span.player-matches-squad-dot--senior",
                 commentStart: "Processing match badges for 🇸enior and 🇾outh matches",
                 commentFinished: "Match badges for 🇸enior and 🇾outh matches processed"
             })
@@ -1424,21 +1410,16 @@ function getCoreSkillsTable() {
 }
 
 function isShowingOverview() {
-    const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
+    const activeTab = document.querySelector(`${uiUtils.navTabsQuery} > li.nav-item > a.nav-link.active[aria-selected='true']`)
     return activeTab && activeTab.textContent.trim() === "Overview"
 }
 
-function isShowingStatistics() {
-    const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
-    return activeTab && activeTab.textContent.trim() === "Stats"
-}
-
-function isShowingRecentStatistics() {
-    const recentSelect = document.querySelector("fw-player-detail-statistics select.form-control.navigation-select")
-    return isShowingStatistics && recentSelect && recentSelect.value === "0: 0"
+function isShowingMatches() {
+    const activeTab = document.querySelector(`${uiUtils.navTabsQuery} > li.nav-item > a.nav-link.active[aria-selected='true']`)
+    return activeTab && activeTab.textContent.trim() === "Matches"
 }
 
 function isShowingReports() {
-    const activeTab = document.querySelector("ul.nav-tabs > li.nav-item > a.nav-link.active[aria-selected='true']")
+    const activeTab = document.querySelector(`${uiUtils.navTabsQuery} > li.nav-item > a.nav-link.active[aria-selected='true']`)
     return activeTab && activeTab.textContent.trim() === "Reports"
 }

@@ -21,7 +21,7 @@ async function applyCustomColorsForTags() {
             i.denom4, span.denom4 i, div.denom4.ng-star-inserted {
                 color: ${colors.tagColor4} !important;
             }
-            i.denom5, span.denom5 i, div.denom5.ng-star-inserted {
+            i.denom5, span.denom5 i, div.denom5.ng-star-inserted::before {
                 color: ${colors.tagColor5} !important;
             }
             i.denom6, span.denom6 i, div.denom6.ng-star-inserted {
@@ -36,6 +36,9 @@ async function applyCustomColorsForTags() {
             i.denom9, span.denom9 i, div.denom9.ng-star-inserted {
                 color: ${colors.tagColor9} !important;
             }
+            .bi-tag::before {
+                content: "\\f5af" !important;
+            }
         `, "final-whistle-custom-tag-colors");
     } catch (err) {
         console.error("Failed to apply custom colors for tags:", err);
@@ -46,12 +49,13 @@ applyCustomColorsForTags()
 export async function processTags() {
     console.info(`${version} 🏷️ Processing tags`)
 
+    // on /players we have a table
     let tableNodes = document.querySelectorAll("table.table")
     for (let tableNode of tableNodes) {
         if (tableNode.rows.length > 1) {
             console.debug(`Found the following table for processing tags: `, tableNode)
 
-            tableNode.querySelectorAll(`td > fw-player-hover > div.hovercard > sup`).forEach((el, idx) => {
+            tableNode.querySelectorAll(`td > div.squad-player-name-row > fw-player-hover > div.hovercard > sup`).forEach((el, idx) => {
                 let supNode = el
                 let currentClass = supNode.className
 
@@ -64,5 +68,21 @@ export async function processTags() {
         } else {
             console.debug(`Skipping a table with only one row (probably header): `, tableNode)
         }
+    }
+
+    // on /training#Reports we have a div.training-feed
+    let trainingFeed = document.querySelector("div.training-feed")
+    if (!trainingFeed) { return } // site not loaded yet
+    let trainingPlayers = trainingFeed.querySelectorAll("article.training-feed-row fw-player-hover")
+    for (let trainigPlayer of trainingPlayers) {
+        let supNode = trainigPlayer.querySelector("div.hovercard > sup")
+        if (!supNode) { continue } // already processed
+        let currentClass = supNode.className
+
+        let tagNode = supNode.querySelector(`i`)
+        let tagRemoved = supNode.removeChild(tagNode)
+        tagRemoved.className += ` ${currentClass}`
+        supNode.parentNode.insertBefore(tagRemoved, supNode)
+        supNode.remove()
     }
 }

@@ -16,7 +16,9 @@ import { specialTalentsSymbols, specialTalentsDescriptions } from "./special_tal
 function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
     const cell = document.createElement(tag);
     cell.classList.add(utils.pluginNodeClass)
-    cell.setAttribute("data-tooltip", hoverContent);
+    if (hoverContent != undefined) {
+        cell.setAttribute("data-tooltip", hoverContent);
+    }
 
     // span with text
     const span = document.createElement("span");
@@ -32,7 +34,7 @@ function createHoverCardCell(tag, mainLabel, hoverContent, extraClass = "") {
 // Adds the headers to the players table
 async function createHeaders() {
     console.debug(`appending headers...`)
-    const firstRow = document.querySelector("table > tr:first-of-type");
+    const headerRow = document.querySelector("table > thead > tr:first-of-type");
 
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
@@ -44,41 +46,47 @@ async function createHeaders() {
 
     const overrides = await db.getOverrides()
     if (!overrides['preferOriginalSpecialTalentsColumn']) {
-        const originalSTHeader = firstRow.querySelector('th[title="Special Talents"]')
+        const originalSTHeader = headerRow.querySelector('th[title="Special Talents"]')
         if (originalSTHeader) originalSTHeader.remove()
 
-        const specialTalentsTH = createHoverCardCell("th", "", "Special Talents")
+        const specialTalentsTH = createHoverCardCell("th", "")
+        specialTalentsTH.title = "Special Talents"
         const specialTalentsBolt = document.createElement("i")
         specialTalentsBolt.classList.add("fa", "fa-bolt")
         specialTalentsTH.appendChild(specialTalentsBolt)
         specialTalentsTH.classList.add(headerClass)
-        firstRow.appendChild(specialTalentsTH)
+        headerRow.appendChild(specialTalentsTH)
     }
 
     if (!isShowingGoalkeepers()) {
-        const formTH = createHoverCardCell("th", "Exp", "Experience")
-        formTH.classList.add(headerClass)
+        const experienceTH = createHoverCardCell("th", "Exp")
+        experienceTH.title = "Experience"
+        experienceTH.classList.add(headerClass, "experience-header")
         // Find the form TH and insert before it
-        const allThs = firstRow.querySelectorAll('th')
+        const allThs = headerRow.querySelectorAll('th')
         allThs.forEach((th) => {
             if (th.textContent.trim() === 'Form') {
-                th.parentNode.insertBefore(formTH, th)
+                th.parentNode.insertBefore(experienceTH, th)
             }
         })
 
-        const thLS = createHoverCardCell("th", "LS", "Long Shot");
-        firstRow.appendChild(thLS);
+        const thLS = createHoverCardCell("th", "LS");
+        thLS.title = "Long Shot"
+        headerRow.appendChild(thLS);
 
-        const thMD = createHoverCardCell("th", "MD", "Midfield Dominance");
-        firstRow.appendChild(thMD);
+        const thMD = createHoverCardCell("th", "MD");
+        thMD.title = "Midfield Dominance"
+        headerRow.appendChild(thMD);
 
-        const thOA = createHoverCardCell("th", "OA", "Offensive Assistance");
-        firstRow.appendChild(thOA);
+        const thOA = createHoverCardCell("th", "OA");
+        thOA.title = "Offensive Assistance"
+        headerRow.appendChild(thOA);
     }
 
     if (!isShowingAttackers()) {
-        const thDA = createHoverCardCell("th", "DA", "Defensive Assistance");
-        firstRow.appendChild(thDA);
+        const thDA = createHoverCardCell("th", "DA");
+        thDA.title = "Defensive Assistance"
+        headerRow.appendChild(thDA);
     }
 }
 
@@ -116,7 +124,7 @@ async function appendAdditionalInfo(checkboxesData) {
     console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
-    let rows = document.querySelectorAll("table > tr:has(fw-player-hover)")
+    let rows = document.querySelectorAll("table > tbody > tr:has(fw-player-hover)")
     const overrides = await db.getOverrides()
     for (const row of rows) {
         const playerID = listUtils.id(row)
@@ -127,7 +135,7 @@ async function appendAdditionalInfo(checkboxesData) {
             checkboxesData,
             (row) => playerID,
             (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),
-            (row) => row.querySelector("td:has(fw-player-hover)"),
+            (row) => row.querySelector(uiUtils.playerStatusQuery),
             true
         )
 
@@ -245,10 +253,11 @@ async function appendAdditionalInfo(checkboxesData) {
                 const tdExp = createHoverCardCell(
                     "td",
                     expContent,
-                    expHoverDescription,
+                    undefined,
                     expClass
                 )
-                tdExp.classList.add(utils.pluginNodeClass + "PlayersTableCell")
+                tdExp.title = expHoverDescription
+                tdExp.classList.add(utils.pluginNodeClass + "PlayersTableCell", "experience-cell")
                 row.insertBefore(tdExp, formCell)
 
                 const tdLS = createHoverCardCell(

@@ -1,7 +1,7 @@
 import * as utils from "../../utils.js"
 import * as uiUtils from "../../ui_utils.js"
 import * as listUtils from "../../list_utils.js"
-import { addTableRowsHighlighting } from "../../row_highlight.js"
+import { addTableRowsHighlightingForTraining } from "../../row_highlight.js"
 import { processTags } from "../../tags.js"
 import * as db from "../../db_access.js"
 import * as dbUtils from '../../db_utils.js'
@@ -40,7 +40,9 @@ export async function processTrainingPage() {
 async function updateAdditionalInfo(checkboxesData) {
     console.info(`${utils.version} 📝 Updating additional info`)
 
-    let rows = document.querySelectorAll("table > tbody > tr")
+    let trainingFeed = document.querySelector("div.training-feed")
+    if (!trainingFeed) { return } // site not loaded yet
+    let rows = trainingFeed.querySelectorAll("article.training-feed-row")
     for (const row of rows) {
         const playerID = listUtils.id(row)
         const loadedPlayerData = await db.getPlayer(playerID)
@@ -49,8 +51,8 @@ async function updateAdditionalInfo(checkboxesData) {
             loadedPlayerData,
             checkboxesData,
             (row) => playerID,
-            (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),
-            (row) => row.querySelector("td:has(fw-player-hover)")
+            (row) => row.querySelector("a span:not(.flag)").textContent.trim(),
+            (row) => row.querySelector("div.training-feed-player")
         )
     }
 }
@@ -63,6 +65,6 @@ async function tryTagsProcessing() {
 
 async function tryRowHighlighting() {
     if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.RowHighlighting)) {
-        await addTableRowsHighlighting({ basicHighlight: true, persistentHighlight: false })
+        await addTableRowsHighlightingForTraining({ basicHighlight: true, persistentHighlight: false })
     }
 }

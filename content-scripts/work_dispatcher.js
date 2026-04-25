@@ -2,6 +2,7 @@ import * as utils from "./utils.js"
 import * as uiUtils from "./ui_utils.js"
 import { processTags } from './tags.js'
 import { processAcademyButtons } from './pages/academy/academy_buttons.js'
+import { processAcademyPage } from "./pages/academy/academy.js"
 import { processFixturesPage } from './calendar.js'
 import { processMatch } from './match.js'
 import { processPlayersPage } from './players.js'
@@ -174,6 +175,7 @@ const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
     async () => {
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.AcademyButtonsSeparation)) {
             processAcademyButtons();
+            processAcademyPage();
         }
         await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver

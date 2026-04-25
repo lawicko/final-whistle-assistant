@@ -17,6 +17,25 @@ export function selectAllAsText() {
     return pageText;
 }
 
+export function selectNodeAsText(node) {
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    // 1. Target the entire body
+    range.selectNodeContents(node);
+
+    // 2. Apply the selection
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const nodeAsText = selection.toString();
+
+    // 3. Cleanup
+    selection.removeAllRanges();
+
+    return nodeAsText;
+}
+
 // compression can be brotli, gzip etc.
 export async function compressAndBase64(text, compression) {
     try {
