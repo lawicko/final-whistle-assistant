@@ -12,7 +12,7 @@
 - Fixed `/lineup` Set Pieces tab missing character from `FontAwesome`
 - Fixed basic row highlighting on `/players` and `/training#Reports`
 
-# 6.0.1
+# 6.1.0
 - Fixed tranfer list additions on `transfer#Market`, `transfer#Bids` and `transfer#Watchlist`
 - Fixed match data indicators and senior/youth markers on `/fixtures`
 - Added spacing between `DP` and `Exp` column on `/players` to be able to tell what's what at first glance
