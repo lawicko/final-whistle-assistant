@@ -30,3 +30,8 @@
 - Fixed special talents not read properly on `/player` resulting in special talents not showing properly on `/players`
 - Fixed player talent not read properly on `/player`
 - Fixed special talent symbol not showing in the table header on `/players` when using custom special talents column
+
+# 6.1.2
+- Fixed the future matches formation indicator colors (default: orange, specific: green)
+- Fixed the small junior/senior indicator size on `/fixtures`
+

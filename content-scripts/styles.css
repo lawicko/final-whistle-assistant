@@ -527,7 +527,9 @@ span.FinalWhistlePluginCustomBinoculars {
 }
 
 span.fixture-squad-dot, span.player-matches-squad-dot {
-  font-size: 0.55em;
+  width: 1rem !important;
+  height: 1rem !important;
+  font-size: 1em;
   font-weight: bold;
   color: black;
 }
@@ -575,4 +577,12 @@ span.academy-output-status.status-red {
 span.academy-output-status.status-yellow {
   background-color: #f9c74f;
   color: #ffffff;
+}
+
+span.badge-default {
+  color: orange;
+}
+
+span.badge-specific {
+  color: green;
 }
