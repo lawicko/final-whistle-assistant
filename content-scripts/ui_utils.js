@@ -17,6 +17,8 @@ export const questionMarkSymbol = "\u2370"
 export const matchLinkQuery = "i.bi-file-text"
 export const navTabsQuery = "ul.nav-tabs"
 export const playerStatusQuery = "td fw-player-status"
+export const specialTalentSymbol = "⚡︎" // used for checkboxes
+export const specialTalentSymbolClass = "bi bi-lightning special-ability"
 
 export const PositionsKeys = {
     CB: "CB",
@@ -59,8 +61,6 @@ export const personalitiesSymbols = {
     "sportsmanship": normalizeEmoji("⚖", "text"),
     "teamwork": normalizeEmoji("⬡", "text")
 }
-
-export const specialTalentSymbol = "⚡︎"
 
 export function toggleClass(el, className) {
     if (el.className.indexOf(className) >= 0) {

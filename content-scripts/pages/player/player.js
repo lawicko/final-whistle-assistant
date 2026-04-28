@@ -538,15 +538,7 @@ function getPersonalitiesData(personalitiesTable) {
  * @returns {Object} player special talents table node.
  */
 function getSpecialTalentsTable() {
-    // Get all <th> elements
-    const thElements = document.querySelectorAll("table > tr > th");
-
-    // Find the one whose textContent matches
-    const th = Array.from(thElements).find(el => el.textContent.trim() === "Special Talent");
-
-    // Get its parent <table>
-    const table = th ? th.closest("table") : null;
-
+    const table = document.querySelector("table.special-ability-table");
     return table
 }
 
@@ -613,14 +605,13 @@ function getHiddenSkillsData(hiddenSkillsTable) {
 }
 
 function getPlayerRating() {
-    // Grab all <td> elements from the first table
-    const tds = document.querySelectorAll("table.table > tbody > tr > td")
-
-    // Find the one whose textContent includes "/"
-    const ratingTD = Array.from(tds).find(td => td.textContent.includes("/"))
-    const spans = ratingTD.querySelectorAll('span')
+    const playerSummaryStatsTable = document.querySelector("table.player-summary-stats-table")
+    const playerSummaryHeaders = playerSummaryStatsTable.querySelectorAll("th")
+    const ratingHeader = Array.from(playerSummaryHeaders).find(th => th.textContent == "Rating")
+    const ratingCell = ratingHeader.nextSibling
+    const spans = ratingCell.querySelectorAll('span')
     const rating = spans[0].textContent.trim()
-    const talent = spans[1].textContent.trim()
+    const talent = spans[2].textContent.trim()
     return { rating: rating, talent: talent }
 }
 
@@ -645,7 +636,7 @@ function getPlayerData() {
     if (specialTalentsTable) {
         specialTalentsData = getSpecialTalentsData(specialTalentsTable)
     }
-    console.debug('Result of reading the special talents', specialTalentsData)
+    console.info('Result of reading the special talents', specialTalentsData)
 
     const hiddenSkillsTable = getHiddenSkillsTable()
     let hiddenSkillsData

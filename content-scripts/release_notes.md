@@ -25,3 +25,8 @@
 - Fixed persistent row highlighting (the one with keyboard shortcuts) for opponent players
 - Fixed academy performance color indicator colors
 - Added training simulation with badger to academy drafts
+
+# 6.1.1
+- Fixed special talents not read properly on `/player` resulting in special talents not showing properly on `/players`
+- Fixed player talent not read properly on `/player`
+- Fixed special talent symbol not showing in the table header on `/players` when using custom special talents column

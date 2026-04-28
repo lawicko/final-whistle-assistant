@@ -213,7 +213,7 @@ export function processTableRow(
 
     const playerID = idCallback(row)
     var playerName = nameCallback(row)
-    console.debug('Processing player:', playerName)
+    console.debug('Processing player:', playerName, 'with ID:', playerID)
 
     const playerData = storedPlayerData
     const insertionPoint = additionalInfoInsertionPointCallback(row)

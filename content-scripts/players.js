@@ -52,7 +52,7 @@ async function createHeaders() {
         const specialTalentsTH = createHoverCardCell("th", "")
         specialTalentsTH.title = "Special Talents"
         const specialTalentsBolt = document.createElement("i")
-        specialTalentsBolt.classList.add("fa", "fa-bolt")
+        specialTalentsBolt.className = uiUtils.specialTalentSymbolClass
         specialTalentsTH.appendChild(specialTalentsBolt)
         specialTalentsTH.classList.add(headerClass)
         headerRow.appendChild(specialTalentsTH)
