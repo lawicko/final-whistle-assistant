@@ -240,8 +240,13 @@ async function appendAdditionalInfo(checkboxesData) {
                 let expHoverDescription
                 if (experienceData && experienceData.value && experienceData.description) {
                     expContent = experienceData.description
-                    expClass = `denom${experienceData.value}`
+                    const exactValue = experienceData.exactValue
+                    const denomination = experienceData.value
+                    expClass = `denom${denomination}`
                     expHoverDescription = `Experience level`
+                    if (exactValue) {
+                        expHoverDescription += ` ${exactValue}`
+                    }
                     if (savedDate) {
                         expHoverDescription += ` from ${savedDate}`
                     }

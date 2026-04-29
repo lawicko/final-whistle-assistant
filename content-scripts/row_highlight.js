@@ -93,7 +93,8 @@ const onMessageListener = async (message) => {
         await clearAllRowsOnThisPage()
         let tableNode = document.querySelector("table.table")
         if (tableNode != undefined && tableNode.rows.length > 1) {
-            processTableRows(tableNode)
+            let rows = tableNode.querySelectorAll("tbody > tr")
+            await processTableRows(rows)
         }
         return
     }
@@ -104,7 +105,8 @@ const onMessageListener = async (message) => {
         await clearAllRowHighlights()
         let tableNode = document.querySelector("table.table")
         if (tableNode != undefined && tableNode.rows.length > 1) {
-            processTableRows(tableNode)
+            let rows = tableNode.querySelectorAll("tbody > tr")
+            await processTableRows(rows)
         }
         return
     }
@@ -200,7 +202,7 @@ async function processTableRows(rows, config = {
     basicHighlight: true,
     persistentHighlight: true
 }) {
-    console.info(`${version} ✨ Adding row highlighting`)
+    console.info(`${version} ✨ Applying row highlighting`)
     const rowHighlightData = await db.getRowHighlights() ?? {}
     for (let i = 0; i < rows.length; i++) {
         const tr = rows[i]

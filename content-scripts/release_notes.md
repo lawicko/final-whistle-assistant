@@ -42,3 +42,7 @@
 - Changed the color of the potential rise indicator to blue on the `/player` Training tab
 - Fixed the processing on `/player` Reports tab
 - Fixed parsing of the player experience value on `/player`
+
+# 6.2.1
+- Fixed the experience custom column colors on `/players`
+- Fixed the persistent highlight removal with context menu

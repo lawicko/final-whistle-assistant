@@ -844,8 +844,10 @@ function getPlayerExperience() {
     const descriptionSpan = experienceValueTD.querySelector("span")
     const valueSpan = descriptionSpan.nextElementSibling
     const numbersOnly = valueSpan.textContent.trim().replace(/\D/g, "")
-    const number = parseInt(numbersOnly, 10)
-    return { value: number, description: descriptionSpan.textContent.trim() }
+    const experienceValue = parseInt(numbersOnly, 10)
+    const denomClass = [...descriptionSpan.classList].find(c => c.includes("denom"))
+    const experienceDenomination = parseInt(denomClass.slice(5), 10)
+    return { value: experienceDenomination, description: descriptionSpan.textContent.trim(), exactValue: experienceValue }
 }
 
 const positionEmoji = {
