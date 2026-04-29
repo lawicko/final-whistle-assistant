@@ -17,6 +17,9 @@ export const questionMarkSymbol = "\u2370"
 export const matchLinkQuery = "i.bi-file-text"
 export const navTabsQuery = "ul.nav-tabs"
 export const playerStatusQuery = "td fw-player-status"
+export const opponentSquadTableQuery = "table.club-squad-table"
+export const opponentFixturesTableQuery = "table.club-fixtures-table"
+export const ownClubFixturesTableQuery = "table.fixture-table"
 export const specialTalentSymbol = "⚡︎" // used for checkboxes
 export const specialTalentSymbolClass = "bi bi-lightning special-ability"
 

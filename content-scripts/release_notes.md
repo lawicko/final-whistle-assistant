@@ -35,3 +35,5 @@
 - Fixed the future matches formation indicator colors (default: orange, specific: green)
 - Fixed the small junior/senior indicator size on `/fixtures`
 
+# 6.1.3
+- Fixed the processing on opponent club `#Squad` and `#Fixtures` pages

@@ -7,9 +7,9 @@ import * as db from "../../db_access.js"
 import * as dbUtils from '../../db_utils.js'
 
 async function updateAdditionalInfo(checkboxesData) {
-    console.info("updating additional info")
+    console.info(`${utils.version} Updating additional info`)
     let rows = document.querySelectorAll("table > tbody > tr");
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
         const playerID = utils.lastPathComponent(row.querySelector("td > div.squad-player-name-row > a").href)
         const loadedPlayerData = await db.getPlayer(playerID)
@@ -25,10 +25,6 @@ async function updateAdditionalInfo(checkboxesData) {
 }
 
 export async function processOpponentClubPage() {
-    let tableNode = document.querySelector("table.table")
-    if (!tableNode) return
-    if (tableNode.rows.length < 2) return
-
     console.info(`${utils.version} 🛡️ Processing opponent club page`)
 
     const controlCheckboxesInsertionPoint = document.querySelector(uiUtils.navTabsQuery)
@@ -40,9 +36,18 @@ export async function processOpponentClubPage() {
         return
     }
     const selectedTab = match[1]
-    console.info("selectedTab", selectedTab)
+    console.info(`${utils.version} selectedTab: ${selectedTab}`)
     switch (selectedTab) {
         case "Squad":
+            let tableNode = document.querySelector(uiUtils.opponentSquadTableQuery)
+            if (!tableNode) {
+                console.debug(`Opponent squad table (${uiUtils.opponentSquadTableQuery}) not loaded yet, returning...`)
+                return
+            }
+            if (tableNode.rows.length < 2) {
+                console.debug(`Opponent squad table (${uiUtils.opponentSquadTableQuery}) content not loaded yet (rows.length<2), returning...`)
+                return
+            }
             await processSquadPage({
                 controlCheckboxesInsertionPoint: controlCheckboxesInsertionPoint
             })
@@ -51,10 +56,12 @@ export async function processOpponentClubPage() {
             }
             break
         case "Fixtures":
-            await processFixturesPage(`🛡️📅 Processing opponent fixtures page`)
+            await processFixturesPage(uiUtils.opponentFixturesTableQuery, `${utils.version} 🛡️📅 Processing opponent fixtures page`)
         // pay attention here, the switch automatically falls through in javascript
         default:
-            listUtils.removeControlCheckboxes(controlCheckboxesInsertionPoint)
+            if (controlCheckboxesInsertionPoint) {
+                listUtils.removeControlCheckboxes(controlCheckboxesInsertionPoint)
+            }
     }
 }
 

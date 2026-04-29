@@ -221,7 +221,7 @@ export function processTableRow(
         console.debug(`Found stored player data for: ${playerName}`, playerData)
         let playerPersonalities = playerData["personalities"]
         if (!playerPersonalities) {
-            console.info(`No personalities in player profile for ${playerName}.`)
+            console.debug(`No personalities in player profile for ${playerName}.`)
             uiUtils.addNoDataSymbol(insertionPoint)
         } else {
             uiUtils.removeNoDataSymbol(insertionPoint)

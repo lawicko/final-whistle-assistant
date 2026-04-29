@@ -184,7 +184,7 @@ const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
 const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
     async () => {
         if (await dbUtils.isFeatureEnabled(dbUtils.FeatureFlagsKeys.MatchBadgeEnhancement)) {
-            await processFixturesPage();
+            await processFixturesPage(uiUtils.ownClubFixturesTableQuery);
         }
         await setNavBarItems()
     }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
