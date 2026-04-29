@@ -1,4 +1,5 @@
 import * as utils from "../../utils.js"
+import * as uiUtils from "../../ui_utils.js"
 
 export function getPlayerAge() {
     const ageElement = document.querySelector("fw-player-age > span > span")
@@ -85,7 +86,7 @@ export const parseNumbersOnPlayerPage = (node) => {
 
 export function parseScoutReport(reportElement) {
     let parsedNumbers = {}
-    reportElement.querySelectorAll("table.table > tr").forEach(row => {
+    reportElement.querySelectorAll(`${uiUtils.playerReportTableQuery} tr`).forEach(row => {
         const skillLabelElement = row.querySelector("td")
         const skillLabelText = skillLabelElement.textContent.trim()
         const skillValueElement = skillLabelElement.nextElementSibling
@@ -105,7 +106,7 @@ export function parseScoutReport(reportElement) {
         retirementPlan: filtered.retirementPlan
     }
 
-    const personalitiesCollection = reportElement.querySelectorAll("table.table > tr td fw-player-personality")
+    const personalitiesCollection = reportElement.querySelectorAll(`${uiUtils.playerReportTableQuery} tr td fw-player-personality`)
     const personalities = parsePersonalitiesCollection(personalitiesCollection)
 
     return { hiddenSkills: hiddenSkills, personalities: personalities }

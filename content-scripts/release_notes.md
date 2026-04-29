@@ -37,3 +37,8 @@
 
 # 6.1.3
 - Fixed the processing on opponent club `#Squad` and `#Fixtures` pages
+
+# 6.2.0
+- Changed the color of the potential rise indicator to blue on the `/player` Training tab
+- Fixed the processing on `/player` Reports tab
+- Fixed parsing of the player experience value on `/player`
