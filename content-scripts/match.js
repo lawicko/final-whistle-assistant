@@ -21,7 +21,7 @@ export async function processMatch() {
     const competitionSymbol = document.querySelector('div[touranchor="match.header"] div.card-body small > i.bi-trophy')
     const competitionNameTextValue = competitionSymbol.parentNode.nextElementSibling.textContent
     const competitionName = competitionNameTextValue.replace(/^[A-Za-z]\s*/, "").trim();
-    const ignoredMatchTypesForPlayerCalculations = ["Friendly", "Quick match", "Custom competition"]
+    const ignoredMatchTypesForPlayerCalculations = ["Friendly", "Quick match", "Custom competition", "Nt friendly", "Nt"]
     if (ignoredMatchTypesForPlayerCalculations.includes(competitionName)) {
         console.info(`⏩ ${competitionName} processing, player minutes and injuries will be skipped`)
     }

@@ -46,3 +46,8 @@
 # 6.2.1
 - Fixed the experience custom column colors on `/players`
 - Fixed the persistent highlight removal with context menu
+
+# 6.2.2
+- Fixed `NT` and `NT Friendly` game minutes being counted towards injuries
+- Fixed players from other teams only show the 20 last matches and no count of minutes without injuries
+

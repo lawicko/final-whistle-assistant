@@ -421,6 +421,7 @@ async function showInjuries(currentPlayerData) {
     } else {
         var minutesWithoutInjury = 0
         if (minutesPlayed) {
+            console.debug("minutesPlayed", minutesPlayed)
             minutesWithoutInjury = utils.sumMinutes(minutesPlayed)
         }
         if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
@@ -843,8 +844,11 @@ function getPlayerExperience() {
     const experienceValueTD = experienceLabelTH.nextElementSibling
     const descriptionSpan = experienceValueTD.querySelector("span")
     const valueSpan = descriptionSpan.nextElementSibling
-    const numbersOnly = valueSpan.textContent.trim().replace(/\D/g, "")
-    const experienceValue = parseInt(numbersOnly, 10)
+    var experienceValue = undefined
+    if (valueSpan) {
+        const numbersOnly = valueSpan.textContent.trim().replace(/\D/g, "")
+        experienceValue = parseInt(numbersOnly, 10)
+    }
     const denomClass = [...descriptionSpan.classList].find(c => c.includes("denom"))
     const experienceDenomination = parseInt(denomClass.slice(5), 10)
     return { value: experienceDenomination, description: descriptionSpan.textContent.trim(), exactValue: experienceValue }
