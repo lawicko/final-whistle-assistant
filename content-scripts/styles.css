@@ -172,7 +172,10 @@ h5[touranchor="lineup.tour"] span {
 .details-row {
   --bs-table-color: var(--player-soft-text);
   display: none;
-  /* all hidden by default */
+}
+
+.details-row.is-visible {
+  display: table-row;
 }
 
 .summary-row-clickable {

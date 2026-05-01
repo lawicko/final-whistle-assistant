@@ -98,7 +98,12 @@ export async function showInjuries(currentPlayerData) {
                     // Toggle all subsequent .details-row until another summary-row is found
                     while (next && !next.classList.contains('summary-row')) {
                         if (!next.classList.contains('injuries-first-row')) {
-                            next.style.display = isOpen ? 'none' : 'table-row';
+                            console.info("next", next, "className", next.className)
+                            if (isOpen) {
+                                next.classList.remove("is-visible")
+                            } else {
+                                next.classList.add("is-visible")
+                            }
                         }
                         next = next.nextElementSibling;
                     }
