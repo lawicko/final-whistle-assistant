@@ -20,6 +20,10 @@ export const playerStatusQuery = "td fw-player-status"
 export const playerSummaryStatsTableQuery = "table.player-summary-stats-table"
 export const playerReportTableQuery = "table.player-detail-report-table"
 export const playerTrainingTableQuery = "table.player-detail-training-table"
+
+export const playerClubMetaTableQuery = "table.player-club-meta-table"
+export const playerMinutesSinceInjuryRowClass = utils.pluginNodeClass + "InjuryInfo"
+
 export const opponentSquadTableQuery = "table.club-squad-table"
 export const opponentFixturesTableQuery = "table.club-fixtures-table"
 export const ownClubFixturesTableQuery = "table.fixture-table"

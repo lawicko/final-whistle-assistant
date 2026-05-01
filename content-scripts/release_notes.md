@@ -51,3 +51,5 @@
 - Fixed `NT` and `NT Friendly` game minutes being counted towards injuries
 - Fixed players from other teams only show the 20 last matches and no count of minutes without injuries
 
+# 6.3.0
+- Moved the injuries table to the right side and updated the styles

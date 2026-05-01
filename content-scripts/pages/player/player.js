@@ -8,6 +8,7 @@ import * as integrationUtils from "../../integrations/integrations_utls.js"
 import { processPlayerMatchesTab } from "./player+matches.js"
 import { processPlayerReports } from "./player+reports.js"
 import { processPlayerTraining } from "./player+training.js"
+import { showInjuries } from "./player+injuries.js"
 
 // Calculates and adds the cells with the midfield dominance values for each player
 function appendComputedSkills(tableNode) {
@@ -271,168 +272,6 @@ function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText,
     potentialCell.setAttribute("data-tooltip", potentialTooltipText)
 }
 
-function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
-    console.debug("***************** minutesPlayedBetween *****************")
-    const dateMap = new Map(
-        Object.entries(minutesPlayed).map(([dateStr, value]) => [
-            new Date(dateStr),  // key = Date
-            parseInt(value, 10) // value = integer
-        ])
-    );
-    console.debug("dateMap: ", dateMap)
-
-    const injuryDates = injurDatesAsStrings.map(str => new Date(str));
-    console.debug("injuryDates: ", injuryDates)
-
-    var results = []
-    var previousInjuryDate = new Date()
-    for (const injuryDate of injuryDates) {
-        console.debug("Processing injury date: ", injuryDate)
-        var sum = 0
-
-        for (const [date, minutes] of dateMap.entries()) {
-            console.debug("Found ", minutes, " played on ", date)
-            console.debug("Checking if ", date, " is between ", injuryDate, "and", previousInjuryDate)
-            if (date > injuryDate && date <= previousInjuryDate) {
-                sum += minutes
-                console.debug("It is, new sum: ", sum)
-            } else {
-                console.debug("It is not, skipping...")
-            }
-        }
-        results.push(sum)
-        previousInjuryDate = injuryDate
-    }
-
-    const firstKnownInjuryDate = injuryDates[injuryDates.length - 1]
-    var sum = 0
-    for (const [date, minutes] of dateMap.entries()) {
-        if (date <= firstKnownInjuryDate) {
-            sum += minutes
-        }
-    }
-    results.push(sum)
-
-    return results
-}
-
-/**
- * Adds injuries table to the player page if there is injury information in the storage
- */
-async function showInjuries(currentPlayerData) {
-    console.debug('currentPlayerData = ', currentPlayerData)
-    const injuries = currentPlayerData['injuries']
-    //    const injuries = ["29 Aug 2025, 12:00", "27 Aug 2025, 12:00", "15 Aug 2025, 12:00"]
-    const minutesPlayed = currentPlayerData['minutes-played']
-
-    const sisterTable = document.querySelector('div.card-body table')
-    if (!sisterTable) { return }
-    const tableContainer = sisterTable.parentNode
-    console.debug("tableContainer: ", tableContainer)
-    if (injuries && injuries.length > 0) {
-        console.debug("injuries for player: ", injuries)
-
-        // Calculate minutes played since last injury
-        const minutes = minutesPlayedBetween(minutesPlayed, injuries)
-        console.debug('Minutes played between injuries: ', minutes)
-
-        if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
-            const span = document.createElement('span')
-            span.id = 'minutes-since-last-injury'
-            span.textContent = `Minutes since last injury: ${minutes[0]}`
-            tableContainer.appendChild(span)
-        }
-
-        if (!tableContainer.querySelector("table#injury-table")) {
-            const table = document.createElement('table')
-            table.id = "injury-table"
-            table.classList.add('table')
-            table.classList.add('table-sm')
-            table.classList.add('table-fw')
-            const headerRow = document.createElement('tr')
-            headerRow.classList.add('summary-row')
-            const headerCellRecentInjuries = document.createElement('th')
-
-            if (injuries.length > 1) {
-                const disclosureSpan = document.createElement('span')
-                disclosureSpan.classList.add('disclosure')
-                disclosureSpan.textContent = '▶'
-                headerCellRecentInjuries.appendChild(disclosureSpan)
-
-                // append text without nuking the span
-                headerCellRecentInjuries.appendChild(document.createTextNode(' Recent injuries'))
-
-                headerRow.addEventListener('click', () => {
-                    const disclosure = headerRow.querySelector('.disclosure');
-                    let next = headerRow.nextElementSibling;
-                    const isOpen = disclosure.classList.contains('open');
-
-                    // Toggle all subsequent .details-row until another summary-row is found
-                    while (next && !next.classList.contains('summary-row')) {
-                        if (!next.classList.contains('injuries-first-row')) {
-                            next.style.display = isOpen ? 'none' : 'table-row';
-                        }
-                        next = next.nextElementSibling;
-                    }
-
-                    disclosure.classList.toggle('open', !isOpen);
-                });
-            } else {
-                headerCellRecentInjuries.appendChild(document.createTextNode('Recent injuries'))
-            }
-            const headerCellMinutes = document.createElement('th')
-            headerCellMinutes.classList.add('table-header-minutes')
-            const questionMarkSpan = document.createElement("span")
-            questionMarkSpan.textContent = uiUtils.questionMarkSymbol
-            questionMarkSpan.title = "Indicates how many minutes player has played until he sustained the injury (if this is his first known injury this number may be smaller than in reality because of the time the extension started collecting data)"
-            headerCellMinutes.appendChild(document.createTextNode('Minutes'))
-            headerCellMinutes.appendChild(questionMarkSpan)
-
-            headerRow.appendChild(headerCellRecentInjuries)
-            headerRow.appendChild(headerCellMinutes)
-            table.appendChild(headerRow)
-
-            for (let i = 0; i < injuries.length; i++) {
-                const injury = injuries[i]
-                const row = document.createElement('tr')
-                if (table.querySelector('td')) {
-                    row.classList.add('details-row')
-                } else {
-                    row.classList.add('injuries-first-row')
-                }
-                const cell = document.createElement('td')
-                cell.textContent = injury
-                row.appendChild(cell)
-
-                const index = i + 1
-                if (index < minutes.length) {
-                    console.debug("Value exists:", minutes[index]);
-                    const cell = document.createElement('td')
-                    cell.textContent = minutes[index]
-                    row.appendChild(cell)
-                } else {
-                    console.debug("No value at this index: ", index);
-                }
-
-                table.appendChild(row)
-            }
-            tableContainer.appendChild(table)
-        }
-    } else {
-        var minutesWithoutInjury = 0
-        if (minutesPlayed) {
-            console.debug("minutesPlayed", minutesPlayed)
-            minutesWithoutInjury = utils.sumMinutes(minutesPlayed)
-        }
-        if (!tableContainer.querySelector("span#minutes-since-last-injury")) {
-            const span = document.createElement('span')
-            span.id = 'minutes-since-last-injury'
-            span.textContent = `Minutes without injury: ${minutesWithoutInjury}`
-            tableContainer.appendChild(span)
-        }
-    }
-}
-
 /**
  * Performs a check if the player is ours.
  * @returns {boolean} True if the player is ours
@@ -471,10 +310,14 @@ function getPlayerClubData() {
  * @returns {string} "L" or "R"
  */
 function getPlayerFoot() {
-    const additionalDetailsTable = document.querySelector('table:has(fw-club-hover)')
-    if (!additionalDetailsTable) return
-    const footRow = additionalDetailsTable.querySelector("tr:last-of-type")
-    const footInfo = footRow.querySelector("td").textContent.trim()
+    const playerClubMetaTable = document.querySelector(uiUtils.playerClubMetaTableQuery)
+    if (!playerClubMetaTable) return
+    const allCells = Array.from(playerClubMetaTable.querySelectorAll('tr > td'))
+    const footCell = allCells.findLast(cell => {
+        return cell.textContent.trim().endsWith("Footed")
+    })
+    if (!footCell) return
+    const footInfo = footCell.textContent.trim()
     switch (footInfo) {
         case "Right Footed": return "R"
         case "Left Footed": return "L"
