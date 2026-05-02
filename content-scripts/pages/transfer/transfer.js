@@ -82,7 +82,7 @@ export async function processTransferPage() {
         }
     }
 
-    const footerElement = document.querySelector("fw-transfer-market > div.row:has(div > div.view-switch)")
+    const footerElement = document.querySelector("fw-transfer-market > div.row:has(div > span.result-total)")
     if (footerElement) {
         const resultsElement = footerElement.parentNode.querySelector("div:has(table.table)")
         footerElement.parentNode.insertBefore(footerElement, resultsElement)
