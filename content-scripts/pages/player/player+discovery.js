@@ -277,7 +277,7 @@ function getPlayerExperience() {
     const experienceValueTD = experienceLabelTH.nextElementSibling
     const descriptionSpan = experienceValueTD.querySelector("span")
     const valueSpan = descriptionSpan.nextElementSibling
-    var experienceValue = undefined
+    let experienceValue = undefined
     if (valueSpan) {
         const numbersOnly = valueSpan.textContent.trim().replace(/\D/g, "")
         experienceValue = parseInt(numbersOnly, 10)

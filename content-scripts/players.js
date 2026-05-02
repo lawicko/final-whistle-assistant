@@ -3,6 +3,7 @@ import * as uiUtils from "./ui_utils.js"
 import * as listUtils from "./list_utils.js"
 import * as db from "./db_access.js"
 import { specialTalentsSymbols, specialTalentsDescriptions } from "./special_talents_utils.js"
+import { getCheckboxesDataFromDB, insertCheckboxesForData } from "./shared/checkboxes.js"
 
 /**
  * Creates a <td> or <th> element with a hover-card.
@@ -334,25 +335,20 @@ export async function processPlayersPage() {
         console.debug(`Found the following table: `, tableNode)
         console.debug(`tableNode.rows.length: ${tableNode.rows.length}`)
 
-        const checkboxes = await db.getCheckboxes()
-        const checkboxesDefault = {
-            specialTalents: true,
-            teamwork: true,
-            sportsmanship: true,
-            advancedDevelopment: true,
-            estimatedPotential: true
-        }
-        const checkboxesData = checkboxes || checkboxesDefault
+        const checkboxesData = await getCheckboxesDataFromDB()
 
         cleanUpNodeForPlayers(tableNode)
 
-        const checkboxInsertionPoint = document.querySelector("fw-players div.card-header > div.row")
+        const checkboxInsertionPointQuery = "fw-players div.card-header > div.row"
+        const checkboxInsertionPoint = document.querySelector(checkboxInsertionPointQuery)
         if (checkboxInsertionPoint) {
-            listUtils.addControlCheckboxes(
-                checkboxInsertionPoint,
+            insertCheckboxesForData(
+                { node: checkboxInsertionPoint, method: "default" },
                 checkboxesData,
                 (cData) => { appendAdditionalInfo(cData) }
             )
+        } else {
+            console.warn("Could not find checkbox insertion point. Query:", checkboxInsertionPointQuery)
         }
 
         const footDisplay = getFootDisplay(tableNode)

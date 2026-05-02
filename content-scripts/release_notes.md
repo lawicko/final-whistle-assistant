@@ -53,3 +53,4 @@
 
 # 6.3.0
 - Moved the injuries table to the right side and updated the styles
+- Fixed the transfer list footer to top relocation

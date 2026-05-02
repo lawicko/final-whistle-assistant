@@ -7,8 +7,9 @@ import { processPlayerReports } from "./player+reports.js"
 import { processPlayerTraining } from "./player+training.js"
 import { showInjuries } from "./player+injuries.js"
 import * as discovery from "./player+discovery.js"
-import { prepareNodeAndAppendComputedSkills } from "./player+skill.js"
+import { applyAdditionalInfo, prepareNodeAndAppendComputedSkills } from "./player+skill.js"
 import { addTrainingSimulationButtonIfNeeded, showBuyingGuide } from "./player+management.js"
+import { getCheckboxesDataFromDB, insertCheckboxesForData } from "../../shared/checkboxes.js"
 
 export async function processPlayerPage() {
     console.info(`⏳ ${utils.version} Processing player page for ${utils.lastPathComponent(window.location.pathname)}...`)
@@ -34,8 +35,22 @@ export async function processPlayerPage() {
         showBuyingGuide(playerDataFromPage)
     }
 
+    const checkboxesData = await getCheckboxesDataFromDB()
+    const checkboxInsertionPointQuery = "div.player-detail-header div.player-detail-header-title"
+    const checkboxInsertionPoint = document.querySelector(checkboxInsertionPointQuery)
+    if (checkboxInsertionPoint) {
+        insertCheckboxesForData(
+            { node: checkboxInsertionPoint, method: "after" },
+            checkboxesData,
+            (cData) => { applyAdditionalInfo(cData) }
+        )
+    } else {
+        console.warn("Could not find checkbox insertion point. Query:", checkboxInsertionPointQuery)
+    }
+
     const coreSkillsTable = discovery.getCoreSkillsTable()
     if (coreSkillsTable && coreSkillsTable.rows && coreSkillsTable.rows.length > 1) {
+        applyAdditionalInfo(checkboxesData, playerDataFromPage)
         prepareNodeAndAppendComputedSkills(coreSkillsTable)
         addTrainingSimulationButtonIfNeeded()
     }

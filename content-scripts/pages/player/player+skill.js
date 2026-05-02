@@ -1,6 +1,108 @@
 import * as utils from "../../utils.js"
 import * as uiUtils from "../../ui_utils.js"
 import * as discovery from "./player+discovery.js"
+import { parseNumber } from "../../list_utils.js"
+import * as specialTalentsUtils from "../../special_talents_utils.js"
+import { skillIndexGoalkeepers, skillIndexOutfielders } from "../../shared/skills.js"
+
+export function applyAdditionalInfo(checkboxesData, playerData) {
+    const specialTalents = playerData?.specialTalents
+    // console.info("Special talents for ", playerData.name, playerData.specialTalents)
+    // console.info("Checkboxes data:", checkboxesData)
+
+    const skillRows = document.querySelectorAll("table.player-skill-table > tbody > tr.pointer")
+    const skills = getPlayerSkills(skillRows)
+    console.info("Player skills:", skills)
+    const skillsWithST = applySpecialTalents(skills, specialTalents, checkboxesData.specialTalents ?? false)
+    console.info("skillsWithST", skillsWithST)
+    setPlayerSkills(skillsWithST, skillRows)
+}
+
+function getPlayerSkills(rows) {
+    let data = {}
+    for (const row of rows) {
+        const allCells = row.querySelectorAll('td')
+        const label = allCells[0].textContent.trim()
+        const valueSpan = allCells[1].querySelector('span')
+        const value = parseNumber(valueSpan)
+        const potSpan = allCells[2].querySelector('span')
+        const pot = parseNumber(potSpan)
+        data[label] = { value: value, pot: pot }
+    }
+    return data
+}
+
+function applySpecialTalents(skills, specialTalents, add) {
+    console.info("applying special talents", specialTalents, "to skills", skills)
+
+    const stClass = utils.pluginNodeClass + "SpecialTalentModified"
+    const stTooltipClass = stClass + "Tooltip"
+    let skillIndexObject = skillIndexOutfielders
+    let skillMapping = skillMappingOutfielder
+    if (skills.length < 8) { // Goalkeepers
+        skillIndexObject = skillIndexGoalkeepers
+        skillMapping = skillMappingGK
+    }
+    let modifications = new Array(skills.length).fill(0)
+    let tooltip = "If you plan on changing the form you will have to reload the page to get the correct numbers."
+    for (const specialTalent of specialTalents) {
+        const affectedSkills = specialTalentsUtils.SpecialTalentsDefinitions[specialTalent]
+        if (!affectedSkills) continue // for skills like tough there are no skills affected
+        console.debug("talent", specialTalent, "affectedSkills", affectedSkills)
+        for (const [skill, value] of Object.entries(affectedSkills)) {
+            const skillToChange = skillMapping[skill]
+            if (skillToChange) {
+                console.info("changing", skills[skillToChange],"from", skills[skillToChange].value,"to",skills[skillToChange].value+value)
+                skills[skillToChange].value += value
+                skills[skillToChange].updateDenomination = true
+                skills[skillToChange].tooltip = tooltip + "\n+" + value + " from " + specialTalent
+            }
+        }
+    }
+
+    console.debug("new skills:", skills)
+    return skills
+}
+
+const skillMappingOutfielder = {
+    "SC": "Scoring",
+    "OP": "Off. Pos.",
+    "BC": "Ball Control",
+    "PA": "Passing",
+    "AE": "Aerial Ability",
+    "CO": "Constitution",
+    "TA": "Tackling",
+    "DP": "Def. Pos."
+}
+
+const skillMappingGK = {
+    "RE": "Reflex",
+    "GP": "Positioning",
+    "IN": "Interceptions",
+    "CT": "Ball Control",
+    "OR": "Organization"
+}
+
+function setPlayerSkills(skills, rows) {
+    console.info("setting skills", skills, "to rows", rows)
+    for (const row of rows) {
+        const allCells = row.querySelectorAll('td')
+        const label = allCells[0].textContent.trim()
+        const valueSpan = allCells[1].querySelector('span')
+        valueSpan.textContent = skills[label].value
+        const denomination = utils.denomination(skills[label].value)
+        const denomClass = "denom" + denomination
+        // Find the class that starts with "denom"
+        const currentDenomClass = Array.from(valueSpan.classList).find(cls => cls.startsWith("denom"))
+        if (currentDenomClass) {
+            valueSpan.classList.remove(currentDenomClass) // remove old denomX
+            valueSpan.classList.add(denomClass) // add new denomX
+        }
+
+        const potSpan = allCells[2].querySelector('span')
+        potSpan.textContent = skills[label].pot
+    }
+}
 
 export function prepareNodeAndAppendComputedSkills(tableNode) {
     cleanUpNodeForPlayer(tableNode)
@@ -160,7 +262,7 @@ function appendComputedSkills(tableNode) {
     const resultPotential = uiUtils.calculateAssistance({ OP: OP_POT, BC: BC_POT, TA: TA_POT, DP: DP_POT, teamwork: personalities["teamwork"] });
 
     // Offensive Assistance
-    var trOA = createComputedPropertyRow(
+    let trOA = createComputedPropertyRow(
         "Offensive Assistance",
         resultCurrents.offensiveAssistanceDenominationNormalized,
         resultCurrents.offensiveAssistance,
@@ -170,7 +272,7 @@ function appendComputedSkills(tableNode) {
     tbodyNode.appendChild(trOA)
 
     // Defensive Assistance
-    var trDA = createComputedPropertyRow(
+    let trDA = createComputedPropertyRow(
         "Defensive Assistance",
         resultCurrents.defensiveAssistanceDenominationNormalized,
         resultCurrents.defensiveAssistance,
@@ -216,17 +318,17 @@ function appendComputedSkills(tableNode) {
 }
 
 function createComputedPropertyRow(label, currentDenomination, currentTextContent, potentialDenomination, potentialTextContent) {
-    var tr = document.createElement("tr")
+    let tr = document.createElement("tr")
     tr.className = utils.pluginNodeClass
 
-    var tdLabel = document.createElement("td")
+    let tdLabel = document.createElement("td")
     tdLabel.className = "text-body-secondary"
-    var tdSpan = document.createElement("span")
+    let tdSpan = document.createElement("span")
     tdSpan.textContent = label
     tdLabel.appendChild(tdSpan)
     tr.appendChild(tdLabel)
 
-    var tdCurrent = document.createElement("td")
+    let tdCurrent = document.createElement("td")
     tdCurrent.className = "text-end"
     const tdCurrentSpan = document.createElement('span');
     tdCurrentSpan.className = `denom${currentDenomination}`;
@@ -234,7 +336,7 @@ function createComputedPropertyRow(label, currentDenomination, currentTextConten
     tdCurrent.appendChild(tdCurrentSpan);
     tr.appendChild(tdCurrent)
 
-    var tdPot = document.createElement("td")
+    let tdPot = document.createElement("td")
     tdPot.className = "text-end"
     const tdPotSpan = document.createElement('span');
     tdPotSpan.className = `denom${potentialDenomination}`;

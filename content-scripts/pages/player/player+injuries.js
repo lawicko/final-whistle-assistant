@@ -14,11 +14,11 @@ function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
     const injuryDates = injurDatesAsStrings.map(str => new Date(str));
     console.debug("injuryDates: ", injuryDates)
 
-    var results = []
-    var previousInjuryDate = new Date()
+    let results = []
+    let previousInjuryDate = new Date()
     for (const injuryDate of injuryDates) {
         console.debug("Processing injury date: ", injuryDate)
-        var sum = 0
+        let sum = 0
 
         for (const [date, minutes] of dateMap.entries()) {
             console.debug("Found ", minutes, " played on ", date)
@@ -35,7 +35,7 @@ function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
     }
 
     const firstKnownInjuryDate = injuryDates[injuryDates.length - 1]
-    var sum = 0
+    let sum = 0
     for (const [date, minutes] of dateMap.entries()) {
         if (date <= firstKnownInjuryDate) {
             sum += minutes
@@ -158,7 +158,7 @@ export async function showInjuries(currentPlayerData) {
             tableContainer.appendChild(table)
         }
     } else {
-        var minutesWithoutInjury = 0
+        let minutesWithoutInjury = 0
         if (minutesPlayed) {
             console.debug("minutesPlayed", minutesPlayed)
             minutesWithoutInjury = utils.sumMinutes(minutesPlayed)

@@ -14,7 +14,7 @@ import { processOpponentClubPage } from "./pages/club_opponent/club_opponent.js"
 import { processTransferPage } from './pages/transfer/transfer.js'
 import { processTrainingPage } from "./pages/training/training.js"
 import * as dbUtils from './db_utils.js'
-import { setNavBarItems } from './universal.js';
+import { setNavBarItems } from './shared/shortcuts.js'
 
 // How long to wait after the last mutation before processing the DOM (in ms)
 const DEBOUNCE_WAIT_MS = 150;

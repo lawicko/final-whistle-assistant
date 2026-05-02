@@ -1,5 +1,5 @@
-import * as db from './db_access.js'
-import { version } from './utils.js'
+import * as db from '../db_access.js'
+import { version } from '../utils.js'
 
 export async function setNavBarItems() {
     const shortcuts = await db.getShortcuts()

@@ -3,6 +3,7 @@ import * as uiUtils from "../../ui_utils.js"
 import * as listUtils from "../../list_utils.js"
 import { addTableRowsHighlighting } from "../../row_highlight.js"
 import { processFixturesPage } from "../../calendar.js"
+import { getCheckboxesDataFromDB, insertCheckboxesForData, removeCheckboxes } from "../../shared/checkboxes.js"
 import * as db from "../../db_access.js"
 import * as dbUtils from '../../db_utils.js'
 
@@ -60,23 +61,14 @@ export async function processOpponentClubPage() {
         // pay attention here, the switch automatically falls through in javascript
         default:
             if (controlCheckboxesInsertionPoint) {
-                listUtils.removeControlCheckboxes(controlCheckboxesInsertionPoint)
+                removeCheckboxes(controlCheckboxesInsertionPoint)
             }
     }
 }
 
 async function processSquadPage(config) {
     console.info(`${utils.version} 🛡️🧍‍♂️🧍‍♂️🧍‍♂️ Processing opponent squad page`)
-    const checkboxes = await db.getCheckboxes()
-    const checkboxesDefault = {
-        specialTalents: true,
-        teamwork: true,
-        sportsmanship: true,
-        advancedDevelopment: true,
-        estimatedPotential: true
-    }
-    const checkboxesData = checkboxes || checkboxesDefault
-
+    const checkboxesData = await getCheckboxesDataFromDB()
     // preparation - col-md-8 adds width 66.6% and col-md-4 33.3% so they need to be modified to make space
     const headerLeft = document.querySelector("fw-club div.card-header > div.row > div.col-md-8")
     if (headerLeft) {
@@ -87,8 +79,8 @@ async function processSquadPage(config) {
         headerRight.remove()
     }
 
-    listUtils.addControlCheckboxes(
-        config.controlCheckboxesInsertionPoint,
+    insertCheckboxesForData(
+        { node: config.controlCheckboxesInsertionPoint, method: "default" },
         checkboxesData,
         (cData) => { updateAdditionalInfo(cData) }
     )

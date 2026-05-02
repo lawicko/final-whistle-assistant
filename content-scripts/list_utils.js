@@ -2,25 +2,7 @@ import * as utils from "./utils.js"
 import * as uiUtils from "./ui_utils.js"
 import * as specialTalentsUtils from "./special_talents_utils.js"
 import * as db from "./db_access.js"
-
-const skillIndexOutfielders = {
-    "SC": 0,
-    "OP": 1,
-    "BC": 2,
-    "PA": 3,
-    "AE": 4,
-    "CO": 5,
-    "TA": 6,
-    "DP": 7
-}
-
-const skillIndexGoalkeepers = {
-    "RE": 0,
-    "GP": 1,
-    "IN": 2,
-    "CT": 3,
-    "OR": 4
-}
+import { skillIndexGoalkeepers, skillIndexOutfielders } from "./shared/skills.js"
 
 export function parseNumber(node) {
     return Number(node.textContent.replace(/\D/g, ''))
@@ -105,74 +87,6 @@ export function updateHiddenSkillsDetails({
             "EP"
         )
     }
-}
-
-/**
- * Adds the control checkboxes to the desired node
- * @param {Node} insertionPoint the insertion point to which the checkboxes will be appended
- * @param {Object} checkboxesDataFromStorage the object containing information on the saved selection state
- */
-export function addControlCheckboxes(insertionPoint, checkboxesDataFromStorage, afterCheckboxDataSetCallback) {
-    if (!insertionPoint) {
-        throw new Error("addControlCheckboxes called with undefined insertionPoint")
-    }
-
-    if (!checkboxesDataFromStorage) {
-        throw new Error("addControlCheckboxes called with undefined checkboxesDataFromStorage")
-    }
-
-    // If there already exists any of the chekboxes then we don't need to add anything because it's already there
-    if (document.getElementById("teamworkCheckbox")) return
-
-    const checkboxesData = [
-        { id: "specialTalentsCheckbox", label: `${uiUtils.specialTalentSymbol} ST` },
-        { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork` },
-        { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship` },
-        { id: "advancedDevelopmentCheckbox", label: `AD` },
-        { id: "estimatedPotentialCheckbox", label: `EP` }
-    ];
-    const checkboxContainer = document.createElement("div")
-    checkboxContainer.id = utils.pluginNodeClass + "CheckboxContainer"
-    checkboxContainer.classList.add("right-items")
-    checkboxContainer.classList.add("float-end") // comes from the game
-
-    checkboxesData.forEach(item => {
-        const checkbox = document.createElement("input")
-        checkbox.type = "checkbox"
-        checkbox.id = item.id
-
-        const suffix = "Checkbox";
-        const checkboxKey = item.id.slice(0, -suffix.length);
-        checkbox.checked = !!checkboxesDataFromStorage[checkboxKey]
-
-        const label = document.createElement("label")
-        label.textContent = item.label
-        label.htmlFor = item.id
-
-        // Update the corresponding boolean variable on change
-        checkbox.addEventListener("change", async (event) => {
-            const isChecked = event.target.checked
-            console.debug(`${item.label}:`, checkbox.checked)
-            const cd = await db.getCheckboxes() || checkboxesDataFromStorage
-            if (isChecked) {
-                cd[checkboxKey] = true
-            } else {
-                cd[checkboxKey] = false
-            }
-            await db.putCheckboxes(cd)
-            afterCheckboxDataSetCallback(cd)
-        })
-
-        checkboxContainer.appendChild(checkbox)
-        checkboxContainer.appendChild(label)
-        checkboxContainer.appendChild(document.createTextNode(" ")) // spacing
-    })
-    insertionPoint.appendChild(checkboxContainer)
-}
-
-export function removeControlCheckboxes(parentNode) {
-    const checkboxContainer = parentNode.querySelector(`#${utils.pluginNodeClass + "CheckboxContainer"}`)
-    if (checkboxContainer) checkboxContainer.remove()
 }
 
 export function clearTeamwork(element) {
