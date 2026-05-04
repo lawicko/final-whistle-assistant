@@ -344,7 +344,7 @@ export async function processPlayersPage() {
         if (checkboxInsertionPoint) {
             insertCheckboxesForData(
                 { node: checkboxInsertionPoint, method: "default" },
-                checkboxesData,
+                { checkboxesDataFromStorage: checkboxesData },
                 (cData) => { appendAdditionalInfo(cData) }
             )
         } else {

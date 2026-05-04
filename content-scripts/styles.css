@@ -272,7 +272,6 @@ fw-club div.card-header>div.row label {
 }
 
 input[type="checkbox"] {
-  accent-color: #3d453d;
   margin-left: 6px;
 }
 
@@ -437,6 +436,10 @@ span.FinalWhistlePluginSpecialTalentModifiedTooltip {
   right: -3px;
   font-size: 0.6em;
   cursor: help;
+}
+
+table.player-skill-table span.FinalWhistlePluginSpecialTalentModifiedTooltip {
+  right: auto;
 }
 
 th#FinalWhistlePluginDetailsHeader {

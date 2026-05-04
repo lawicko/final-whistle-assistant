@@ -11,7 +11,7 @@ const stTooltipClass = stClass + "Tooltip"
 export function applyAdditionalInfo(checkboxesData, playerData) {
     const specialTalents = playerData?.specialTalents
     // console.info("Special talents for ", playerData.name, playerData.specialTalents)
-    // console.info("Applying addtional info for checkboxesData:", checkboxesData)
+    console.info("Applying addtional info for checkboxesData:", checkboxesData)
     const stCheckbox = checkboxesData.specialTalents ?? false
 
     try {
@@ -49,13 +49,17 @@ function getPlayerSkills(rows) {
 
 function needsUpdateSpecialTalents(rows, specialTalents) {
     if (rows.length == 0) return false
-    const hasModifiedRows = rows[0].querySelector(`td span.${stClass}`) != undefined
-    console.info("------- WILL RETURN needsUpdate: ", specialTalents != hasModifiedRows, "specialTalents", specialTalents, "hasModifiedRows", hasModifiedRows)
+    let hasModifiedRows = false
+    for (const row of rows) {
+        hasModifiedRows = row.querySelector(`td span.${stClass}`) != undefined
+        if (hasModifiedRows) break
+    }
+    console.debug("needsUpdate: ", specialTalents != hasModifiedRows, "specialTalents", specialTalents, "hasModifiedRows", hasModifiedRows)
     return specialTalents != hasModifiedRows
 }
 
 function applySpecialTalents(originalSkills, specialTalents, add) {
-    console.info("applying special talents", specialTalents, "to skills", originalSkills)
+    console.debug("applying special talents", specialTalents, "to skills", originalSkills)
 
     const skills = structuredClone(originalSkills)
     let skillIndexObject = skillIndexOutfielders
@@ -80,11 +84,14 @@ function applySpecialTalents(originalSkills, specialTalents, add) {
             const skillToChange = skillMapping[skill]
             if (skillToChange) {
                 if (add) {
-                    console.info("changing", skills[skillToChange],"from", skills[skillToChange].value,"to",skills[skillToChange].value+value)
+                    console.debug("changing", skills[skillToChange], "from", skills[skillToChange].value, "to", skills[skillToChange].value + value)
                     skills[skillToChange].value += value
-                    skills[skillToChange].tooltip = tooltip + "\n+" + value + " from " + specialTalent
+                    if (!skills[skillToChange].tooltip) {
+                        skills[skillToChange].tooltip = tooltip
+                    }
+                    skills[skillToChange].tooltip += "\n+" + value + " from " + specialTalent
                 } else {
-                    console.info("changing", skills[skillToChange],"from", skills[skillToChange].value,"to",skills[skillToChange].value-value)
+                    console.info("changing", skills[skillToChange], "from", skills[skillToChange].value, "to", skills[skillToChange].value - value)
                     skills[skillToChange].value -= value
                     delete skills[skillToChange].tooltip
                 }
@@ -116,7 +123,7 @@ const skillMappingGK = {
 }
 
 function setPlayerSkills(skills, rows) {
-    console.info("setting skills", skills, "to rows", rows)
+    console.debug("setting skills", skills, "to rows", rows)
     for (const row of rows) {
         const allCells = row.querySelectorAll('td')
         const label = allCells[0].textContent.trim()
@@ -132,16 +139,29 @@ function setPlayerSkills(skills, rows) {
             const tooltip = skills[label].tooltip
             if (tooltip != undefined) {
                 valueSpan.classList.add(stClass)
-                valueSpan.title = tooltip
+                // valueSpan.title = tooltip
+                const tooltipNode = document.createElement("span")
+                tooltipNode.classList.add(stTooltipClass)
+                tooltipNode.textContent = uiUtils.questionMarkSymbol
+                tooltipNode.title = tooltip
+                valueSpan.after(tooltipNode)
             } else {
                 valueSpan.classList.remove(stClass)
-                valueSpan.title = ""
+                // valueSpan.title = ""
+                const tooltipNode = valueSpan.parentNode.querySelector(`span.${stTooltipClass}`)
+                if (tooltipNode) {
+                    tooltipNode.remove()
+                }
             }
         }
 
         const potSpan = allCells[2].querySelector('span')
         potSpan.textContent = skills[label].pot
     }
+}
+
+export function modifyExistingComputedSkills(tableNode) {
+    // TODO: modify original computed skills like long shots etc.
 }
 
 export function prepareNodeAndAppendComputedSkills(tableNode) {

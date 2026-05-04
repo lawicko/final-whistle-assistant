@@ -4,6 +4,7 @@ import * as playerUtils from "./player+utils.js"
 import { getScoutButton, getBidButton } from "./player+discovery.js"
 import * as integrationUtils from "../../integrations/integrations_utls.js"
 import * as personalitiesUtils from "../../personalities_utils.js"
+import * as specialTalentsUtils from "../../special_talents_utils.js"
 
 export function addTrainingSimulationButtonIfNeeded() {
     if (document.getElementById("TRAINING-SIMULATION-BUTTON")) return

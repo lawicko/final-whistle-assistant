@@ -81,7 +81,7 @@ async function processSquadPage(config) {
 
     insertCheckboxesForData(
         { node: config.controlCheckboxesInsertionPoint, method: "default" },
-        checkboxesData,
+        { checkboxesDataFromStorage: checkboxesData },
         (cData) => { updateAdditionalInfo(cData) }
     )
 

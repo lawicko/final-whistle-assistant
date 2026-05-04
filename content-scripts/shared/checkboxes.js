@@ -16,28 +16,48 @@ export async function getCheckboxesDataFromDB() {
 
 /**
  * Adds the control checkboxes to the desired node
- * @param {Object} insertionPointConfig the insertion point node and to which the checkboxes will be appended with specified method
- * @param {Object} checkboxesDataFromStorage the object containing information on the saved selection state
+ * @param {Object} insertionPointConfig the insertion point config containing the insertion node to which the checkboxes will be appended with specified method
+ * @param {Object} checkboxesConfig the config containing information on the requested checkboxes and the saved selection state
  */
-export function insertCheckboxesForData(insertionPointConfig, checkboxesDataFromStorage, afterCheckboxDataSetCallback) {
+export function insertCheckboxesForData(insertionPointConfig, checkboxesConfig, afterCheckboxDataSetCallback) {
     if (!insertionPointConfig) {
         throw new Error("insertCheckboxesForData called with undefined insertionPointConfig")
     }
 
-    if (!checkboxesDataFromStorage) {
-        throw new Error("insertCheckboxesForData called with undefined checkboxesDataFromStorage")
+    if (!checkboxesConfig) {
+        throw new Error("insertCheckboxesForData called with undefined checkboxesConfig")
     }
 
-    // If there already exists any of the chekboxes then we don't need to add anything because it's already there
-    if (document.getElementById("teamworkCheckbox")) return
+    // If there already exists a chekboxes container, then we don't need to add anything
+    if (document.getElementById(utils.pluginNodeClass + "CheckboxContainer")) return
 
-    const checkboxesData = [
-        { id: "specialTalentsCheckbox", label: `${uiUtils.specialTalentSymbol} ST` },
-        { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork` },
-        { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship` },
-        { id: "advancedDevelopmentCheckbox", label: `AD` },
-        { id: "estimatedPotentialCheckbox", label: `EP` }
-    ];
+    let checkboxesData = []
+    if (!checkboxesConfig.requestedCheckboxes) {
+        checkboxesData = [
+            { id: "specialTalentsCheckbox", label: `${uiUtils.specialTalentSymbol} ST` },
+            { id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork` },
+            { id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship` },
+            { id: "advancedDevelopmentCheckbox", label: `AD` },
+            { id: "estimatedPotentialCheckbox", label: `EP` }
+        ]
+    } else {
+        if (checkboxesConfig.requestedCheckboxes.specialTalents) {
+            checkboxesData.push({ id: "specialTalentsCheckbox", label: `${uiUtils.specialTalentSymbol} ST` })
+        }
+        if (checkboxesConfig.requestedCheckboxes.teamwork) {
+            checkboxesData.push({ id: "teamworkCheckbox", label: `${uiUtils.personalitiesSymbols["teamwork"]} Teamwork` })
+        }
+        if (checkboxesConfig.requestedCheckboxes.sportsmanship) {
+            checkboxesData.push({ id: "sportsmanshipCheckbox", label: `${uiUtils.personalitiesSymbols["sportsmanship"]} Sportsmanship` })
+        }
+        if (checkboxesConfig.requestedCheckboxes.advancedDevelopment) {
+            checkboxesData.push({ id: "advancedDevelopmentCheckbox", label: `AD` })
+        }
+        if (checkboxesConfig.requestedCheckboxes.estimatedPotential) {
+            checkboxesData.push({ id: "estimatedPotentialCheckbox", label: `EP` })
+        }
+    }
+        
     const checkboxContainer = document.createElement("div")
     checkboxContainer.id = utils.pluginNodeClass + "CheckboxContainer"
     checkboxContainer.classList.add("right-items")
@@ -47,10 +67,11 @@ export function insertCheckboxesForData(insertionPointConfig, checkboxesDataFrom
         const checkbox = document.createElement("input")
         checkbox.type = "checkbox"
         checkbox.id = item.id
+        checkbox.className = "form-check-input"
 
         const suffix = "Checkbox";
         const checkboxKey = item.id.slice(0, -suffix.length);
-        checkbox.checked = !!checkboxesDataFromStorage[checkboxKey]
+        checkbox.checked = !!checkboxesConfig.checkboxesDataFromStorage[checkboxKey]
 
         const label = document.createElement("label")
         label.textContent = item.label
@@ -60,7 +81,7 @@ export function insertCheckboxesForData(insertionPointConfig, checkboxesDataFrom
         checkbox.addEventListener("change", async (event) => {
             const isChecked = event.target.checked
             console.debug(`${item.label}:`, checkbox.checked)
-            const cd = await db.getCheckboxes() || checkboxesDataFromStorage
+            const cd = await db.getCheckboxes() || checkboxesConfig.checkboxesDataFromStorage
             if (isChecked) {
                 cd[checkboxKey] = true
             } else {
