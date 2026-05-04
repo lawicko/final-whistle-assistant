@@ -42,7 +42,7 @@ export async function processPlayerPage() {
         insertCheckboxesForData(
             { node: checkboxInsertionPoint, method: "after" },
             checkboxesData,
-            (cData) => { applyAdditionalInfo(cData) }
+            (cData) => { applyAdditionalInfo(cData, playerDataFromPage) }
         )
     } else {
         console.warn("Could not find checkbox insertion point. Query:", checkboxInsertionPointQuery)

@@ -5,17 +5,29 @@ import { parseNumber } from "../../list_utils.js"
 import * as specialTalentsUtils from "../../special_talents_utils.js"
 import { skillIndexGoalkeepers, skillIndexOutfielders } from "../../shared/skills.js"
 
+const stClass = utils.pluginNodeClass + "SpecialTalentModified"
+const stTooltipClass = stClass + "Tooltip"
+
 export function applyAdditionalInfo(checkboxesData, playerData) {
     const specialTalents = playerData?.specialTalents
     // console.info("Special talents for ", playerData.name, playerData.specialTalents)
-    // console.info("Checkboxes data:", checkboxesData)
+    // console.info("Applying addtional info for checkboxesData:", checkboxesData)
+    const stCheckbox = checkboxesData.specialTalents ?? false
 
-    const skillRows = document.querySelectorAll("table.player-skill-table > tbody > tr.pointer")
-    const skills = getPlayerSkills(skillRows)
-    console.info("Player skills:", skills)
-    const skillsWithST = applySpecialTalents(skills, specialTalents, checkboxesData.specialTalents ?? false)
-    console.info("skillsWithST", skillsWithST)
-    setPlayerSkills(skillsWithST, skillRows)
+    try {
+        if (specialTalents) {
+            const skillRows = document.querySelectorAll("table.player-skill-table > tbody > tr.pointer")
+            if (needsUpdateSpecialTalents(skillRows, stCheckbox)) {
+                const skills = getPlayerSkills(skillRows)
+                console.debug("Player skills:", skills)
+                const skillsWithST = applySpecialTalents(skills, specialTalents, stCheckbox)
+                console.debug("skillsWithST", skillsWithST)
+                setPlayerSkills(skillsWithST, skillRows)
+            }
+        }
+    } catch (error) {
+        console.info("Skills table doesn't contain numbers:", error.message)
+    }
 }
 
 function getPlayerSkills(rows) {
@@ -24,24 +36,36 @@ function getPlayerSkills(rows) {
         const allCells = row.querySelectorAll('td')
         const label = allCells[0].textContent.trim()
         const valueSpan = allCells[1].querySelector('span')
-        const value = parseNumber(valueSpan)
+        const value = parseInt(valueSpan.textContent.replace(/\D/g, ''))
         const potSpan = allCells[2].querySelector('span')
-        const pot = parseNumber(potSpan)
+        const pot = parseInt(potSpan.textContent.replace(/\D/g, ''))
+        if (isNaN(value) || isNaN(pot)) {
+            throw new Error(`Failed to parse numeric data for skill: "${label}"`);
+        }
         data[label] = { value: value, pot: pot }
     }
     return data
 }
 
-function applySpecialTalents(skills, specialTalents, add) {
-    console.info("applying special talents", specialTalents, "to skills", skills)
+function needsUpdateSpecialTalents(rows, specialTalents) {
+    if (rows.length == 0) return false
+    const hasModifiedRows = rows[0].querySelector(`td span.${stClass}`) != undefined
+    console.info("------- WILL RETURN needsUpdate: ", specialTalents != hasModifiedRows, "specialTalents", specialTalents, "hasModifiedRows", hasModifiedRows)
+    return specialTalents != hasModifiedRows
+}
 
-    const stClass = utils.pluginNodeClass + "SpecialTalentModified"
-    const stTooltipClass = stClass + "Tooltip"
+function applySpecialTalents(originalSkills, specialTalents, add) {
+    console.info("applying special talents", specialTalents, "to skills", originalSkills)
+
+    const skills = structuredClone(originalSkills)
     let skillIndexObject = skillIndexOutfielders
     let skillMapping = skillMappingOutfielder
-    if (skills.length < 8) { // Goalkeepers
+    if (Object.keys(skills).length < 8) { // Goalkeepers
+        console.debug("Detected GK")
         skillIndexObject = skillIndexGoalkeepers
         skillMapping = skillMappingGK
+    } else {
+        console.debug("Detected outfileder")
     }
     let modifications = new Array(skills.length).fill(0)
     let tooltip = "If you plan on changing the form you will have to reload the page to get the correct numbers."
@@ -50,12 +74,20 @@ function applySpecialTalents(skills, specialTalents, add) {
         if (!affectedSkills) continue // for skills like tough there are no skills affected
         console.debug("talent", specialTalent, "affectedSkills", affectedSkills)
         for (const [skill, value] of Object.entries(affectedSkills)) {
+            // console.info("skillMapping", skillMapping)
+            // console.info("skill", skill)
+            // console.info("skills", skills)
             const skillToChange = skillMapping[skill]
             if (skillToChange) {
-                console.info("changing", skills[skillToChange],"from", skills[skillToChange].value,"to",skills[skillToChange].value+value)
-                skills[skillToChange].value += value
-                skills[skillToChange].updateDenomination = true
-                skills[skillToChange].tooltip = tooltip + "\n+" + value + " from " + specialTalent
+                if (add) {
+                    console.info("changing", skills[skillToChange],"from", skills[skillToChange].value,"to",skills[skillToChange].value+value)
+                    skills[skillToChange].value += value
+                    skills[skillToChange].tooltip = tooltip + "\n+" + value + " from " + specialTalent
+                } else {
+                    console.info("changing", skills[skillToChange],"from", skills[skillToChange].value,"to",skills[skillToChange].value-value)
+                    skills[skillToChange].value -= value
+                    delete skills[skillToChange].tooltip
+                }
             }
         }
     }
@@ -97,6 +129,14 @@ function setPlayerSkills(skills, rows) {
         if (currentDenomClass) {
             valueSpan.classList.remove(currentDenomClass) // remove old denomX
             valueSpan.classList.add(denomClass) // add new denomX
+            const tooltip = skills[label].tooltip
+            if (tooltip != undefined) {
+                valueSpan.classList.add(stClass)
+                valueSpan.title = tooltip
+            } else {
+                valueSpan.classList.remove(stClass)
+                valueSpan.title = ""
+            }
         }
 
         const potSpan = allCells[2].querySelector('span')

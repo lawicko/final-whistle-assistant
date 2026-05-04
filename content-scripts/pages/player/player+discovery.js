@@ -197,7 +197,7 @@ export function getPlayerData() {
     let specialTalentsData
     if (specialTalentsTable) {
         specialTalentsData = getSpecialTalentsData(specialTalentsTable)
-        console.info('Result of reading the special talents', specialTalentsData)
+        console.debug('Result of reading the special talents', specialTalentsData)
     } else {
         console.debug(`No special talents table found, skipping...`)
     }

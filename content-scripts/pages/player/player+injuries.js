@@ -50,7 +50,7 @@ function minutesPlayedBetween(minutesPlayed, injurDatesAsStrings) {
  * Adds injuries table to the player page if there is injury information in the storage
  */
 export async function showInjuries(currentPlayerData) {
-    console.debug('currentPlayerData = ', currentPlayerData)
+    console.debug('showInjuries currentPlayerData = ', currentPlayerData)
     const injuries = currentPlayerData['injuries']
     //    const injuries = ["29 Aug 2025, 12:00", "27 Aug 2025, 12:00", "15 Aug 2025, 12:00"]
     const minutesPlayed = currentPlayerData['minutes-played']
