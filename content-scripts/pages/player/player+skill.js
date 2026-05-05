@@ -16,7 +16,7 @@ export function applyAdditionalInfo(checkboxesData, playerData) {
 
     try {
         if (specialTalents) {
-            const skillRows = document.querySelectorAll("table.player-skill-table > tbody > tr.pointer")
+            const skillRows = document.querySelectorAll("table.player-skill-table > tbody > tr.pointer, table.player-skill-table > tbody > tr.over-train-marker")
             if (needsUpdateSpecialTalents(skillRows, stCheckbox)) {
                 const skills = getPlayerSkills(skillRows)
                 console.debug("Player skills:", skills)
@@ -54,7 +54,7 @@ function needsUpdateSpecialTalents(rows, specialTalents) {
         hasModifiedRows = row.querySelector(`td span.${stClass}`) != undefined
         if (hasModifiedRows) break
     }
-    console.debug("needsUpdate: ", specialTalents != hasModifiedRows, "specialTalents", specialTalents, "hasModifiedRows", hasModifiedRows)
+    console.debug("needsUpdate:", specialTalents != hasModifiedRows, "specialTalents", specialTalents, "hasModifiedRows", hasModifiedRows)
     return specialTalents != hasModifiedRows
 }
 
@@ -65,11 +65,11 @@ function applySpecialTalents(originalSkills, specialTalents, add) {
     let skillIndexObject = skillIndexOutfielders
     let skillMapping = skillMappingOutfielder
     if (Object.keys(skills).length < 8) { // Goalkeepers
-        console.debug("Detected GK")
+        console.debug("Detected GK, keys:", Object.keys(skills))
         skillIndexObject = skillIndexGoalkeepers
         skillMapping = skillMappingGK
     } else {
-        console.debug("Detected outfileder")
+        console.debug("Detected outfileder, keys:", Object.keys(skills))
     }
     let modifications = new Array(skills.length).fill(0)
     let tooltip = "If you plan on changing the form you will have to reload the page to get the correct numbers."
@@ -128,31 +128,13 @@ function setPlayerSkills(skills, rows) {
         const allCells = row.querySelectorAll('td')
         const label = allCells[0].textContent.trim()
         const valueSpan = allCells[1].querySelector('span')
-        valueSpan.textContent = skills[label].value
-        const denomination = utils.denomination(skills[label].value)
-        const denomClass = "denom" + denomination
-        // Find the class that starts with "denom"
-        const currentDenomClass = Array.from(valueSpan.classList).find(cls => cls.startsWith("denom"))
-        if (currentDenomClass) {
-            valueSpan.classList.remove(currentDenomClass) // remove old denomX
-            valueSpan.classList.add(denomClass) // add new denomX
-            const tooltip = skills[label].tooltip
-            if (tooltip != undefined) {
-                valueSpan.classList.add(stClass)
-                // valueSpan.title = tooltip
-                const tooltipNode = document.createElement("span")
-                tooltipNode.classList.add(stTooltipClass)
-                tooltipNode.textContent = uiUtils.questionMarkSymbol
-                tooltipNode.title = tooltip
-                valueSpan.after(tooltipNode)
-            } else {
-                valueSpan.classList.remove(stClass)
-                // valueSpan.title = ""
-                const tooltipNode = valueSpan.parentNode.querySelector(`span.${stTooltipClass}`)
-                if (tooltipNode) {
-                    tooltipNode.remove()
-                }
-            }
+        updateValueAndDenominationFor(valueSpan, skills[label].value)
+
+        const tooltip = skills[label].tooltip
+        if (tooltip != undefined) {
+            addTooltipAfter(valueSpan, tooltip)
+        } else {
+            removeTooltipFor(valueSpan)
         }
 
         const potSpan = allCells[2].querySelector('span')
@@ -160,8 +142,33 @@ function setPlayerSkills(skills, rows) {
     }
 }
 
-export function modifyExistingComputedSkills(tableNode) {
-    // TODO: modify original computed skills like long shots etc.
+function updateValueAndDenominationFor(node, value) {
+    node.textContent = value
+    const denomination = utils.denomination(value)
+    const denomClass = "denom" + denomination
+    // Find the class that starts with "denom"
+    const currentDenomClass = Array.from(node.classList).find(cls => cls.startsWith("denom"))
+    if (currentDenomClass) {
+        node.classList.remove(currentDenomClass) // remove old denomX
+        node.classList.add(denomClass) // add new denomX
+    }
+}
+
+function addTooltipAfter(node, tooltip) {
+    node.classList.add(stClass)
+    const tooltipNode = document.createElement("span")
+    tooltipNode.classList.add(stTooltipClass)
+    tooltipNode.textContent = uiUtils.questionMarkSymbol
+    tooltipNode.title = tooltip
+    node.after(tooltipNode)
+}
+
+function removeTooltipFor(node) {
+    node.classList.remove(stClass)
+    const tooltipNode = node.parentNode.querySelector(`span.${stTooltipClass}`)
+    if (tooltipNode) {
+        tooltipNode.remove()
+    }
 }
 
 export function prepareNodeAndAppendComputedSkills(tableNode) {
@@ -344,37 +351,105 @@ function appendComputedSkills(tableNode) {
     // Tool-tips
     let updatedCells = tbodyNode.querySelectorAll("tr td")
 
-    const headingValueText = `Math.floor(0.65 * ${SC} + 0.35 * ${AE}) =\nMath.floor(${(0.65 * SC).toFixed(2)} + ${(0.35 * AE).toFixed(2)}) =\nMath.floor(${((0.65 * SC) + (0.35 * AE)).toFixed(2)}) = ${Math.floor((0.65 * SC) + (0.35 * AE))}`
-    const headingPotentialText = `Math.floor(0.65 * ${SC_POT} + 0.35 * ${AE_POT}) =\nMath.floor(${(0.65 * SC_POT).toFixed(2)} + ${(0.35 * AE_POT).toFixed(2)}) =\nMath.floor(${((0.65 * SC_POT) + (0.35 * AE_POT)).toFixed(2)}) = ${Math.floor((0.65 * SC_POT) + (0.35 * AE_POT))}`
-    addHoverCardToCell(updatedCells, "Heading", "Math.floor(0.65 * SC + 0.35 * AE)", headingValueText, headingPotentialText)
+    const headingCell = cellWithText(updatedCells, "Heading")
+    if (headingCell) {
+        const headingValueText = `Math.floor(0.65 * ${SC} + 0.35 * ${AE}) =\nMath.floor(${(0.65 * SC).toFixed(2)} + ${(0.35 * AE).toFixed(2)}) =\nMath.floor(${((0.65 * SC) + (0.35 * AE)).toFixed(2)}) = ${Math.floor((0.65 * SC) + (0.35 * AE))}`
+        const headingPotentialText = `Math.floor(0.65 * ${SC_POT} + 0.35 * ${AE_POT}) =\nMath.floor(${(0.65 * SC_POT).toFixed(2)} + ${(0.35 * AE_POT).toFixed(2)}) =\nMath.floor(${((0.65 * SC_POT) + (0.35 * AE_POT)).toFixed(2)}) = ${Math.floor((0.65 * SC_POT) + (0.35 * AE_POT))}`
+        addHoverCardToCell(headingCell, "Math.floor(0.65 * SC + 0.35 * AE)", headingValueText, headingPotentialText)
 
-    const penaltyValueText = `Math.floor(Math.max(1.2 * ${SC}, 0.8 * ${PA})) =\nMath.floor(Math.max(${(1.2 * SC).toFixed(2)}, ${(0.8 * PA).toFixed(2)})) =\nMath.floor(${(Math.max(1.2 * SC, 0.8 * PA)).toFixed(2)}) = ${Math.floor(Math.max(1.2 * SC, 0.8 * PA))}`
-    const penaltyPotentialText = `Math.floor(Math.max(1.2 * ${SC_POT}, 0.8 * ${PA_POT})) =\nMath.floor(Math.max(${(1.2 * SC_POT).toFixed(2)}, ${(0.8 * PA_POT).toFixed(2)})) =\nMath.floor(${(Math.max(1.2 * SC_POT, 0.8 * PA_POT)).toFixed(2)}) = ${Math.floor(Math.max(1.2 * SC_POT, 0.8 * PA_POT))}`
-    addHoverCardToCell(updatedCells, "Penalty Kick", "Math.floor(Math.max(1.2 * SC, 0.8 * PA))", penaltyValueText, penaltyPotentialText)
+        const valueSpan = headingCell.nextElementSibling.querySelector('span')
+        const newValue = Math.floor(0.65 * SC + 0.35 * AE)
+        updateValueAndDenominationFor(valueSpan, newValue)
+    } else {
+        console.warn(`headingCell not found`)
+        return
+    }
 
-    const longShotsValueText = `Math.floor((${SC} + Math.min(2 * ${SC}, ${PA})) / 2) =\nMath.floor((${SC} + Math.min(${2 * SC}, ${PA})) / 2) =\nMath.floor((${SC} + ${Math.min(2 * SC, PA)}) / 2) =\nMath.floor(${SC + Math.min(2 * SC, PA)} / 2) =\nMath.floor(${(SC + Math.min(2 * SC, PA)) / 2}) = ${Math.floor((SC + Math.min(2 * SC, PA)) / 2)}`
-    const longShotsPotentialText = `Math.floor((${SC_POT} + Math.min(2 * ${SC_POT}, ${PA_POT})) / 2) =\nMath.floor((${SC_POT} + Math.min(${2 * SC_POT}, ${PA_POT})) / 2) =\nMath.floor((${SC_POT} + ${Math.min(2 * SC_POT, PA_POT)}) / 2) =\nMath.floor(${SC_POT + Math.min(2 * SC_POT, PA_POT)} / 2) =\nMath.floor(${(SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2}) = ${Math.floor((SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2)}`
-    addHoverCardToCell(updatedCells, "Long Shots", "Math.floor((SC + Math.min(2 * SC, PA)) / 2)", longShotsValueText, longShotsPotentialText)
+    const penaltyCell = cellWithText(updatedCells, "Penalty Kick")
+    if (penaltyCell) {
+        const penaltyValueText = `Math.floor(Math.max(1.2 * ${SC}, 0.8 * ${PA})) =\nMath.floor(Math.max(${(1.2 * SC).toFixed(2)}, ${(0.8 * PA).toFixed(2)})) =\nMath.floor(${(Math.max(1.2 * SC, 0.8 * PA)).toFixed(2)}) = ${Math.floor(Math.max(1.2 * SC, 0.8 * PA))}`
+        const penaltyPotentialText = `Math.floor(Math.max(1.2 * ${SC_POT}, 0.8 * ${PA_POT})) =\nMath.floor(Math.max(${(1.2 * SC_POT).toFixed(2)}, ${(0.8 * PA_POT).toFixed(2)})) =\nMath.floor(${(Math.max(1.2 * SC_POT, 0.8 * PA_POT)).toFixed(2)}) = ${Math.floor(Math.max(1.2 * SC_POT, 0.8 * PA_POT))}`
+        addHoverCardToCell(penaltyCell, "Math.floor(Math.max(1.2 * SC, 0.8 * PA))", penaltyValueText, penaltyPotentialText)
 
-    const spHeadingValueText = `Math.floor(0.8 * ${AE} + 0.2 * ${CO}) =\nMath.floor(${(0.8 * AE).toFixed(2)} + ${(0.2 * CO).toFixed(2)}) =\nMath.floor(${(0.8 * AE + 0.2 * CO).toFixed(2)}) = ${Math.floor(0.8 * AE + 0.2 * CO)}`
-    const spHeadingPotentialText = `Math.floor(0.8 * ${AE_POT} + 0.2 * ${CO_POT}) =\nMath.floor(${(0.8 * AE_POT).toFixed(2)} + ${(0.2 * CO_POT).toFixed(2)}) =\nMath.floor(${(0.8 * AE_POT + 0.2 * CO_POT).toFixed(2)}) = ${Math.floor(0.8 * AE_POT + 0.2 * CO_POT)}`
-    addHoverCardToCell(updatedCells, "Sp. Heading", "Math.floor(0.8 * AE + 0.2 * CO)", spHeadingValueText, spHeadingPotentialText)
+        const valueSpan = penaltyCell.nextElementSibling.querySelector('span')
+        const newValue = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
+        updateValueAndDenominationFor(valueSpan, newValue)
+    } else {
+        console.warn(`penaltyCell not found`)
+        return
+    }
 
-    const spCrossValueText = `Math.floor(0.7 * ${PA} + 0.3 * ${BC}) =\nMath.floor(${(0.7 * PA).toFixed(2)} + ${(0.3 * BC).toFixed(2)}) =\nMath.floor(${(0.7 * PA + 0.3 * BC).toFixed(2)}) = ${Math.floor(0.7 * PA + 0.3 * BC)}`
-    const spCrossPotentialText = `Math.floor(0.7 * ${PA_POT} + 0.3 * ${BC_POT}) =\nMath.floor(${(0.7 * PA_POT).toFixed(2)} + ${(0.3 * BC_POT).toFixed(2)}) =\nMath.floor(${(0.7 * PA_POT + 0.3 * BC_POT).toFixed(2)}) = ${Math.floor(0.7 * PA_POT + 0.3 * BC_POT)}`
-    addHoverCardToCell(updatedCells, "Sp. Cross", "Math.floor(0.7 * PA + 0.3 * BC)", spCrossValueText, spCrossPotentialText)
+    const longShotCell = cellWithText(updatedCells, "Long Shots")
+    if (longShotCell) {
+        const longShotsValueText = `Math.floor((${SC} + Math.min(2 * ${SC}, ${PA})) / 2) =\nMath.floor((${SC} + Math.min(${2 * SC}, ${PA})) / 2) =\nMath.floor((${SC} + ${Math.min(2 * SC, PA)}) / 2) =\nMath.floor(${SC + Math.min(2 * SC, PA)} / 2) =\nMath.floor(${(SC + Math.min(2 * SC, PA)) / 2}) = ${Math.floor((SC + Math.min(2 * SC, PA)) / 2)}`
+        const longShotsPotentialText = `Math.floor((${SC_POT} + Math.min(2 * ${SC_POT}, ${PA_POT})) / 2) =\nMath.floor((${SC_POT} + Math.min(${2 * SC_POT}, ${PA_POT})) / 2) =\nMath.floor((${SC_POT} + ${Math.min(2 * SC_POT, PA_POT)}) / 2) =\nMath.floor(${SC_POT + Math.min(2 * SC_POT, PA_POT)} / 2) =\nMath.floor(${(SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2}) = ${Math.floor((SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2)}`
+        addHoverCardToCell(longShotCell, "Math.floor((SC + Math.min(2 * SC, PA)) / 2)", longShotsValueText, longShotsPotentialText)
 
-    const mdValueText = `${PA} + Math.min(${OP} + ${BC}, ${TA} + ${DP}) + Math.max(0, ${CO - constitutionTreshold}) =\n${PA} + Math.min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)} =\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`
-    const mdPotentialText = `${PA_POT} + Math.min(${OP_POT} + ${BC_POT}, ${TA_POT} + ${DP_POT}) + Math.max(0, ${CO_POT - constitutionTreshold}) =\n${PA_POT} + Math.min(${OP_POT + BC_POT}, ${TA_POT + DP_POT}) + ${Math.max(0, CO_POT - constitutionTreshold)} =\n${PA_POT} + ${Math.min(OP_POT + BC_POT, TA_POT + DP_POT)} + ${Math.max(0, CO_POT - constitutionTreshold)} = ${PA_POT + Math.min(OP_POT + BC_POT, TA_POT + DP_POT) + Math.max(0, CO_POT - constitutionTreshold)}`
-    addHoverCardToCell(updatedCells, "Midfield Dominance", `PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})`, mdValueText, mdPotentialText)
+        const valueSpan = longShotCell.nextElementSibling.querySelector('span')
+        const newValue = Math.floor((SC + Math.min(2 * SC, PA)) / 2)
+        updateValueAndDenominationFor(valueSpan, newValue)
+    } else {
+        console.warn(`longShotCell not found`)
+        return
+    }
 
-    const oaValueText = `OP + BC =\n${OP} + ${BC} = ${resultCurrents.offensiveAssistance}${resultCurrents.offensiveAssistanceModifierDetails}`
-    const oaPotentialText = `OP_POT + BC_POT = \n${OP_POT} + ${BC_POT} = ${resultPotential.offensiveAssistance}${resultPotential.offensiveAssistanceModifierDetails}`
-    addHoverCardToCell(updatedCells, "Offensive Assistance", "OP + BC", oaValueText, oaPotentialText)
+    const spHeadingCell = cellWithText(updatedCells, "Sp. Heading")
+    if (spHeadingCell) {
+        const spHeadingValueText = `Math.floor(0.8 * ${AE} + 0.2 * ${CO}) =\nMath.floor(${(0.8 * AE).toFixed(2)} + ${(0.2 * CO).toFixed(2)}) =\nMath.floor(${(0.8 * AE + 0.2 * CO).toFixed(2)}) = ${Math.floor(0.8 * AE + 0.2 * CO)}`
+        const spHeadingPotentialText = `Math.floor(0.8 * ${AE_POT} + 0.2 * ${CO_POT}) =\nMath.floor(${(0.8 * AE_POT).toFixed(2)} + ${(0.2 * CO_POT).toFixed(2)}) =\nMath.floor(${(0.8 * AE_POT + 0.2 * CO_POT).toFixed(2)}) = ${Math.floor(0.8 * AE_POT + 0.2 * CO_POT)}`
+        addHoverCardToCell(spHeadingCell, "Math.floor(0.8 * AE + 0.2 * CO)", spHeadingValueText, spHeadingPotentialText)
 
-    const daValueText = `TA + DP =\n${TA} + ${DP} = ${resultCurrents.defensiveAssistance}${resultCurrents.defensiveAssistanceModifierDetails}`
-    const daPotentialText = `TA_POT + DP_POT = \n${TA_POT} + ${DP_POT} = ${resultPotential.defensiveAssistance}${resultPotential.defensiveAssistanceModifierDetails}`
-    addHoverCardToCell(updatedCells, "Defensive Assistance", "TA + DP", daValueText, daPotentialText)
+        const valueSpan = spHeadingCell.nextElementSibling.querySelector('span')
+        const newValue = Math.floor(0.8 * AE + 0.2 * CO)
+        updateValueAndDenominationFor(valueSpan, newValue)
+    } else {
+        console.warn(`spHeadingCell not found`)
+        return
+    }
+
+    const spCrossCell = cellWithText(updatedCells, "Sp. Cross")
+    if (spCrossCell) {
+        const spCrossValueText = `Math.floor(0.7 * ${PA} + 0.3 * ${BC}) =\nMath.floor(${(0.7 * PA).toFixed(2)} + ${(0.3 * BC).toFixed(2)}) =\nMath.floor(${(0.7 * PA + 0.3 * BC).toFixed(2)}) = ${Math.floor(0.7 * PA + 0.3 * BC)}`
+        const spCrossPotentialText = `Math.floor(0.7 * ${PA_POT} + 0.3 * ${BC_POT}) =\nMath.floor(${(0.7 * PA_POT).toFixed(2)} + ${(0.3 * BC_POT).toFixed(2)}) =\nMath.floor(${(0.7 * PA_POT + 0.3 * BC_POT).toFixed(2)}) = ${Math.floor(0.7 * PA_POT + 0.3 * BC_POT)}`
+        addHoverCardToCell(spCrossCell, "Math.floor(0.7 * PA + 0.3 * BC)", spCrossValueText, spCrossPotentialText)
+
+        const valueSpan = spCrossCell.nextElementSibling.querySelector('span')
+        const newValue = Math.floor(0.7 * PA + 0.3 * BC)
+        updateValueAndDenominationFor(valueSpan, newValue)
+    } else {
+        console.warn(`spCrossCell not found`)
+        return
+    }
+
+    const mdCell = cellWithText(updatedCells, "Midfield Dominance")
+    if (mdCell) {
+        const mdValueText = `${PA} + Math.min(${OP} + ${BC}, ${TA} + ${DP}) + Math.max(0, ${CO - constitutionTreshold}) =\n${PA} + Math.min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)} =\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`
+        const mdPotentialText = `${PA_POT} + Math.min(${OP_POT} + ${BC_POT}, ${TA_POT} + ${DP_POT}) + Math.max(0, ${CO_POT - constitutionTreshold}) =\n${PA_POT} + Math.min(${OP_POT + BC_POT}, ${TA_POT + DP_POT}) + ${Math.max(0, CO_POT - constitutionTreshold)} =\n${PA_POT} + ${Math.min(OP_POT + BC_POT, TA_POT + DP_POT)} + ${Math.max(0, CO_POT - constitutionTreshold)} = ${PA_POT + Math.min(OP_POT + BC_POT, TA_POT + DP_POT) + Math.max(0, CO_POT - constitutionTreshold)}`
+        addHoverCardToCell(mdCell, `PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})`, mdValueText, mdPotentialText)
+    } else {
+        console.warn(`mdCell not found`)
+        return
+    }
+
+    const oaCell = cellWithText(updatedCells, "Offensive Assistance")
+    if (oaCell) {
+        const oaValueText = `OP + BC =\n${OP} + ${BC} = ${resultCurrents.offensiveAssistance}${resultCurrents.offensiveAssistanceModifierDetails}`
+        const oaPotentialText = `OP_POT + BC_POT = \n${OP_POT} + ${BC_POT} = ${resultPotential.offensiveAssistance}${resultPotential.offensiveAssistanceModifierDetails}`
+        addHoverCardToCell(oaCell, "OP + BC", oaValueText, oaPotentialText)
+    } else {
+        console.warn(`oaCell not found`)
+        return
+    }
+
+    const daCell = cellWithText(updatedCells, "Defensive Assistance")
+    if (daCell) {
+        const daValueText = `TA + DP =\n${TA} + ${DP} = ${resultCurrents.defensiveAssistance}${resultCurrents.defensiveAssistanceModifierDetails}`
+        const daPotentialText = `TA_POT + DP_POT = \n${TA_POT} + ${DP_POT} = ${resultPotential.defensiveAssistance}${resultPotential.defensiveAssistanceModifierDetails}`
+        addHoverCardToCell(daCell, "TA + DP", daValueText, daPotentialText)
+    } else {
+        console.warn(`daCell not found`)
+        return
+    }
 }
 
 function createComputedPropertyRow(label, currentDenomination, currentTextContent, potentialDenomination, potentialTextContent) {
@@ -407,17 +482,15 @@ function createComputedPropertyRow(label, currentDenomination, currentTextConten
     return tr
 }
 
-function addHoverCardToCell(allCells, targetText, tooltipText, valueTooltipText, potentialTooltipText) {
+function cellWithText(allCells, targetText) {
     // Find the cell whose text matches targetText
     let targetCell = Array.from(allCells).find(
         cell => cell.textContent.trim() === targetText
-    );
+    )
+    return targetCell
+}
 
-    if (!targetCell) {
-        console.warn(`Cell with text "${targetText}" not found.`);
-        return;
-    }
-
+function addHoverCardToCell(targetCell, tooltipText, valueTooltipText, potentialTooltipText) {
     targetCell.setAttribute("data-tooltip", tooltipText);
     targetCell.classList.add('header-tooltip')
 
