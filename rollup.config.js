@@ -29,7 +29,8 @@ const copyCommonFiles = targets.flatMap((target) => {
             ]),
         { src: 'dist/content-scripts.bundle.js', dest: `dist/${target}` },
         { src: 'dist/content-scripts.bundle.js.map', dest: `dist/${target}` },
-        { src: 'content-scripts/integrations/*', dest: `dist/${target}` }
+        { src: 'content-scripts/integrations/*', dest: `dist/${target}` },
+        { src: 'src/scroll_block.js', dest: `dist/${target}`}
     ]
 })
 
@@ -97,7 +98,8 @@ export default [
             }),
             watchStylesheet(),
             watchAnalyser(),
-            watchIntegrations()
+            watchIntegrations(),
+            watchOther()
         ]
     },
 
@@ -244,18 +246,27 @@ function watchOptions() {
     return {
         name: 'watch-options',
         buildStart() {
-            this.addWatchFile(path.resolve('options/options.css'));
-            this.addWatchFile(path.resolve('options/options.html'));
+            this.addWatchFile(path.resolve('options/options.css'))
+            this.addWatchFile(path.resolve('options/options.html'))
         }
-    };
+    }
 }
 
 function watchIntegrations() {
     return {
         name: 'watch-training-simulation',
         buildStart() {
-            this.addWatchFile(path.resolve('content-scripts/integrations/training_simulation_badger.js'));
-            this.addWatchFile(path.resolve('content-scripts/integrations/external_analyzer_trevor.js'));
+            this.addWatchFile(path.resolve('content-scripts/integrations/training_simulation_badger.js'))
+            this.addWatchFile(path.resolve('content-scripts/integrations/external_analyzer_trevor.js'))
         }
-    };
+    }
+}
+
+function watchOther() {
+    return {
+        name: 'watch-other',
+        buildStart() {
+            this.addWatchFile(path.resolve('src/scroll_block.js'))
+        }
+    }
 }

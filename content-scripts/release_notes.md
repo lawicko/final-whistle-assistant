@@ -56,3 +56,6 @@
 - Fixed the transfer list footer to top relocation
 - Reverted the color change of the potential rise indicator on the `/player` Training tab since it was fixed in the game
 - Implemented special talents modifiers on the `/player` page ([#55](https://github.com/lawicko/final-whistle-assistant/issues/55))
+
+# 6.4.0
+- Added scroll block for `/lineup`

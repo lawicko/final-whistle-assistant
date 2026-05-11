@@ -2,7 +2,7 @@ import {
     lastPathComponent,
     version,
     pluginNodeClass
-} from "./utils.js";
+} from "../../utils.js";
 
 import {
     addNoDataSymbol,
@@ -14,8 +14,8 @@ import {
     removeNoDataSymbol,
     personalitiesSymbols,
     questionMarkSymbol
-} from "./ui_utils";
-import * as db from "./db_access.js"
+} from "../../ui_utils.js";
+import * as db from "../../db_access.js"
 
 function getPlayerLinks(selector) {
     // Get the container
