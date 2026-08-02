@@ -355,8 +355,7 @@ function appendComputedSkills(tableNode) {
     if (headingCell) {
         const headingValueText = `Math.floor(0.65 * ${SC} + 0.35 * ${AE}) =\nMath.floor(${(0.65 * SC).toFixed(2)} + ${(0.35 * AE).toFixed(2)}) =\nMath.floor(${((0.65 * SC) + (0.35 * AE)).toFixed(2)}) = ${Math.floor((0.65 * SC) + (0.35 * AE))}`
         const headingPotentialText = `Math.floor(0.65 * ${SC_POT} + 0.35 * ${AE_POT}) =\nMath.floor(${(0.65 * SC_POT).toFixed(2)} + ${(0.35 * AE_POT).toFixed(2)}) =\nMath.floor(${((0.65 * SC_POT) + (0.35 * AE_POT)).toFixed(2)}) = ${Math.floor((0.65 * SC_POT) + (0.35 * AE_POT))}`
-        addHoverCardToCell(headingCell, "Math.floor(0.65 * SC + 0.35 * AE)", headingValueText, headingPotentialText)
-
+        addTooltipsToCell(headingCell, "Math.floor(0.65 * SC + 0.35 * AE)", headingValueText, headingPotentialText)
         const valueSpan = headingCell.nextElementSibling.querySelector('span')
         const newValue = Math.floor(0.65 * SC + 0.35 * AE)
         updateValueAndDenominationFor(valueSpan, newValue)
@@ -369,7 +368,7 @@ function appendComputedSkills(tableNode) {
     if (penaltyCell) {
         const penaltyValueText = `Math.floor(Math.max(1.2 * ${SC}, 0.8 * ${PA})) =\nMath.floor(Math.max(${(1.2 * SC).toFixed(2)}, ${(0.8 * PA).toFixed(2)})) =\nMath.floor(${(Math.max(1.2 * SC, 0.8 * PA)).toFixed(2)}) = ${Math.floor(Math.max(1.2 * SC, 0.8 * PA))}`
         const penaltyPotentialText = `Math.floor(Math.max(1.2 * ${SC_POT}, 0.8 * ${PA_POT})) =\nMath.floor(Math.max(${(1.2 * SC_POT).toFixed(2)}, ${(0.8 * PA_POT).toFixed(2)})) =\nMath.floor(${(Math.max(1.2 * SC_POT, 0.8 * PA_POT)).toFixed(2)}) = ${Math.floor(Math.max(1.2 * SC_POT, 0.8 * PA_POT))}`
-        addHoverCardToCell(penaltyCell, "Math.floor(Math.max(1.2 * SC, 0.8 * PA))", penaltyValueText, penaltyPotentialText)
+        addTooltipsToCell(penaltyCell, "Math.floor(Math.max(1.2 * SC, 0.8 * PA))", penaltyValueText, penaltyPotentialText)
 
         const valueSpan = penaltyCell.nextElementSibling.querySelector('span')
         const newValue = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
@@ -383,7 +382,7 @@ function appendComputedSkills(tableNode) {
     if (longShotCell) {
         const longShotsValueText = `Math.floor((${SC} + Math.min(2 * ${SC}, ${PA})) / 2) =\nMath.floor((${SC} + Math.min(${2 * SC}, ${PA})) / 2) =\nMath.floor((${SC} + ${Math.min(2 * SC, PA)}) / 2) =\nMath.floor(${SC + Math.min(2 * SC, PA)} / 2) =\nMath.floor(${(SC + Math.min(2 * SC, PA)) / 2}) = ${Math.floor((SC + Math.min(2 * SC, PA)) / 2)}`
         const longShotsPotentialText = `Math.floor((${SC_POT} + Math.min(2 * ${SC_POT}, ${PA_POT})) / 2) =\nMath.floor((${SC_POT} + Math.min(${2 * SC_POT}, ${PA_POT})) / 2) =\nMath.floor((${SC_POT} + ${Math.min(2 * SC_POT, PA_POT)}) / 2) =\nMath.floor(${SC_POT + Math.min(2 * SC_POT, PA_POT)} / 2) =\nMath.floor(${(SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2}) = ${Math.floor((SC_POT + Math.min(2 * SC_POT, PA_POT)) / 2)}`
-        addHoverCardToCell(longShotCell, "Math.floor((SC + Math.min(2 * SC, PA)) / 2)", longShotsValueText, longShotsPotentialText)
+        addTooltipsToCell(longShotCell, "Math.floor((SC + Math.min(2 * SC, PA)) / 2)", longShotsValueText, longShotsPotentialText)
 
         const valueSpan = longShotCell.nextElementSibling.querySelector('span')
         const newValue = Math.floor((SC + Math.min(2 * SC, PA)) / 2)
@@ -397,7 +396,7 @@ function appendComputedSkills(tableNode) {
     if (spHeadingCell) {
         const spHeadingValueText = `Math.floor(0.8 * ${AE} + 0.2 * ${CO}) =\nMath.floor(${(0.8 * AE).toFixed(2)} + ${(0.2 * CO).toFixed(2)}) =\nMath.floor(${(0.8 * AE + 0.2 * CO).toFixed(2)}) = ${Math.floor(0.8 * AE + 0.2 * CO)}`
         const spHeadingPotentialText = `Math.floor(0.8 * ${AE_POT} + 0.2 * ${CO_POT}) =\nMath.floor(${(0.8 * AE_POT).toFixed(2)} + ${(0.2 * CO_POT).toFixed(2)}) =\nMath.floor(${(0.8 * AE_POT + 0.2 * CO_POT).toFixed(2)}) = ${Math.floor(0.8 * AE_POT + 0.2 * CO_POT)}`
-        addHoverCardToCell(spHeadingCell, "Math.floor(0.8 * AE + 0.2 * CO)", spHeadingValueText, spHeadingPotentialText)
+        addTooltipsToCell(spHeadingCell, "Math.floor(0.8 * AE + 0.2 * CO)", spHeadingValueText, spHeadingPotentialText)
 
         const valueSpan = spHeadingCell.nextElementSibling.querySelector('span')
         const newValue = Math.floor(0.8 * AE + 0.2 * CO)
@@ -411,7 +410,7 @@ function appendComputedSkills(tableNode) {
     if (spCrossCell) {
         const spCrossValueText = `Math.floor(0.7 * ${PA} + 0.3 * ${BC}) =\nMath.floor(${(0.7 * PA).toFixed(2)} + ${(0.3 * BC).toFixed(2)}) =\nMath.floor(${(0.7 * PA + 0.3 * BC).toFixed(2)}) = ${Math.floor(0.7 * PA + 0.3 * BC)}`
         const spCrossPotentialText = `Math.floor(0.7 * ${PA_POT} + 0.3 * ${BC_POT}) =\nMath.floor(${(0.7 * PA_POT).toFixed(2)} + ${(0.3 * BC_POT).toFixed(2)}) =\nMath.floor(${(0.7 * PA_POT + 0.3 * BC_POT).toFixed(2)}) = ${Math.floor(0.7 * PA_POT + 0.3 * BC_POT)}`
-        addHoverCardToCell(spCrossCell, "Math.floor(0.7 * PA + 0.3 * BC)", spCrossValueText, spCrossPotentialText)
+        addTooltipsToCell(spCrossCell, "Math.floor(0.7 * PA + 0.3 * BC)", spCrossValueText, spCrossPotentialText)
 
         const valueSpan = spCrossCell.nextElementSibling.querySelector('span')
         const newValue = Math.floor(0.7 * PA + 0.3 * BC)
@@ -425,7 +424,7 @@ function appendComputedSkills(tableNode) {
     if (mdCell) {
         const mdValueText = `${PA} + Math.min(${OP} + ${BC}, ${TA} + ${DP}) + Math.max(0, ${CO - constitutionTreshold}) =\n${PA} + Math.min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)} =\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`
         const mdPotentialText = `${PA_POT} + Math.min(${OP_POT} + ${BC_POT}, ${TA_POT} + ${DP_POT}) + Math.max(0, ${CO_POT - constitutionTreshold}) =\n${PA_POT} + Math.min(${OP_POT + BC_POT}, ${TA_POT + DP_POT}) + ${Math.max(0, CO_POT - constitutionTreshold)} =\n${PA_POT} + ${Math.min(OP_POT + BC_POT, TA_POT + DP_POT)} + ${Math.max(0, CO_POT - constitutionTreshold)} = ${PA_POT + Math.min(OP_POT + BC_POT, TA_POT + DP_POT) + Math.max(0, CO_POT - constitutionTreshold)}`
-        addHoverCardToCell(mdCell, `PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})`, mdValueText, mdPotentialText)
+        addTooltipsToCell(mdCell, `PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})`, mdValueText, mdPotentialText)
     } else {
         console.warn(`mdCell not found`)
         return
@@ -435,7 +434,7 @@ function appendComputedSkills(tableNode) {
     if (oaCell) {
         const oaValueText = `OP + BC =\n${OP} + ${BC} = ${resultCurrents.offensiveAssistance}${resultCurrents.offensiveAssistanceModifierDetails}`
         const oaPotentialText = `OP_POT + BC_POT = \n${OP_POT} + ${BC_POT} = ${resultPotential.offensiveAssistance}${resultPotential.offensiveAssistanceModifierDetails}`
-        addHoverCardToCell(oaCell, "OP + BC", oaValueText, oaPotentialText)
+        addTooltipsToCell(oaCell, "OP + BC", oaValueText, oaPotentialText)
     } else {
         console.warn(`oaCell not found`)
         return
@@ -445,7 +444,7 @@ function appendComputedSkills(tableNode) {
     if (daCell) {
         const daValueText = `TA + DP =\n${TA} + ${DP} = ${resultCurrents.defensiveAssistance}${resultCurrents.defensiveAssistanceModifierDetails}`
         const daPotentialText = `TA_POT + DP_POT = \n${TA_POT} + ${DP_POT} = ${resultPotential.defensiveAssistance}${resultPotential.defensiveAssistanceModifierDetails}`
-        addHoverCardToCell(daCell, "TA + DP", daValueText, daPotentialText)
+        addTooltipsToCell(daCell, "TA + DP", daValueText, daPotentialText)
     } else {
         console.warn(`daCell not found`)
         return
@@ -490,18 +489,16 @@ function cellWithText(allCells, targetText) {
     return targetCell
 }
 
-function addHoverCardToCell(targetCell, tooltipText, valueTooltipText, potentialTooltipText) {
-    targetCell.setAttribute("data-tooltip", tooltipText);
-    targetCell.classList.add('header-tooltip')
+function addTooltipsToCell(targetCell, tooltipText, valueTooltipText, potentialTooltipText) {
+    targetCell.title = tooltipText
 
     // Add tooltip with the formula to the value cell
     const valueCell = targetCell.nextElementSibling
-    valueCell.setAttribute("data-tooltip", valueTooltipText);
-    valueCell.classList.add('value-tooltip')
+    valueCell.title = valueTooltipText
 
     // Add tooltip with the formula to the potential cell
     const potentialCell = valueCell.nextElementSibling
-    potentialCell.setAttribute("data-tooltip", potentialTooltipText)
+    potentialCell.title = potentialTooltipText
 }
 
 function cleanUpNodeForPlayer(tableNode) {
