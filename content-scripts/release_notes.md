@@ -59,3 +59,7 @@
 
 # 6.4.0
 - Added scroll block for `/lineup`
+
+# 6.5.0
+- Fixed tooltips on `/player`
+- Fixed `/lineup#setPieces` that was broken after UI changes mid-season
