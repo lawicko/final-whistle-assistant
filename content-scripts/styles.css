@@ -599,3 +599,7 @@ span.badge-default {
 span.badge-specific {
   color: green;
 }
+
+div.FinalWhistlePluginProposedContainer * {
+  font-size: 0.8em;
+}

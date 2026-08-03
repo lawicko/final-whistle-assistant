@@ -51,8 +51,8 @@ async function proposeAnchors(anchors) {
         return
     }
 
-    // Find all h5 elements
-    const headers = document.querySelectorAll("h5");
+    // Find all h2 elements
+    const headers = document.querySelectorAll("h2");
 
     // Find the one with the text "Penalty Takers"
     const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection");
@@ -103,20 +103,20 @@ async function proposeAnchors(anchors) {
         }
     }
 
-    console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
-    const siblingWithAnchor = Array.from(targetHeader.parentNode.parentNode.children)
-        .find(sibling =>
-            sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Anchor"
-        );
+    const commonAncestor = targetHeader.parentNode.parentNode
+    const mainContainer = commonAncestor.querySelector("div.card-body")
+    const rolesContainers = mainContainer.querySelectorAll("div.set-pieces-role-row")
+    const containerWithAnchor = Array.from(rolesContainers)
+        .find(container =>
+            container.querySelector('p')?.textContent.trim() === "Anchor"
+        )
 
-    if (siblingWithAnchor) {
-        console.debug("Found sibling:", siblingWithAnchor);
+    if (containerWithAnchor) {
+        console.debug("Found sibling:", containerWithAnchor)
     } else {
-        console.warn("No matching sibling found, can't insert the recommended anchors");
+        console.warn("No matching sibling found, can't insert the recommended anchors")
         return
     }
-
-    targetHeader.parentNode.parentNode.insertBefore(proposedAnchors, siblingWithAnchor)
 
     const proposedAnchorsHeader = document.createElement("h6");
     proposedAnchorsHeader.id = 'proposed-anchors-header'
@@ -125,7 +125,12 @@ async function proposeAnchors(anchors) {
     questionMarkSpan.textContent = questionMarkSymbol
     questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedAnchorsHeader.appendChild(questionMarkSpan)
-    targetHeader.parentNode.parentNode.insertBefore(proposedAnchorsHeader, proposedAnchors)
+
+    const newContentContainer = document.createElement("div")
+    newContentContainer.classList.add(pluginNodeClass + "ProposedContainer")
+    newContentContainer.append(proposedAnchorsHeader)
+    newContentContainer.append(proposedAnchors)
+    containerWithAnchor.append(newContentContainer)
 
     // Ignore negative sportsmanship
     const checkbox = document.createElement("input")
@@ -171,8 +176,8 @@ function proposeCrossTakers(takers) {
         return
     }
 
-    // Find all h5 elements
-    const headers = document.querySelectorAll("h5");
+    // Find all h2 elements
+    const headers = document.querySelectorAll("h2");
 
     // Find the one with the text "Penalty Takers"
     const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection");
@@ -196,19 +201,20 @@ function proposeCrossTakers(takers) {
         proposedCrossTakers.appendChild(takerLi)
     }
 
-    console.debug("sibling nodes: ", Array.from(targetHeader.parentNode.parentNode.children))
-    const siblingWithCornerKick = Array.from(targetHeader.parentNode.parentNode.children)
-        .find(sibling =>
-            sibling !== targetHeader && sibling.querySelector('div p')?.textContent.trim() === "Corner Kick"
-        );
+    const commonAncestor = targetHeader.parentNode.parentNode
+    const mainContainer = commonAncestor.querySelector("div.card-body")
+    const rolesContainers = mainContainer.querySelectorAll("div.set-pieces-role-row")
+    const containerWithCornerKick = Array.from(rolesContainers)
+        .find(container =>
+            container.querySelector('p')?.textContent.trim() === "Corner Kick"
+        )
 
-    if (siblingWithCornerKick) {
-        console.debug("Found sibling:", siblingWithCornerKick);
+    if (containerWithCornerKick) {
+        console.debug("Found sibling:", containerWithCornerKick);
     } else {
         console.warn("No matching sibling found, can't insert the recommended corner takers");
         return
     }
-    targetHeader.parentNode.parentNode.insertBefore(proposedCrossTakers, siblingWithCornerKick)
 
     const proposedCornerTakersHeader = document.createElement("h6");
     proposedCornerTakersHeader.id = 'proposed-corner-takers-header'
@@ -217,7 +223,12 @@ function proposeCrossTakers(takers) {
     questionMarkSpan.textContent = questionMarkSymbol
     questionMarkSpan.title = "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
     proposedCornerTakersHeader.appendChild(questionMarkSpan)
-    targetHeader.parentNode.parentNode.insertBefore(proposedCornerTakersHeader, proposedCrossTakers)
+    
+    const newContentContainer = document.createElement("div")
+    newContentContainer.classList.add(pluginNodeClass + "ProposedContainer")
+    newContentContainer.append(proposedCornerTakersHeader)
+    newContentContainer.append(proposedCrossTakers)
+    containerWithCornerKick.append(newContentContainer)
 }
 
 async function proposePenaltyTakers(takers) {
@@ -226,8 +237,8 @@ async function proposePenaltyTakers(takers) {
         return
     }
 
-    // Find all h5 elements
-    const headers = document.querySelectorAll("h5");
+    // Find all h2 elements
+    const headers = document.querySelectorAll("h2");
 
     // Find the one with the text "Penalty Takers"
     const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Penalty Takers");
@@ -452,8 +463,8 @@ async function insertArroganceTresholdInput(parent) {
 
 async function processLineup() {
     console.info(`${version} ⚽♟️ Processing lineup...`)
-    const pLinks = getPlayerLinks('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12')
-    const hrefs = getHrefList('[id^="ngb-nav-"][id$="-panel"] > fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12');
+    const pLinks = getPlayerLinks('div.squad-mobile-card-list')
+    const hrefs = getHrefList('div.squad-mobile-card-list')
     const playerIDs = hrefs.map(lastPathComponent);
     const profiles = await db.bulkGetPlayers(playerIDs)
     console.debug('Profiles: ', profiles)
@@ -739,18 +750,18 @@ function applyLeadership(element, leadership) {
 export async function processLineupPage() {
     console.log("Processing lineup page...")
     if (hasActiveFormation()) {
-        fixHeader({
-            formationContainerSelector: "fw-formation div[touranchor='lineup.select']",
-            firstPlayerCardSelector: "div.player-select > fw-player-card",
-            columnLabels: ["Name", "S", "A", "Pos", "R"]
-        })
+        // fixHeader({
+        //     formationContainerSelector: "fw-formation div[touranchor='lineup.select']",
+        //     firstPlayerCardSelector: "div.player-select > fw-player-card",
+        //     columnLabels: ["Name", "S", "A", "Pos", "R"]
+        // })
     }
     if (hasActiveSetPieces()) {
-        fixHeader({
-            formationContainerSelector: "fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12",
-            firstPlayerCardSelector: "div.container-block > fw-player-card",
-            columnLabels: ["Name", " ", "A", "Pos", "R"]
-        })
+        // fixHeader({
+        //     formationContainerSelector: "fw-set-pieces > div.row > div.col-md-6 > div.row > div.col-md-12",
+        //     firstPlayerCardSelector: "div.container-block > fw-player-card",
+        //     columnLabels: ["Name", " ", "A", "Pos", "R"]
+        // })
         try {
             const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
             if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
