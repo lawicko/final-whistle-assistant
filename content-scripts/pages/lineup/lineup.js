@@ -2,7 +2,8 @@ import {
     lastPathComponent,
     version,
     pluginNodeClass
-} from "../../utils.js";
+} from "../../utils.js"
+import * as ui from "../../ui_utils.js"
 
 import {
     addNoDataSymbol,
@@ -16,126 +17,97 @@ import {
     questionMarkSymbol
 } from "../../ui_utils.js";
 import * as db from "../../db_access.js"
+import * as discovery from "./lineup+discovery.js"
 
-function getPlayerLinks(selector) {
-    // Get the container
-    const container = document.querySelector(selector);
+function createProposedElement(
+    id,
+    headerText,
+    hintText,
+    additionalControls,
+    proposedList
+) {
+    const headerElement = document.createElement("div")
+    headerElement.classList.add(discovery.proposedListHeaderClass)
+    const headerSpan = document.createElement("span")
+    headerSpan.textContent = headerText + " "
+    headerElement.appendChild(headerSpan)
+    const infoSpan = document.createElement("span")
+    infoSpan.textContent = ui.infoSymbol
+    infoSpan.title = hintText
+    ui.makeCursorHelp(infoSpan)
+    headerElement.appendChild(infoSpan)
 
-    if (!container) {
-        throw new Error(`Container "${selector}" not found!`);
-    } else {
-        console.debug(`Found container for selector: ${selector}`)
+    const newContentContainer = document.createElement("div")
+    newContentContainer.id = id
+    newContentContainer.classList.add(discovery.proposedContainerClass)
+    newContentContainer.append(headerElement)
+    if (additionalControls != null) {
+        newContentContainer.append(additionalControls)
     }
-
-    // Get all <a> descendants
-    const links = container.querySelectorAll('fw-player-card fw-player-hover div.hovercard a');
-
-    const filteredLinks = Array.from(links).filter(a =>
-        a.hasAttribute("href") &&
-        a.getAttribute("href").trim() !== "" &&
-        !a.getAttribute("href").startsWith("javascript:")
-    );
-
-    return filteredLinks
-}
-
-function getHrefList(selector) {
-    const playerLinks = getPlayerLinks(selector)
-
-    return playerLinks.map(a => a.href);
+    newContentContainer.append(proposedList)
+    return newContentContainer
 }
 
 async function proposeAnchors(anchors) {
     // Do we already have it?
-    if (document.querySelector('#proposed-anchors')) {
+    if (discovery.proposedAnchorsDisplayed()) {
         return
     }
 
-    // Find all h2 elements
-    const headers = document.querySelectorAll("h2");
-
-    // Find the one with the text "Penalty Takers"
-    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection");
-
-    if (!targetHeader) {
-        console.info("No Player Selection header, will try to find it when the page changes. ")
+    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
+    if (!playerSelectionContainer) {
+        console.info("No Player Selection container, will try to find it when the page changes.")
         return
     }
 
-    const proposedAnchors = document.createElement("ol");
-    proposedAnchors.id = 'proposed-anchors'
+    const proposedAnchorsList = document.createElement("ol")
+    proposedAnchorsList.id = discovery.proposedAnchorsListID
     console.debug('Will iterate anchors: ', anchors)
     for (const anchor of anchors) {
-        console.debug('creating takerSpan')
+        console.debug('creating list element and name span for anchor', anchor)
         var anchorListItem = document.createElement('li')
         var playerNameSpan = document.createElement('span')
         playerNameSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
         playerNameSpan.textContent = `${anchor.name} (${anchor.AE})`
         anchorListItem.appendChild(playerNameSpan)
-        console.debug('appending takerSpan to proposedAnchors')
-        proposedAnchors.appendChild(anchorListItem)
+        console.debug('appending anchor to proposedAnchors')
+        proposedAnchorsList.appendChild(anchorListItem)
 
         if (anchor.sportsmanship > 0 || anchor.sportsmanship < 0) {
-            const sportsmanshipSpan = document.createElement("span");
+            const sportsmanshipSpan = document.createElement("span")
             sportsmanshipSpan.classList.add('sportsmanship')
             sportsmanshipSpan.textContent = " " + personalitiesSymbols["sportsmanship"]
             switch (anchor.sportsmanship) {
                 case -2:
-                    sportsmanshipSpan.classList.add('doubleNegative');
-                    sportsmanshipSpan.title = "This players sportsmanship is very questionable, you want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen.";
-                    break;
+                    sportsmanshipSpan.classList.add('doubleNegative')
+                    sportsmanshipSpan.title = "This players sportsmanship is very questionable, you want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen."
+                    break
                 case -1:
-                    sportsmanshipSpan.classList.add('negative');
-                    sportsmanshipSpan.title = "This players sportsmanship is questionable, you may want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen.";
-                    break;
+                    sportsmanshipSpan.classList.add('negative')
+                    sportsmanshipSpan.title = "This players sportsmanship is questionable, you may want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen."
+                    break
                 case 1:
-                    sportsmanshipSpan.classList.add('positive');
-                    sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls.";
-                    break;
+                    sportsmanshipSpan.classList.add('positive')
+                    sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls."
+                    break
                 case 2:
-                    sportsmanshipSpan.classList.add('doublePositive');
-                    sportsmanshipSpan.title = "This players is a fair competitor with excellent sportsmanship, his actions rarely result in fouls.";
-                    break;
+                    sportsmanshipSpan.classList.add('doublePositive')
+                    sportsmanshipSpan.title = "This players is a fair competitor with excellent sportsmanship, his actions rarely result in fouls."
+                    break
                 default:
-                    console.warn("Value of anchor.sportsmanship is unexpected: ", anchor.sportsmanship);
+                    console.warn("Value of anchor.sportsmanship is unexpected: ", anchor.sportsmanship)
             }
             anchorListItem.appendChild(sportsmanshipSpan)
         }
     }
 
-    const commonAncestor = targetHeader.parentNode.parentNode
-    const mainContainer = commonAncestor.querySelector("div.card-body")
-    const rolesContainers = mainContainer.querySelectorAll("div.set-pieces-role-row")
-    const containerWithAnchor = Array.from(rolesContainers)
-        .find(container =>
-            container.querySelector('p')?.textContent.trim() === "Anchor"
-        )
-
-    if (containerWithAnchor) {
-        console.debug("Found sibling:", containerWithAnchor)
-    } else {
-        console.warn("No matching sibling found, can't insert the recommended anchors")
-        return
-    }
-
-    const proposedAnchorsHeader = document.createElement("h6");
-    proposedAnchorsHeader.id = 'proposed-anchors-header'
-    proposedAnchorsHeader.textContent = "Recommended anchors "
-    const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = questionMarkSymbol
-    questionMarkSpan.title = "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-    proposedAnchorsHeader.appendChild(questionMarkSpan)
-
-    const newContentContainer = document.createElement("div")
-    newContentContainer.classList.add(pluginNodeClass + "ProposedContainer")
-    newContentContainer.append(proposedAnchorsHeader)
-    newContentContainer.append(proposedAnchors)
-    containerWithAnchor.append(newContentContainer)
+    const anchorsRow = discovery.getSetPiecesRoleRowWith("Anchor", playerSelectionContainer)
 
     // Ignore negative sportsmanship
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
     checkbox.id = "ignoreSportsmanshipForAnchors"
+    checkbox.classList.add("form-check-input")
     const checkboxes = await db.getCheckboxes()
     checkbox.checked = checkboxes["ignoreSportsmanshipForAnchors"]
     checkbox.addEventListener("change", async () => {
@@ -150,85 +122,67 @@ async function proposeAnchors(anchors) {
     })
 
     const label = document.createElement("label")
+    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
     label.appendChild(checkbox)
     const labelSpan = document.createElement("span")
-    labelSpan.textContent = " Ignore sportsmanship"
+    labelSpan.textContent = "Ignore sportsmanship"
     label.appendChild(labelSpan)
     label.htmlFor = "ignoreSportsmanshipForAnchors"
-    proposedAnchorsHeader.appendChild(label)
+
+    const newContentContainer = createProposedElement(
+        discovery.proposedAnchorsElementID,
+        "Recommended anchors",
+        "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        label,
+        proposedAnchorsList
+    )
+    anchorsRow.append(newContentContainer)
 }
 
 function removeProposedAnchorsControls() {
-    if (document.querySelector('#proposed-anchors-header')) {
-        console.debug("removing #proposed-anchors-header")
-        document.querySelector('#proposed-anchors-header').remove()
-    }
-    if (document.querySelector('#proposed-anchors')) {
-        console.debug("removing #proposed-anchors")
-        document.querySelector('#proposed-anchors').remove()
+    const proposedAnchorsElement = document.querySelector(`#${discovery.proposedAnchorsElementID}`)
+    if (proposedAnchorsElement) {
+        console.debug(`removing ${proposedAnchorsElement}`)
+        proposedAnchorsElement.remove()
     }
 }
 
-// This may be used for both corners and free kicks, so we need to make a destinction when inserting the list
 function proposeCrossTakers(takers) {
     // Do we already have it?
-    if (document.querySelector('#proposed-corner-takers')) {
+    if (discovery.proposedCrossTakersDisplayed()) {
         return
     }
 
-    // Find all h2 elements
-    const headers = document.querySelectorAll("h2");
-
-    // Find the one with the text "Penalty Takers"
-    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection");
-
-    if (!targetHeader) {
-        console.info("No Player Selection header, will try to find it when the page changes. ")
+    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
+    if (!playerSelectionContainer) {
+        console.info("No Player Selection container, will try to find it when the page changes.")
         return
     }
 
-    const proposedCrossTakers = document.createElement("ol");
-    proposedCrossTakers.id = 'proposed-corner-takers'
-    console.debug('Will iterate takers: ', takers)
+    const proposedCrossTakersList = document.createElement("ol");
+    proposedCrossTakersList.id = discovery.proposedCrossTakersListID
+    console.debug('Will iterate cross takers: ', takers)
     for (const taker of takers) {
-        console.debug('creating takerSpan')
-        var takerLi = document.createElement('li')
-        var takerSpan = document.createElement('span')
-        takerSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
-        takerSpan.textContent = `${taker.name} (${taker.cross})`
-        takerLi.appendChild(takerSpan)
-        console.debug('appending takerSpan to proposedCrossTakers')
-        proposedCrossTakers.appendChild(takerLi)
+        console.debug('creating list element and name span for taker', taker)
+        var crossTakerListItem = document.createElement('li')
+        var playerNameSpan = document.createElement('span')
+        playerNameSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
+        playerNameSpan.textContent = `${taker.name} (${taker.cross})`
+        crossTakerListItem.appendChild(playerNameSpan)
+        console.debug('appending cross taker to proposedCrossTakers')
+        proposedCrossTakersList.appendChild(crossTakerListItem)
     }
 
-    const commonAncestor = targetHeader.parentNode.parentNode
-    const mainContainer = commonAncestor.querySelector("div.card-body")
-    const rolesContainers = mainContainer.querySelectorAll("div.set-pieces-role-row")
-    const containerWithCornerKick = Array.from(rolesContainers)
-        .find(container =>
-            container.querySelector('p')?.textContent.trim() === "Corner Kick"
-        )
+    const cornerKickRow = discovery.getSetPiecesRoleRowWith("Corner Kick", playerSelectionContainer)
 
-    if (containerWithCornerKick) {
-        console.debug("Found sibling:", containerWithCornerKick);
-    } else {
-        console.warn("No matching sibling found, can't insert the recommended corner takers");
-        return
-    }
-
-    const proposedCornerTakersHeader = document.createElement("h6");
-    proposedCornerTakersHeader.id = 'proposed-corner-takers-header'
-    proposedCornerTakersHeader.textContent = "Recommended corner takers "
-    const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = questionMarkSymbol
-    questionMarkSpan.title = "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-    proposedCornerTakersHeader.appendChild(questionMarkSpan)
-    
-    const newContentContainer = document.createElement("div")
-    newContentContainer.classList.add(pluginNodeClass + "ProposedContainer")
-    newContentContainer.append(proposedCornerTakersHeader)
-    newContentContainer.append(proposedCrossTakers)
-    containerWithCornerKick.append(newContentContainer)
+    const newContentContainer = createProposedElement(
+        discovery.proposedCrossTakersElementID,
+        "Recommended cross takers",
+        "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        null,
+        proposedCrossTakersList
+    )
+    cornerKickRow.append(newContentContainer)
 }
 
 async function proposePenaltyTakers(takers) {
@@ -463,8 +417,8 @@ async function insertArroganceTresholdInput(parent) {
 
 async function processLineup() {
     console.info(`${version} ⚽♟️ Processing lineup...`)
-    const pLinks = getPlayerLinks('div.squad-mobile-card-list')
-    const hrefs = getHrefList('div.squad-mobile-card-list')
+    const pLinks = discovery.getPlayerLinks('div.squad-mobile-card-list')
+    const hrefs = discovery.getHrefList('div.squad-mobile-card-list')
     const playerIDs = hrefs.map(lastPathComponent);
     const profiles = await db.bulkGetPlayers(playerIDs)
     console.debug('Profiles: ', profiles)
@@ -762,16 +716,12 @@ export async function processLineupPage() {
         //     firstPlayerCardSelector: "div.container-block > fw-player-card",
         //     columnLabels: ["Name", " ", "A", "Pos", "R"]
         // })
-        try {
-            const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
-            if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
-                await insertArroganceTresholdInput(h5Element)
-            }
-
-            await processLineup()
-        } catch (err) {
-            console.error(err.message);
+        const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
+        if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
+            await insertArroganceTresholdInput(h5Element)
         }
+
+        await processLineup()
     }
 }
 

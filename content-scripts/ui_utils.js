@@ -14,6 +14,7 @@ export function nextMatching(el, selector) {
 }
 
 export const questionMarkSymbol = "\u2370"
+export const infoSymbol = "\u24D8"
 export const matchLinkQuery = "i.bi-file-text"
 export const navTabsQuery = "ul.nav-tabs"
 export const playerStatusQuery = "td fw-player-status"
@@ -62,6 +63,14 @@ function normalizeEmoji(char, style = "text") {
     const base = char.replace(/[\uFE0E\uFE0F]/g, "");
 
     return style === "emoji" ? base + VS16 : base + VS15;
+}
+
+export function makeCursorPointer(element) {
+    element.classList.add('cursor_pointer')
+}
+
+export function makeCursorHelp(element) {
+    element.classList.add('cursor_help')
 }
 
 export const personalitiesSymbols = {

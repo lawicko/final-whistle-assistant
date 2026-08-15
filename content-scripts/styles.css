@@ -1,3 +1,12 @@
+/* Utils */
+.cursor_pointer {
+  cursor: pointer;
+}
+
+.cursor_help {
+  cursor: help;
+}
+
 /* Lineup */
 span.leadership {
   display: inline-block;
@@ -43,10 +52,38 @@ span.sportsmanship {
   margin-left: 4px;
 }
 
+/*
+Lineup Proposed Container
+*/
+.FinalWhistlePlugin_LineupProposedContainer {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/*
+Lineup Proposed List Header
+*/
+.FinalWhistlePlugin_LineupProposedListHeader {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  text-align: center;
+}
+
+label.FinalWhistlePlugin_LineupProposedListAdditionalControlsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem; /* Controls spacing between all child elements */
+}
+
+label.FinalWhistlePlugin_LineupProposedListAdditionalControlsLabel > input.form-check-input {
+  margin-top: 0px;
+}
+
 ol#proposed-penalty-takers,
-ol#proposed-corner-takers,
+ol#proposed-cross-takers,
 ol#proposed-anchors {
-  font-size: .8rem;
   text-align: center;
 
   list-style-type: none;
@@ -54,32 +91,6 @@ ol#proposed-anchors {
   padding-left: 0;
   /* optional: remove indentation */
   margin-left: 0;
-}
-
-h6#proposed-penalty-takers-header,
-h6#proposed-corner-takers-header,
-h6#proposed-anchors-header {
-  text-align: center;
-}
-
-h6#proposed-penalty-takers-header>span,
-h6#proposed-corner-takers-header>span,
-h6#proposed-anchors-header>span {
-  cursor: help;
-  font: 14px/1 FontAwesome;
-}
-
-h6#proposed-anchors-header label,
-h6#proposed-anchors-header label {
-  display: block;
-}
-
-h6#proposed-penalty-takers-header label span {
-  font-size: 0.8rem;
-}
-
-h6#proposed-anchors-header label span {
-  font-size: 0.8rem;
 }
 
 div.proposed-penalty-takers-container {
@@ -269,15 +280,6 @@ fw-club div.card-header>div.row label {
   /* allow shrinking below default min-width */
   align-self: center;
   /* optional: vertically center in the container */
-}
-
-input[type="checkbox"] {
-  margin-left: 6px;
-}
-
-input[type="checkbox"]#ignoreComposureForPenaltyTakers {
-  accent-color: #323932;
-  margin-left: 6px;
 }
 
 /* Row highlight */
@@ -598,8 +600,4 @@ span.badge-default {
 
 span.badge-specific {
   color: green;
-}
-
-div.FinalWhistlePluginProposedContainer * {
-  font-size: 0.8em;
 }
