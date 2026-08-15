@@ -11,20 +11,31 @@ export const proposedListAdditionalControlsLabelClass = utils.pluginNodeClass + 
 
 export const proposedContainerClass = utils.pluginNodeClass + "_LineupProposedContainer"
 
+export const proposedPenaltyTakersElementID = proposedContainerClass + "_PenaltyTakers"
+export const additionalPenaltyTakersElementID = proposedContainerClass + "_AdditionalPenaltyTakers"
+export const allPenaltyTakersElementID = proposedContainerClass + "_AllPenaltyTakers"
 export const proposedAnchorsElementID = proposedContainerClass + "_Anchors"
 export const proposedCrossTakersElementID = proposedContainerClass + "_CrossTakers"
 
 /////////////////////// Common //////////////////////////////////
-export function getPlayerSelectionContainer() {
-     // Find all h2 elements
+function getContainerForHeaderName(headerName) {
+    // Find all h2 elements
     const headers = document.querySelectorAll("h2")
 
     // Find the one with the text "Player Selection"
-    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Player Selection")
+    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === headerName)
 
     if (targetHeader == null) { return }
 
     return targetHeader.parentNode.parentNode
+}
+
+export function getPenaltyTakersContainer() {
+    return getContainerForHeaderName("Penalty Takers")
+}
+
+export function getPlayerSelectionContainer() {
+    return getContainerForHeaderName("Player Selection")
 }
 
 export function getPlayerLinks(selector) {
@@ -68,6 +79,11 @@ export function getSetPiecesRoleRowWith(title, container) {
         console.warn("No matching row (title=", title,") found in container", container)
         return null
     }
+}
+
+////////////////////// Proposed Penalty Takers //////////////////
+export function proposedPenaltyTakersDisplayed() {
+    return document.querySelector(`#${proposedPenaltyTakersListID}`) != null
 }
 
 /////////////////////// Proposed Anchors ////////////////////////

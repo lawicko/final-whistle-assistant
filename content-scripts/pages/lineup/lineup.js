@@ -187,150 +187,115 @@ function proposeCrossTakers(takers) {
 
 async function proposePenaltyTakers(takers) {
     // Do we already have it?
-    if (document.querySelector('.proposed-penalty-takers-container') || document.querySelector('#proposed-penalty-takers')) {
+    if (discovery.proposedPenaltyTakersDisplayed()) {
         return
     }
 
-    // Find all h2 elements
-    const headers = document.querySelectorAll("h2");
-
-    // Find the one with the text "Penalty Takers"
-    const targetHeader = Array.from(headers).find(h => h.textContent.trim() === "Penalty Takers");
-
-    if (!targetHeader) {
-        console.info("No Penalty Takers header, will try to find it when the page changes. ")
+    const penaltyTakersContainer = discovery.getPenaltyTakersContainer()
+    if (!penaltyTakersContainer) {
+        console.info("No Penalty Takers container, will try to find it when the page changes.")
         return
     }
 
     function createTakerListItem(taker, personalitiesSymbols) {
-        const li = document.createElement("li");
+        const li = document.createElement("li")
 
-        const nameSpan = document.createElement("span");
-        nameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`);
-        nameSpan.textContent = `${taker.name} (${taker.penaltyKick})`;
-        li.appendChild(nameSpan);
+        const nameSpan = document.createElement("span")
+        nameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
+        nameSpan.textContent = `${taker.name} (${taker.penaltyKick})`
+        li.appendChild(nameSpan)
 
         if (taker.composure) {
-            const composureSpan = document.createElement("span");
-            composureSpan.classList.add("composure");
-            composureSpan.textContent = " " + personalitiesSymbols["composure"];
+            const composureSpan = document.createElement("span")
+            composureSpan.classList.add("composure")
+            composureSpan.textContent = " " + personalitiesSymbols["composure"]
 
             switch (taker.composure) {
                 case -2:
-                    composureSpan.classList.add("doubleNegative");
-                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker";
-                    break;
+                    composureSpan.classList.add("doubleNegative")
+                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker"
+                    break
                 case -1:
-                    composureSpan.classList.add("negative");
-                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker";
-                    break;
+                    composureSpan.classList.add("negative")
+                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker"
+                    break
                 case 1:
-                    composureSpan.classList.add("positive");
-                    composureSpan.title = "This player has good composure, consider using him as penalty taker";
-                    break;
+                    composureSpan.classList.add("positive")
+                    composureSpan.title = "This player has good composure, consider using him as penalty taker"
+                    break
                 case 2:
-                    composureSpan.classList.add("doublePositive");
-                    composureSpan.title = "This player has excellent composure, use him as penalty taker";
-                    break;
+                    composureSpan.classList.add("doublePositive")
+                    composureSpan.title = "This player has excellent composure, use him as penalty taker"
+                    break
                 default:
-                    console.warn("Value of taker.composure is unexpected: ", taker.composure);
+                    console.warn("Value of taker.composure is unexpected: ", taker.composure)
             }
-            li.appendChild(composureSpan);
+            li.appendChild(composureSpan)
         }
 
-        return li;
+        return li
     }
 
     function buildTakersList(takers, personalitiesSymbols) {
-        const ol = document.createElement("ol");
-        ol.id = "proposed-penalty-takers";
+        const ol = document.createElement("ol")
+        ol.id = discovery.proposedPenaltyTakersListID
         for (const taker of takers) {
-            ol.appendChild(createTakerListItem(taker, personalitiesSymbols));
+            ol.appendChild(createTakerListItem(taker, personalitiesSymbols))
         }
-        return ol;
+        return ol
     }
 
-    function createSectionHeader(text, tooltip) {
-        const header = document.createElement("h6");
-        header.id = "proposed-penalty-takers-header";
-        header.textContent = text + " ";
+    const composureTresholdInput = await createComposureTresholdInput()
+    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox()
+    const additionalControls = document.createElement("div")
+    additionalControls.classList.add("flex_direction_column")
+    additionalControls.append(composureTresholdInput)
+    additionalControls.append(ignoreComposureCheckbox)
 
-        const questionMark = document.createElement("span");
-        questionMark.textContent = questionMarkSymbol;
-        questionMark.title = tooltip;
-
-        header.appendChild(questionMark);
-        return header;
-    }
-
-    // Always build recommended takers
-    const recommendedHeader = createSectionHeader(
+    const proposedPenaltyTakersContainer = createProposedElement(
+        discovery.proposedPenaltyTakersElementID,
         "Recommended penalty takers",
-        "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-    );
+        "The recommended list below is sorted by the penalty kick computed skill, taking into account possible player composure personality trait - players with positive composure will be higher on the list as the chances of them missing the goal is lower. You should have 5 recommended players on the list, if this is not the case consider lowering the composure treshold in the extension options, because chances are there are currently not enough players with the penalty kick skill above the composure treshold to recommend here. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        additionalControls,
+        buildTakersList(takers.recommended, personalitiesSymbols)
+    )
 
-    const recommendedList = buildTakersList(takers.recommended, personalitiesSymbols);
-    // Decide layout
+    const allPenaltyTakersContainer = document.createElement("div")
+    allPenaltyTakersContainer.id = discovery.allPenaltyTakersElementID
+    allPenaltyTakersContainer.append(proposedPenaltyTakersContainer)
+
     if (takers.other.length > 0) {
-        // Create two-panel layout
-        const container = document.createElement("div");
-        container.classList.add("proposed-penalty-takers-container");
-
-        const leftPanel = document.createElement("div");
-        leftPanel.classList.add("proposed-penalty-takers-panel");
-
-        const rightPanel = document.createElement("div");
-        rightPanel.classList.add("proposed-penalty-takers-panel");
-
-        container.append(leftPanel, rightPanel);
-        targetHeader.parentNode.after(container);
-
-        // Fill left panel with recommended
-        leftPanel.append(recommendedHeader, recommendedList);
-        await insertComposureTresholdInput(recommendedHeader);
-
-        // Add “other takers” on the right
-        const otherHeader = createSectionHeader(
+        const additionalPenaltyTakersContainer = createProposedElement(
+            discovery.additionalPenaltyTakersElementID,
             "Other penalty takers",
-            "These are other players with the penalty kick skill above the composure treshold, who didn't make it to the recommended list for some reason - likely other players having positive composure which this extension really favours. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page."
-        );
-        const otherList = buildTakersList(takers.other, personalitiesSymbols);
-
-        rightPanel.append(otherHeader, otherList);
-
-    } else {
-        // Just show recommended below targetHeader
-        targetHeader.parentNode.after(recommendedList);
-        targetHeader.parentNode.after(recommendedHeader);
-        await insertComposureTresholdInput(recommendedHeader);
+            "These are other players with the penalty kick skill above the composure treshold, who didn't make it to the recommended list for some reason - likely other players having positive composure which this extension really favours. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+            null,
+            buildTakersList(takers.other, personalitiesSymbols)
+        )
+        allPenaltyTakersContainer.append(additionalPenaltyTakersContainer)
     }
+
+    const penaltyTakersBodyNode = penaltyTakersContainer.querySelector("div.card-body")
+    penaltyTakersContainer.insertBefore(allPenaltyTakersContainer, penaltyTakersBodyNode)
 }
 
 function removeProposedPenaltyTakersControls() {
-    if (document.querySelector('.proposed-penalty-takers-container')) {
-        console.debug("removing .proposed-penalty-takers-container")
-        document.querySelector('.proposed-penalty-takers-container').remove()
-    } else {
-        if (document.querySelector('#proposed-penalty-takers-header')) {
-            console.debug("removing #proposed-penalty-takers-header")
-            document.querySelector('#proposed-penalty-takers-header').remove()
-        }
-        if (document.querySelector('#proposed-penalty-takers')) {
-            console.debug("removing #proposed-penalty-takers")
-            document.querySelector('#proposed-penalty-takers').remove()
-        }
+    const allPenaltyTakersElement = document.querySelector(`#${discovery.allPenaltyTakersElementID}`)
+    if (allPenaltyTakersElement) {
+        console.debug(`removing ${allPenaltyTakersElement}`)
+        allPenaltyTakersElement.remove()
     }
 }
 
-async function insertComposureTresholdInput(parent) {
-    // Create the input element
-    const input = document.createElement("input");
-    input.type = "number";
-    input.setAttribute("min", "0");
-    input.setAttribute("max", "99");
-    input.setAttribute("step", "1");
-    input.id = "composure-treshold";
-    input.placeholder = "Composure treshold";
+async function createComposureTresholdInput() {
+    const input = document.createElement("input")
+    input.type = "number"
+    input.setAttribute("min", "0")
+    input.setAttribute("max", "99")
+    input.setAttribute("step", "1")
+    input.id = "composure-treshold"
+    input.classList.add("form-check-input")
+    input.placeholder = "Composure treshold"
 
     const tresholds = await db.getTresholds()
     const composure_treshold = tresholds.composure ?? 50
@@ -338,26 +303,32 @@ async function insertComposureTresholdInput(parent) {
 
     // Add a listener for changes
     input.addEventListener("change", async (e) => {
-        const newValue = e.target.value;
+        const newValue = e.target.value
         const tresholds = await db.getTresholds()
         tresholds['composure'] = parseInt(newValue, 10)
 
         await db.putTresholds(tresholds)
-        console.debug("Updated tresholds =", tresholds);
+        console.debug("Updated tresholds =", tresholds)
         removeProposedPenaltyTakersControls()
-    });
+    })
 
-    // Inject into the page
-    parent.appendChild(input)
-    const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = ` ${questionMarkSymbol} `
-    questionMarkSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ${personalitiesSymbols["composure"]} symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
-    parent.appendChild(questionMarkSpan)
+    const label = document.createElement("label")
+    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
+    label.appendChild(input)
+    const labelSpan = document.createElement("span")
+    ui.makeCursorHelp(labelSpan)
+    labelSpan.textContent = ui.infoSymbol
+    labelSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ${personalitiesSymbols["composure"]} symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
+    label.appendChild(labelSpan)
+    label.htmlFor = "composure-treshold"
+    return label
+}
 
-    // Ignore composure
+async function createIgnoreComposureCheckbox() {
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
     checkbox.id = "ignoreComposureForPenaltyTakers"
+    checkbox.classList.add("form-check-input")
     const checkboxes = await db.getCheckboxes()
     checkbox.checked = checkboxes["ignoreComposureForPenaltyTakers"]
     checkbox.addEventListener("change", async () => {
@@ -372,12 +343,13 @@ async function insertComposureTresholdInput(parent) {
     });
 
     const label = document.createElement("label")
+    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
     label.appendChild(checkbox)
     const labelSpan = document.createElement("span")
-    labelSpan.textContent = " Ignore composure"
+    labelSpan.textContent = "Ignore composure"
     label.appendChild(labelSpan)
     label.htmlFor = "ignoreComposureForPenaltyTakers"
-    parent.appendChild(label)
+    return label
 }
 
 async function insertArroganceTresholdInput(parent) {

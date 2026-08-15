@@ -7,6 +7,11 @@
   cursor: help;
 }
 
+.flex_direction_column {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Lineup */
 span.leadership {
   display: inline-block;
@@ -75,6 +80,7 @@ label.FinalWhistlePlugin_LineupProposedListAdditionalControlsLabel {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem; /* Controls spacing between all child elements */
+  justify-content: center;
 }
 
 label.FinalWhistlePlugin_LineupProposedListAdditionalControlsLabel > input.form-check-input {
@@ -93,19 +99,12 @@ ol#proposed-anchors {
   margin-left: 0;
 }
 
-div.proposed-penalty-takers-container {
+#FinalWhistlePlugin_LineupProposedContainer_AllPenaltyTakers {
   display: flex;
-}
-
-div.proposed-penalty-takers-panel {
-  flex: 1;
-  /* Equal width */
-  display: flex;
-  flex-direction: column;
-  /* 👈 stack children vertically */
-  justify-content: flex-start;
-  /* 👈 Align children to top */
-  align-items: center;
+  flex-direction: row;
+  gap: 10%;
+  align-items: flex-start; /* Vertically align children: flex-start, center, flex-end, stretch */
+  justify-content: center; /* Horizontally align children: flex-start, center, space-between, etc. */
 }
 
 input#composure-treshold,
@@ -118,7 +117,7 @@ input#arrogance-treshold {
   /* inner spacing */
   border-radius: 8px;
   /* rounded corners */
-  font-size: 13px;
+  font-size: 12px;
   /* adjust font size */
   box-sizing: border-box;
 }
