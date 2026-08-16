@@ -38,6 +38,24 @@ export function getPlayerSelectionContainer() {
     return getContainerForHeaderName("Player Selection")
 }
 
+export function getAllPlayerSelects() {
+    return document.querySelectorAll("div.player-select")
+}
+
+export function getPlayerSelectFor(playerID) {
+    const allPlayerSelects = getAllPlayerSelects()
+    const playerSelect = Array.from(allPlayerSelects).find(playerSelect => {
+        const a = playerSelect.querySelector('fw-player-card fw-player-hover div.hovercard a')
+        return a != null,
+            a.hasAttribute("href") &&
+            a.getAttribute("href").trim() !== "" &&
+            !a.getAttribute("href").startsWith("javascript:") &&
+            utils.lastPathComponent(a.href) == playerID
+    })
+    console.debug("Found playerSelect", playerSelect)
+    return playerSelect
+}
+
 export function getPlayerLinks(selector) {
     // Get the container
     const container = document.querySelector(selector)
@@ -76,7 +94,7 @@ export function getSetPiecesRoleRowWith(title, container) {
         console.debug("Found row:", rowWithTitle)
         return rowWithTitle
     } else {
-        console.warn("No matching row (title=", title,") found in container", container)
+        console.warn("No matching row (title=", title, ") found in container", container)
         return null
     }
 }

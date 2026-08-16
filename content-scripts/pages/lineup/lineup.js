@@ -66,6 +66,14 @@ async function proposeAnchors(anchors) {
     for (const anchor of anchors) {
         console.debug('creating list element and name span for anchor', anchor)
         var anchorListItem = document.createElement('li')
+        ui.makeCursorPointer(anchorListItem)
+        anchorListItem.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(anchor.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
         var playerNameSpan = document.createElement('span')
         playerNameSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
         playerNameSpan.textContent = `${anchor.name} (${anchor.AE})`
@@ -165,6 +173,14 @@ function proposeCrossTakers(takers) {
     for (const taker of takers) {
         console.debug('creating list element and name span for taker', taker)
         var crossTakerListItem = document.createElement('li')
+        ui.makeCursorPointer(crossTakerListItem)
+        crossTakerListItem.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(taker.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
         var playerNameSpan = document.createElement('span')
         playerNameSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
         playerNameSpan.textContent = `${taker.name} (${taker.cross})`
@@ -199,6 +215,14 @@ async function proposePenaltyTakers(takers) {
 
     function createTakerListItem(taker, personalitiesSymbols) {
         const li = document.createElement("li")
+        ui.makeCursorPointer(li)
+        li.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(taker.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
 
         const nameSpan = document.createElement("span")
         nameSpan.classList.add(`denom${Math.floor(taker.penaltyKick / 10)}`)
@@ -483,10 +507,10 @@ async function processLineup() {
                     if (composure > 0) {
                         console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, composure ${composure} > 0, setting reasonablePenaltyKick to true`);
                         reasonablePenaltyKick = true
-                        penaltyTakersData.recommended.push({ name: name, penaltyKick: penaltyKick, composure: composure });
+                        penaltyTakersData.recommended.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: composure });
                     } else {
                         console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, but composure ${composure} < 0, leaving reasonablePenaltyKick as false`);
-                        penaltyTakersData.discouraged.push({ name: name, penaltyKick: penaltyKick, composure: composure });
+                        penaltyTakersData.discouraged.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: composure });
                     }
                 } else {
                     console.debug(`processing composure, penaltyKick = ${penaltyKick} below reasonable level, leaving reasonablePenaltyKick as false`);
@@ -509,7 +533,7 @@ async function processLineup() {
             } else {
                 console.debug(`processing composure, but the player is not an outfielder, leaving reasonablePenaltyKick as false`);
                 if (penaltyKick > composure_treshold) {
-                    penaltyTakersWithoutComposure.push({ name: name, penaltyKick: penaltyKick, composure: 0 })
+                    penaltyTakersWithoutComposure.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: 0 })
                 }
             }
         }
@@ -572,10 +596,10 @@ async function processLineup() {
             const BC = skills[2].querySelector('span[class*="denom"]').textContent.trim();
             const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim();
             const cross = Math.floor(0.7 * PA + 0.3 * BC)
-            crossingPlayers.push({ name: name, cross: cross })
+            crossingPlayers.push({ id: playerIDs[i], name: name, cross: cross })
 
             const AE = skills[4].querySelector('span[class*="denom"]').textContent.trim();
-            anchors.push({ name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
+            anchors.push({ id: playerIDs[i], name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
     }
 

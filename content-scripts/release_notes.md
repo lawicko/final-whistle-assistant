@@ -63,3 +63,9 @@
 # 6.5.0
 - Fixed tooltips on `/player`
 - Fixed `/lineup#setPieces` that was broken after UI changes mid-season
+
+# 6.5.1
+- Refactored `/lineup#setPieces` to use native styling
+
+# 6.5.2
+- Added clickability to the recommended players for easier assignment
