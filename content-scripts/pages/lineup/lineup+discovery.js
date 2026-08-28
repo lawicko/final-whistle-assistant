@@ -16,6 +16,7 @@ export const additionalPenaltyTakersElementID = proposedContainerClass + "_Addit
 export const allPenaltyTakersElementID = proposedContainerClass + "_AllPenaltyTakers"
 export const proposedAnchorsElementID = proposedContainerClass + "_Anchors"
 export const proposedCrossTakersElementID = proposedContainerClass + "_CrossTakers"
+export const proposedLongShotTakersElementID = proposedContainerClass + "_LongShotTakers"
 
 /////////////////////// Common //////////////////////////////////
 function getContainerForHeaderName(headerName) {
@@ -112,4 +113,9 @@ export function proposedAnchorsDisplayed() {
 /////////////////////// Proposed Cross Takers ///////////////////
 export function proposedCrossTakersDisplayed() {
     return document.querySelector(`#${proposedCrossTakersListID}`) != null
+}
+
+/////////////////////// Proposed Long Shot Takers ///////////////////
+export function proposedLongShotTakersDisplayed() {
+    return document.querySelector(`#${proposedLongShootersListID}`) != null
 }

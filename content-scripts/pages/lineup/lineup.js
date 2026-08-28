@@ -201,6 +201,86 @@ function proposeCrossTakers(takers) {
     cornerKickRow.append(newContentContainer)
 }
 
+async function proposeLongShotTakers(takers) {
+    // Do we already have it?
+    if (discovery.proposedLongShotTakersDisplayed()) {
+        return
+    }
+
+    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
+    if (!playerSelectionContainer) {
+        console.info("No Player Selection container, will try to find it when the page changes.")
+        return
+    }
+
+    const proposedLongShotTakersList = document.createElement("ol");
+    proposedLongShotTakersList.id = discovery.proposedLongShootersListID
+    console.debug('Will iterate long shot takers: ', takers)
+    for (const taker of takers) {
+        console.debug('creating list element and name span for taker', taker)
+        var longShotTakerListItem = document.createElement('li')
+        ui.makeCursorPointer(longShotTakerListItem)
+        longShotTakerListItem.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(taker.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
+        var playerNameSpan = document.createElement('span')
+        playerNameSpan.classList.add(`denom${Math.floor(taker.longShot / 10)}`)
+        playerNameSpan.textContent = `${taker.name} (${taker.longShot})`
+        longShotTakerListItem.appendChild(playerNameSpan)
+
+        if (taker.composure) {
+            const composureSpan = document.createElement("span")
+            composureSpan.classList.add("composure")
+            composureSpan.textContent = " " + personalitiesSymbols["composure"]
+
+            switch (taker.composure) {
+                case -2:
+                    composureSpan.classList.add("doubleNegative")
+                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker"
+                    break
+                case -1:
+                    composureSpan.classList.add("negative")
+                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker"
+                    break
+                case 1:
+                    composureSpan.classList.add("positive")
+                    composureSpan.title = "This player has good composure, consider using him as penalty taker"
+                    break
+                case 2:
+                    composureSpan.classList.add("doublePositive")
+                    composureSpan.title = "This player has excellent composure, use him as penalty taker"
+                    break
+                default:
+                    console.warn("Value of taker.composure is unexpected: ", taker.composure)
+            }
+            longShotTakerListItem.appendChild(composureSpan)
+        }
+
+        console.debug('appending long shooter to proposedLongShooters')
+        proposedLongShotTakersList.appendChild(longShotTakerListItem)
+    }
+
+    const freeKickRow = discovery.getSetPiecesRoleRowWith("Free Kick", playerSelectionContainer)
+
+    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForLongShooters")
+    const additionalControls = document.createElement("div")
+    additionalControls.classList.add("flex_direction_column")
+    additionalControls.append(ignoreComposureCheckbox)
+
+    const newContentContainer = createProposedElement(
+        discovery.proposedLongShotTakersElementID,
+        "Recommended long shooters",
+        "The recommended list below is sorted by the long shot computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        additionalControls,
+        proposedLongShotTakersList
+    )
+    freeKickRow.append(newContentContainer)
+}
+
 async function proposePenaltyTakers(takers) {
     // Do we already have it?
     if (discovery.proposedPenaltyTakersDisplayed()) {
@@ -270,7 +350,7 @@ async function proposePenaltyTakers(takers) {
     }
 
     const composureTresholdInput = await createComposureTresholdInput()
-    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox()
+    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForPenaltyTakers")
     const additionalControls = document.createElement("div")
     additionalControls.classList.add("flex_direction_column")
     additionalControls.append(composureTresholdInput)
@@ -311,6 +391,14 @@ function removeProposedPenaltyTakersControls() {
     }
 }
 
+function removeProposedLongShootersControls() {
+    const longShootersElement = document.querySelector(`#${discovery.proposedLongShotTakersElementID}`)
+    if (longShootersElement) {
+        console.debug(`removing ${longShootersElement}`)
+        longShootersElement.remove()
+    }
+}
+
 async function createComposureTresholdInput() {
     const input = document.createElement("input")
     input.type = "number"
@@ -348,22 +436,23 @@ async function createComposureTresholdInput() {
     return label
 }
 
-async function createIgnoreComposureCheckbox() {
+async function createIgnoreComposureCheckbox(identifier) {
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
-    checkbox.id = "ignoreComposureForPenaltyTakers"
+    checkbox.id = identifier
     checkbox.classList.add("form-check-input")
     const checkboxes = await db.getCheckboxes()
-    checkbox.checked = checkboxes["ignoreComposureForPenaltyTakers"]
+    checkbox.checked = checkboxes[identifier]
     checkbox.addEventListener("change", async () => {
         const cd = await db.getCheckboxes()
         if (checkbox.checked) {
-            cd["ignoreComposureForPenaltyTakers"] = true
+            cd[identifier] = true
         } else {
-            cd["ignoreComposureForPenaltyTakers"] = false
+            cd[identifier] = false
         }
         await db.putCheckboxes(cd)
         removeProposedPenaltyTakersControls()
+        removeProposedLongShootersControls()
     });
 
     const label = document.createElement("label")
@@ -372,7 +461,7 @@ async function createIgnoreComposureCheckbox() {
     const labelSpan = document.createElement("span")
     labelSpan.textContent = "Ignore composure"
     label.appendChild(labelSpan)
-    label.htmlFor = "ignoreComposureForPenaltyTakers"
+    label.htmlFor = identifier
     return label
 }
 
@@ -430,6 +519,12 @@ async function processLineup() {
     }
     var penaltyTakersWithoutComposure = []
     var crossingPlayers = []
+
+    var longShootersData = {
+        recommended: [],
+        other: [],
+        discouraged: []
+    }
     var anchors = []
 
     for (let i = 0; i < pLinks.length; i++) {
@@ -497,6 +592,7 @@ async function processLineup() {
             const SC = skills[0].querySelector('span[class*="denom"]').textContent.trim();
             const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim();
             const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
+            const longShot = Math.floor((+SC + Math.min(2 * +SC, +PA)) / 2)
             const composure_treshold = tresholds.composure ?? 50
             if (!tresholds) {
                 console.warn("Tresholds could not be loaded from storage! Using default composure_treshold of ", 50)
@@ -530,11 +626,18 @@ async function processLineup() {
                         composureSpan.remove()
                     }
                 }
+
+                if (composure > 0) {
+                    longShootersData.recommended.push({ id: playerIDs[i], name: name, longShot: longShot, composure: composure})
+                } else {
+                    longShootersData.discouraged.push({ id: playerIDs[i], name: name, longShot: longShot, composure: composure})
+                }
             } else {
                 console.debug(`processing composure, but the player is not an outfielder, leaving reasonablePenaltyKick as false`);
                 if (penaltyKick > composure_treshold) {
                     penaltyTakersWithoutComposure.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: 0 })
                 }
+                longShootersData.other.push({ id: playerIDs[i], name: name, longShot: longShot})
             }
         }
 
@@ -624,12 +727,24 @@ async function processLineup() {
     })
     proposeCrossTakers(crossingPlayers.slice(0, 3))
 
-    // Propose penalty takers
-    const ignoreComposure = checkboxes["ignoreComposureForPenaltyTakers"] || false
+    // Propose long shooters
+    const ignoreComposureForLongShooters = checkboxes["ignoreComposureForLongShooters"] || false
+    console.info("ignoreComposureForLongShooters:", ignoreComposureForLongShooters)
+    let allTakers = longShootersData.recommended.concat(longShootersData.other)
+    if (ignoreComposureForLongShooters) {
+        allTakers = allTakers.concat(longShootersData.discouraged)
+    }
+    console.info("longShootersData:", longShootersData)
+    allTakers.sort((a, b) => b.longShot - a.longShot)
+    console.info("allTakers:", allTakers)
+    await proposeLongShotTakers(allTakers.slice(0, 3))
 
-    if (ignoreComposure) {
+    // Propose penalty takers
+    const ignoreComposureForPenaltyTakers = checkboxes["ignoreComposureForPenaltyTakers"] || false
+
+    if (ignoreComposureForPenaltyTakers) {
         let allTakers = penaltyTakersData.recommended.concat(penaltyTakersData.discouraged).concat(penaltyTakersWithoutComposure)
-        allTakers.sort((a, b) => b.penaltyKick - a.penaltyKick);
+        allTakers.sort((a, b) => b.penaltyKick - a.penaltyKick)
         penaltyTakersData.recommended = allTakers.slice(0, 5)
         penaltyTakersData.other = allTakers.slice(5, 10)
     } else {

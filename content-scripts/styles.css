@@ -89,6 +89,7 @@ label.FinalWhistlePlugin_LineupProposedListAdditionalControlsLabel > input.form-
 
 ol#proposed-penalty-takers,
 ol#proposed-cross-takers,
+ol#proposed-long-shooters,
 ol#proposed-anchors {
   text-align: center;
 
