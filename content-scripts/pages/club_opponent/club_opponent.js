@@ -8,7 +8,7 @@ import * as db from "../../db_access.js"
 import * as dbUtils from '../../db_utils.js'
 
 async function updateAdditionalInfo(checkboxesData) {
-    console.info(`${utils.version} Updating additional info`)
+    console.info(`${utils.version} ℹ️ Updating additional info`)
     let rows = document.querySelectorAll("table > tbody > tr");
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
@@ -28,7 +28,7 @@ async function updateAdditionalInfo(checkboxesData) {
 export async function processOpponentClubPage() {
     console.info(`${utils.version} 🛡️ Processing opponent club page`)
 
-    const controlCheckboxesInsertionPoint = document.querySelector(uiUtils.navTabsQuery)
+    const controlCheckboxesInsertionPoint = document.querySelector(uiUtils.navTabsContainerQuery)
 
     const pattern = /club\/\d+#(.+)/
     const match = window.location.href.match(pattern)
@@ -37,7 +37,7 @@ export async function processOpponentClubPage() {
         return
     }
     const selectedTab = match[1]
-    console.info(`${utils.version} selectedTab: ${selectedTab}`)
+    console.info(`${utils.version} 🔘 selectedTab: ${selectedTab}`)
     switch (selectedTab) {
         case "Squad":
             let tableNode = document.querySelector(uiUtils.opponentSquadTableQuery)
