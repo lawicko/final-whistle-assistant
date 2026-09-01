@@ -75,3 +75,6 @@
 - Moved the control checkboxes for controlling the additional info on `/club#Squad` below the tabs as the tabs were extended in the last visual update of the game and the control checkboxes did not fit on the page horizontally anymore
 - Implemented long shot calculation to Set Pieces screen ([#61](https://github.com/lawicko/final-whistle-assistant/issues/61))
 - Added visual effect to the rows of selected players on `/lineup`
+
+# 6.6.1
+- Added database backup compression and decompression

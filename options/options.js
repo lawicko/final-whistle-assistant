@@ -8,32 +8,41 @@ if (typeof browser == "undefined") {
 }
 
 function makeExportFileName(db, label = "export") {
-    const now = new Date();
+    const now = new Date()
 
     // Format local time to YYYY-MM-DDTHH-MM (minutes precision)
-    const pad = n => String(n).padStart(2, "0");
-    const year = now.getFullYear();
-    const month = pad(now.getMonth() + 1);
-    const day = pad(now.getDate());
-    const hours = pad(now.getHours());
-    const minutes = pad(now.getMinutes());
+    const pad = n => String(n).padStart(2, "0")
+    const year = now.getFullYear()
+    const month = pad(now.getMonth() + 1)
+    const day = pad(now.getDate())
+    const hours = pad(now.getHours())
+    const minutes = pad(now.getMinutes())
 
     // Build safe timestamp string
-    const localStamp = `${year}-${month}-${day}T${hours}-${minutes}`;
+    const localStamp = `${year}-${month}-${day}T${hours}-${minutes}`
 
     // Dexie database version
-    const version = db.verno;
+    const version = db.verno
 
-    return `${localStamp}_db-v${version}_${label}.json`;
+    return `${localStamp}_db-v${version}_${label}.json.gzip`
 }
 
 async function exportStorage() {
     try {
-        const blob = await exportDB(getDB(), { prettyJson: true, progressCallback })
+        showLoading('Exporting Database...')
+        const blob = await exportDB(getDB(), { prettyJson: false, progressCallback })
+        modalMessage.textContent = 'Compressing file...'
+        modalProgress.removeAttribute('value') // Reset to indeterminate during stream compression
+        const compressedStream = blob.stream().pipeThrough(new CompressionStream('gzip'))
+        const compressedBlob = await new Response(compressedStream, {
+            headers: { 'Content-Type': 'application/gzip' }
+        }).blob()
         const fileName = makeExportFileName(getDB(), "final-whistle-assistant")
-        download(blob, fileName, "application/json")
+        download(compressedBlob, fileName, "application/gzip")
     } catch (error) {
         console.error('' + error)
+    } finally {
+        hideLoading()
     }
 }
 
@@ -122,26 +131,37 @@ dropZoneDiv.ondrop = async ev => {
             dbInstance.close()
             await dbInstance.delete()
         }
+        showLoading('Decompressing Backup...')
+        const decompressedStream = file
+            .stream()
+            .pipeThrough(new DecompressionStream('gzip'))
+        const decompressedBlob = await new Response(decompressedStream, {
+            headers: { 'Content-Type': 'application/json' }
+        }).blob()
         // Notify other contexts that we are about to import
         browser.runtime.sendMessage({ type: "WILL_IMPORT_DB" })
-        const db = await importDB(file, {
+        modalMessage.textContent = 'Importing into Database...'
+        const db = await importDB(decompressedBlob, {
             progressCallback
         })
         setDB(db)
         console.info("⚙️ Import complete");
         // Notify other contexts that we imported the db
         browser.runtime.sendMessage({ type: "DID_IMPORT_DB" })
-        const confirmationDialog = document.getElementById("confirmationDialog");
+        const confirmationDialog = document.getElementById("confirmationDialog")
         openDialogAbove(document.getElementById("exportBtn"), confirmationDialog)
         initDB("⚙️ DID_IMPORT_DB")
         await restoreOptions()
     } catch (error) {
-        console.error('' + error);
+        console.error('' + error)
+    } finally {
+        hideLoading()
     }
 }
 
 function progressCallback({ totalRows, completedRows }) {
     console.log(`⚙️ Progress: ${completedRows} of ${totalRows} rows completed`)
+    updateProgress(completedRows, totalRows)
 }
 
 // Save settings when changed
@@ -238,8 +258,30 @@ async function restoreOptions() {
 }
 
 // Add listeners to inputs
-document.addEventListener("DOMContentLoaded", restoreOptions);
+document.addEventListener("DOMContentLoaded", restoreOptions)
 
 document.querySelectorAll("input").forEach((input) => {
-    input.addEventListener("change", saveOptions);
-});
+    input.addEventListener("change", saveOptions)
+})
+
+// Progress indicator for db export/import
+const modal = document.getElementById('loadingModal')
+const modalMessage = document.getElementById('modalMessage')
+const modalProgress = document.getElementById('modalProgress')
+
+function showLoading(message) {
+  modalMessage.textContent = message
+  modalProgress.removeAttribute('value') // Set to indeterminate mode (spinning/animating)
+  modal.showModal() // Opens modal with dark backdrop
+}
+
+function updateProgress(completed, total) {
+  if (total > 0) {
+    modalProgress.max = total
+    modalProgress.value = completed
+  }
+}
+
+function hideLoading() {
+  modal.close()
+}

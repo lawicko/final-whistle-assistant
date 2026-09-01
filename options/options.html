@@ -256,6 +256,11 @@
             </form>
         </dialog>
     </fieldset>
+    <dialog id="loadingModal"
+        style="border: none; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+        <p id="modalMessage" style="margin-top: 0; font-family: sans-serif; font-weight: bold;">Processing...</p>
+        <progress id="modalProgress" value="0" max="100" style="width: 200px;"></progress>
+    </dialog>
     <script src="options.bundle.js"></script>
 </body>
 
