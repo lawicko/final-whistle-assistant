@@ -1,7 +1,10 @@
-import * as utils from "../../utils.js"
 import * as common from "./lineup+common.js"
+import * as db from "../../db_access.js"
+import * as discovery from "./lineup+discovery.js"
+import * as listUtils from "../../list_utils.js"
+import * as utils from "../../utils.js"
 
-export async function processPlayerOrdersTab() {
+export async function processPlayerOrdersTab(checkboxesData) {
     console.info(`${utils.version} ⚽♟️ Processing player orders tab...`)
     // common.fixHeader({
     //     formationContainerSelector: "fw-player-orders > div.row > div.col-md-12 > div.squad-mobile-card-list",
@@ -23,4 +26,24 @@ export async function processPlayerOrdersTab() {
     //     }
     // })
     common.updateFormIndicators()
+
+    const checkboxes = checkboxesData
+    // Check if special talents will be applied
+    const applySpecialTalents = checkboxes["specialTalents"] || false
+    const rows = discovery.getAllPlayerOrdersRows()
+    const hrefs = discovery.getHrefList('div.squad-mobile-card-list')
+    const playerIDs = hrefs.map(utils.lastPathComponent)
+    const profiles = await db.bulkGetPlayers(playerIDs)
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        const profile = profiles[i]
+        // Apply special talents if needed
+        if (profile['specialTalents']) {
+            let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
+            const specialTalents = profile["specialTalents"]
+            if (specialTalents) {
+                listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+            }
+        }
+    }
 }

@@ -3,8 +3,9 @@ import * as db from "../../db_access.js"
 import * as discovery from "./lineup+discovery.js"
 import * as ui from "../../ui_utils.js"
 import * as utils from "../../utils.js"
+import * as listUtils from "../../list_utils.js"
 
-export async function processSetPiecesTab() {
+export async function processSetPiecesTab(checkboxesData) {
     console.info(`${utils.version} ⚽♟️ Processing set pieces tab...`)
     // common.fixHeader({
     //     formationContainerSelector: "fw-set-pieces > div.row > div.col-md-6 > div.squad-mobile-card-list",
@@ -31,15 +32,28 @@ export async function processSetPiecesTab() {
         await insertArroganceTresholdInput(formationListToolbar)
     }
 
+    // Cleanup
+    removeProposedPenaltyTakersControls()
+    removeProposedAnchorsControls()
+    removeProposedCrossControls()
+    removeProposedLongShootersControls()
+
+    // New pass after cleanup
+    const rows = discovery.getAllPlayerSelects()
     const pLinks = discovery.getPlayerLinks('div.squad-mobile-card-list')
     const hrefs = discovery.getHrefList('div.squad-mobile-card-list')
-    const playerIDs = hrefs.map(utils.lastPathComponent);
+    const playerIDs = hrefs.map(utils.lastPathComponent)
     const profiles = await db.bulkGetPlayers(playerIDs)
     console.debug('Profiles: ', profiles)
 
     // Load tresholds from storage
     const tresholds = await db.getTresholds()
     console.debug(`Loaded tresholds from storage: `, tresholds)
+
+    const checkboxes = checkboxesData
+
+    // Check if special talents will be applied
+    const applySpecialTalents = checkboxes["specialTalents"] || false
 
     var penaltyTakersData = {
         recommended: [],
@@ -56,7 +70,8 @@ export async function processSetPiecesTab() {
     }
     var anchors = []
 
-    for (let i = 0; i < pLinks.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
         const profile = profiles[i]
 
         // Select the first span child
@@ -98,6 +113,15 @@ export async function processSetPiecesTab() {
         const composure = personalities['composure']
         const arrogance = personalities['arrogance']
         const sportsmanship = personalities['sportsmanship']
+
+        // Apply special talents if needed
+        if (profile['specialTalents']) {
+            let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
+            const specialTalents = profile["specialTalents"]
+            if (specialTalents) {
+                listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+            }
+        }
 
         if (leadership) {
             applyLeadership(pLinks[i], profile['personalities']['leadership'])
@@ -234,8 +258,6 @@ export async function processSetPiecesTab() {
             anchors.push({ id: playerIDs[i], name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
     }
-
-    const checkboxes = await db.getCheckboxes()
 
     // Propose anchors
     const ignoreSportsmanship = checkboxes["ignoreSportsmanshipForAnchors"] || false
@@ -378,289 +400,6 @@ function applyLeadership(element, leadership) {
     }
 }
 
-async function proposeAnchors(anchors) {
-    // Do we already have it?
-    if (discovery.proposedAnchorsDisplayed()) {
-        return
-    }
-
-    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
-    if (!playerSelectionContainer) {
-        console.info("No Player Selection container, will try to find it when the page changes.")
-        return
-    }
-
-    const proposedAnchorsList = document.createElement("ol")
-    proposedAnchorsList.id = discovery.proposedAnchorsListID
-    console.debug('Will iterate anchors: ', anchors)
-    for (const anchor of anchors) {
-        console.debug('creating list element and name span for anchor', anchor)
-        var anchorListItem = document.createElement('li')
-        ui.makeCursorPointer(anchorListItem)
-        anchorListItem.addEventListener("click", () => {
-            const playerSelect = discovery.getPlayerSelectFor(anchor.id)
-
-            if (playerSelect) {
-                playerSelect.click()
-            }
-        })
-        var playerNameSpan = document.createElement('span')
-        playerNameSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
-        playerNameSpan.textContent = `${anchor.name} (${anchor.AE})`
-        anchorListItem.appendChild(playerNameSpan)
-        console.debug('appending anchor to proposedAnchors')
-        proposedAnchorsList.appendChild(anchorListItem)
-
-        if (anchor.sportsmanship > 0 || anchor.sportsmanship < 0) {
-            const sportsmanshipSpan = document.createElement("span")
-            sportsmanshipSpan.classList.add('sportsmanship')
-            sportsmanshipSpan.textContent = " " + ui.personalitiesSymbols["sportsmanship"]
-            switch (anchor.sportsmanship) {
-                case -2:
-                    sportsmanshipSpan.classList.add('doubleNegative')
-                    sportsmanshipSpan.title = "This players sportsmanship is very questionable, you want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen."
-                    break
-                case -1:
-                    sportsmanshipSpan.classList.add('negative')
-                    sportsmanshipSpan.title = "This players sportsmanship is questionable, you may want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen."
-                    break
-                case 1:
-                    sportsmanshipSpan.classList.add('positive')
-                    sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls."
-                    break
-                case 2:
-                    sportsmanshipSpan.classList.add('doublePositive')
-                    sportsmanshipSpan.title = "This players is a fair competitor with excellent sportsmanship, his actions rarely result in fouls."
-                    break
-                default:
-                    console.warn("Value of anchor.sportsmanship is unexpected: ", anchor.sportsmanship)
-            }
-            anchorListItem.appendChild(sportsmanshipSpan)
-        }
-    }
-
-    const anchorsRow = discovery.getSetPiecesRoleRowWith("Anchor", playerSelectionContainer)
-
-    // Ignore negative sportsmanship
-    const checkbox = document.createElement("input")
-    checkbox.type = "checkbox"
-    checkbox.id = "ignoreSportsmanshipForAnchors"
-    checkbox.classList.add("form-check-input")
-    const checkboxes = await db.getCheckboxes()
-    checkbox.checked = checkboxes["ignoreSportsmanshipForAnchors"]
-    checkbox.addEventListener("change", async () => {
-        const cd = await db.getCheckboxes()
-        if (checkbox.checked) {
-            cd["ignoreSportsmanshipForAnchors"] = true
-        } else {
-            cd["ignoreSportsmanshipForAnchors"] = false
-        }
-        await db.putCheckboxes(cd)
-        removeProposedAnchorsControls()
-    })
-
-    const label = document.createElement("label")
-    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
-    label.appendChild(checkbox)
-    const labelSpan = document.createElement("span")
-    labelSpan.textContent = "Ignore sportsmanship"
-    label.appendChild(labelSpan)
-    label.htmlFor = "ignoreSportsmanshipForAnchors"
-
-    const newContentContainer = createProposedElement(
-        discovery.proposedAnchorsElementID,
-        "Recommended anchors",
-        "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
-        label,
-        proposedAnchorsList
-    )
-    anchorsRow.append(newContentContainer)
-}
-
-function createProposedElement(
-    id,
-    headerText,
-    hintText,
-    additionalControls,
-    proposedList
-) {
-    const headerElement = document.createElement("div")
-    headerElement.classList.add(discovery.proposedListHeaderClass)
-    const headerSpan = document.createElement("span")
-    headerSpan.textContent = headerText + " "
-    headerElement.appendChild(headerSpan)
-    const infoSpan = document.createElement("span")
-    infoSpan.textContent = ui.infoSymbol
-    infoSpan.title = hintText
-    ui.makeCursorHelp(infoSpan)
-    headerElement.appendChild(infoSpan)
-
-    const newContentContainer = document.createElement("div")
-    newContentContainer.id = id
-    newContentContainer.classList.add(discovery.proposedContainerClass)
-    newContentContainer.append(headerElement)
-    if (additionalControls != null) {
-        newContentContainer.append(additionalControls)
-    }
-    newContentContainer.append(proposedList)
-    return newContentContainer
-}
-
-function proposeCrossTakers(takers) {
-    // Do we already have it?
-    if (discovery.proposedCrossTakersDisplayed()) {
-        return
-    }
-
-    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
-    if (!playerSelectionContainer) {
-        console.info("No Player Selection container, will try to find it when the page changes.")
-        return
-    }
-
-    const proposedCrossTakersList = document.createElement("ol");
-    proposedCrossTakersList.id = discovery.proposedCrossTakersListID
-    console.debug('Will iterate cross takers: ', takers)
-    for (const taker of takers) {
-        console.debug('creating list element and name span for taker', taker)
-        var crossTakerListItem = document.createElement('li')
-        ui.makeCursorPointer(crossTakerListItem)
-        crossTakerListItem.addEventListener("click", () => {
-            const playerSelect = discovery.getPlayerSelectFor(taker.id)
-
-            if (playerSelect) {
-                playerSelect.click()
-            }
-        })
-        var playerNameSpan = document.createElement('span')
-        playerNameSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
-        playerNameSpan.textContent = `${taker.name} (${taker.cross})`
-        crossTakerListItem.appendChild(playerNameSpan)
-        console.debug('appending cross taker to proposedCrossTakers')
-        proposedCrossTakersList.appendChild(crossTakerListItem)
-    }
-
-    const cornerKickRow = discovery.getSetPiecesRoleRowWith("Corner Kick", playerSelectionContainer)
-
-    const newContentContainer = createProposedElement(
-        discovery.proposedCrossTakersElementID,
-        "Recommended cross takers",
-        "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
-        null,
-        proposedCrossTakersList
-    )
-    cornerKickRow.append(newContentContainer)
-}
-
-async function proposeLongShotTakers(takers) {
-    // Do we already have it?
-    if (discovery.proposedLongShotTakersDisplayed()) {
-        return
-    }
-
-    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
-    if (!playerSelectionContainer) {
-        console.info("No Player Selection container, will try to find it when the page changes.")
-        return
-    }
-
-    const proposedLongShotTakersList = document.createElement("ol");
-    proposedLongShotTakersList.id = discovery.proposedLongShootersListID
-    console.debug('Will iterate long shot takers: ', takers)
-    for (const taker of takers) {
-        console.debug('creating list element and name span for taker', taker)
-        var longShotTakerListItem = document.createElement('li')
-        ui.makeCursorPointer(longShotTakerListItem)
-        longShotTakerListItem.addEventListener("click", () => {
-            const playerSelect = discovery.getPlayerSelectFor(taker.id)
-
-            if (playerSelect) {
-                playerSelect.click()
-            }
-        })
-        var playerNameSpan = document.createElement('span')
-        playerNameSpan.classList.add(`denom${Math.floor(taker.longShot / 10)}`)
-        playerNameSpan.textContent = `${taker.name} (${taker.longShot})`
-        longShotTakerListItem.appendChild(playerNameSpan)
-
-        if (taker.composure) {
-            const composureSpan = document.createElement("span")
-            composureSpan.classList.add("composure")
-            composureSpan.textContent = " " + ui.personalitiesSymbols["composure"]
-
-            switch (taker.composure) {
-                case -2:
-                    composureSpan.classList.add("doubleNegative")
-                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker"
-                    break
-                case -1:
-                    composureSpan.classList.add("negative")
-                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker"
-                    break
-                case 1:
-                    composureSpan.classList.add("positive")
-                    composureSpan.title = "This player has good composure, consider using him as penalty taker"
-                    break
-                case 2:
-                    composureSpan.classList.add("doublePositive")
-                    composureSpan.title = "This player has excellent composure, use him as penalty taker"
-                    break
-                default:
-                    console.warn("Value of taker.composure is unexpected: ", taker.composure)
-            }
-            longShotTakerListItem.appendChild(composureSpan)
-        }
-
-        console.debug('appending long shooter to proposedLongShooters')
-        proposedLongShotTakersList.appendChild(longShotTakerListItem)
-    }
-
-    const freeKickRow = discovery.getSetPiecesRoleRowWith("Free Kick", playerSelectionContainer)
-
-    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForLongShooters")
-    const additionalControls = document.createElement("div")
-    additionalControls.classList.add("flex_direction_column")
-    additionalControls.append(ignoreComposureCheckbox)
-
-    const newContentContainer = createProposedElement(
-        discovery.proposedLongShotTakersElementID,
-        "Recommended long shooters",
-        "The recommended list below is sorted by the long shot computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
-        additionalControls,
-        proposedLongShotTakersList
-    )
-    freeKickRow.append(newContentContainer)
-}
-
-async function createIgnoreComposureCheckbox(identifier) {
-    const checkbox = document.createElement("input")
-    checkbox.type = "checkbox"
-    checkbox.id = identifier
-    checkbox.classList.add("form-check-input")
-    const checkboxes = await db.getCheckboxes()
-    checkbox.checked = checkboxes[identifier]
-    checkbox.addEventListener("change", async () => {
-        const cd = await db.getCheckboxes()
-        if (checkbox.checked) {
-            cd[identifier] = true
-        } else {
-            cd[identifier] = false
-        }
-        await db.putCheckboxes(cd)
-        removeProposedPenaltyTakersControls()
-        removeProposedLongShootersControls()
-    });
-
-    const label = document.createElement("label")
-    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
-    label.appendChild(checkbox)
-    const labelSpan = document.createElement("span")
-    labelSpan.textContent = "Ignore composure"
-    label.appendChild(labelSpan)
-    label.htmlFor = identifier
-    return label
-}
-
 async function proposePenaltyTakers(takers) {
     // Do we already have it?
     if (discovery.proposedPenaltyTakersDisplayed()) {
@@ -763,14 +502,6 @@ async function proposePenaltyTakers(takers) {
     penaltyTakersContainer.insertBefore(allPenaltyTakersContainer, penaltyTakersBodyNode)
 }
 
-function removeProposedAnchorsControls() {
-    const proposedAnchorsElement = document.querySelector(`#${discovery.proposedAnchorsElementID}`)
-    if (proposedAnchorsElement) {
-        console.debug(`removing ${proposedAnchorsElement}`)
-        proposedAnchorsElement.remove()
-    }
-}
-
 function removeProposedPenaltyTakersControls() {
     const allPenaltyTakersElement = document.querySelector(`#${discovery.allPenaltyTakersElementID}`)
     if (allPenaltyTakersElement) {
@@ -779,12 +510,283 @@ function removeProposedPenaltyTakersControls() {
     }
 }
 
+async function proposeAnchors(anchors) {
+    // Do we already have it?
+    if (discovery.proposedAnchorsDisplayed()) {
+        return
+    }
+
+    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
+    if (!playerSelectionContainer) {
+        console.info("No Player Selection container, will try to find it when the page changes.")
+        return
+    }
+
+    const proposedAnchorsList = document.createElement("ol")
+    proposedAnchorsList.id = discovery.proposedAnchorsListID
+    console.debug('Will iterate anchors: ', anchors)
+    for (const anchor of anchors) {
+        console.debug('creating list element and name span for anchor', anchor)
+        var anchorListItem = document.createElement('li')
+        ui.makeCursorPointer(anchorListItem)
+        anchorListItem.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(anchor.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
+        var playerNameSpan = document.createElement('span')
+        playerNameSpan.classList.add(`denom${Math.floor(anchor.AE / 10)}`)
+        playerNameSpan.textContent = `${anchor.name} (${anchor.AE})`
+        anchorListItem.appendChild(playerNameSpan)
+        console.debug('appending anchor to proposedAnchors')
+        proposedAnchorsList.appendChild(anchorListItem)
+
+        if (anchor.sportsmanship > 0 || anchor.sportsmanship < 0) {
+            const sportsmanshipSpan = document.createElement("span")
+            sportsmanshipSpan.classList.add('sportsmanship')
+            sportsmanshipSpan.textContent = " " + ui.personalitiesSymbols["sportsmanship"]
+            switch (anchor.sportsmanship) {
+                case -2:
+                    sportsmanshipSpan.classList.add('doubleNegative')
+                    sportsmanshipSpan.title = "This players sportsmanship is very questionable, you want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen."
+                    break
+                case -1:
+                    sportsmanshipSpan.classList.add('negative')
+                    sportsmanshipSpan.title = "This players sportsmanship is questionable, you may want to avoid placing him as your central defender because he may cause penalties with his fouls. He may also loose possesion by fouling his opponents in offensive situations. You can adjust his attitude on the formation screen."
+                    break
+                case 1:
+                    sportsmanshipSpan.classList.add('positive')
+                    sportsmanshipSpan.title = "This players is a fair competitor with good sportsmanship, his actions should generally not result in fouls."
+                    break
+                case 2:
+                    sportsmanshipSpan.classList.add('doublePositive')
+                    sportsmanshipSpan.title = "This players is a fair competitor with excellent sportsmanship, his actions rarely result in fouls."
+                    break
+                default:
+                    console.warn("Value of anchor.sportsmanship is unexpected: ", anchor.sportsmanship)
+            }
+            anchorListItem.appendChild(sportsmanshipSpan)
+        }
+    }
+
+    const anchorsRow = discovery.getSetPiecesRoleRowWith("Anchor", playerSelectionContainer)
+
+    // Ignore negative sportsmanship
+    const checkbox = document.createElement("input")
+    checkbox.type = "checkbox"
+    checkbox.id = "ignoreSportsmanshipForAnchors"
+    checkbox.classList.add("form-check-input")
+    const checkboxes = await db.getCheckboxes()
+    checkbox.checked = checkboxes["ignoreSportsmanshipForAnchors"]
+    checkbox.addEventListener("change", async () => {
+        const cd = await db.getCheckboxes()
+        if (checkbox.checked) {
+            cd["ignoreSportsmanshipForAnchors"] = true
+        } else {
+            cd["ignoreSportsmanshipForAnchors"] = false
+        }
+        await db.putCheckboxes(cd)
+        removeProposedAnchorsControls()
+    })
+
+    const label = document.createElement("label")
+    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
+    label.appendChild(checkbox)
+    const labelSpan = document.createElement("span")
+    labelSpan.textContent = "Ignore sportsmanship"
+    label.appendChild(labelSpan)
+    label.htmlFor = "ignoreSportsmanshipForAnchors"
+
+    const newContentContainer = createProposedElement(
+        discovery.proposedAnchorsElementID,
+        "Recommended anchors",
+        "The recommended list below is sorted by the aerial skill. You should have 3 recommended players on the list. Nota that this extension will NOT recommend a player with negative sportsmanship as anchor unless you check the checkbox underneath. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        label,
+        proposedAnchorsList
+    )
+    anchorsRow.append(newContentContainer)
+}
+
+function removeProposedAnchorsControls() {
+    const proposedAnchorsElement = document.querySelector(`#${discovery.proposedAnchorsElementID}`)
+    if (proposedAnchorsElement) {
+        console.debug(`removing ${proposedAnchorsElement}`)
+        proposedAnchorsElement.remove()
+    }
+}
+
+function proposeCrossTakers(takers) {
+    // Do we already have it?
+    if (discovery.proposedCrossTakersDisplayed()) {
+        return
+    }
+
+    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
+    if (!playerSelectionContainer) {
+        console.info("No Player Selection container, will try to find it when the page changes.")
+        return
+    }
+
+    const proposedCrossTakersList = document.createElement("ol");
+    proposedCrossTakersList.id = discovery.proposedCrossTakersListID
+    console.debug('Will iterate cross takers: ', takers)
+    for (const taker of takers) {
+        console.debug('creating list element and name span for taker', taker)
+        var crossTakerListItem = document.createElement('li')
+        ui.makeCursorPointer(crossTakerListItem)
+        crossTakerListItem.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(taker.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
+        var playerNameSpan = document.createElement('span')
+        playerNameSpan.classList.add(`denom${Math.floor(taker.cross / 10)}`)
+        playerNameSpan.textContent = `${taker.name} (${taker.cross})`
+        crossTakerListItem.appendChild(playerNameSpan)
+        console.debug('appending cross taker to proposedCrossTakers')
+        proposedCrossTakersList.appendChild(crossTakerListItem)
+    }
+
+    const cornerKickRow = discovery.getSetPiecesRoleRowWith("Corner Kick", playerSelectionContainer)
+
+    const newContentContainer = createProposedElement(
+        discovery.proposedCrossTakersElementID,
+        "Recommended cross takers",
+        "The recommended list below is sorted by the set piece cross computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        null,
+        proposedCrossTakersList
+    )
+    cornerKickRow.append(newContentContainer)
+}
+
+function removeProposedCrossControls() {
+    const crossElement = document.querySelector(`#${discovery.proposedCrossTakersElementID}`)
+    if (crossElement) {
+        console.debug(`removing ${crossElement}`)
+        crossElement.remove()
+    }
+}
+
+async function proposeLongShotTakers(takers) {
+    // Do we already have it?
+    if (discovery.proposedLongShotTakersDisplayed()) {
+        return
+    }
+
+    const playerSelectionContainer = discovery.getPlayerSelectionContainer()
+    if (!playerSelectionContainer) {
+        console.info("No Player Selection container, will try to find it when the page changes.")
+        return
+    }
+
+    const proposedLongShotTakersList = document.createElement("ol");
+    proposedLongShotTakersList.id = discovery.proposedLongShootersListID
+    console.debug('Will iterate long shot takers: ', takers)
+    for (const taker of takers) {
+        console.debug('creating list element and name span for taker', taker)
+        var longShotTakerListItem = document.createElement('li')
+        ui.makeCursorPointer(longShotTakerListItem)
+        longShotTakerListItem.addEventListener("click", () => {
+            const playerSelect = discovery.getPlayerSelectFor(taker.id)
+
+            if (playerSelect) {
+                playerSelect.click()
+            }
+        })
+        var playerNameSpan = document.createElement('span')
+        playerNameSpan.classList.add(`denom${Math.floor(taker.longShot / 10)}`)
+        playerNameSpan.textContent = `${taker.name} (${taker.longShot})`
+        longShotTakerListItem.appendChild(playerNameSpan)
+
+        if (taker.composure) {
+            const composureSpan = document.createElement("span")
+            composureSpan.classList.add("composure")
+            composureSpan.textContent = " " + ui.personalitiesSymbols["composure"]
+
+            switch (taker.composure) {
+                case -2:
+                    composureSpan.classList.add("doubleNegative")
+                    composureSpan.title = "This player has terrible composure, avoid using him as penalty taker"
+                    break
+                case -1:
+                    composureSpan.classList.add("negative")
+                    composureSpan.title = "This player has bad composure, avoid using him as penalty taker"
+                    break
+                case 1:
+                    composureSpan.classList.add("positive")
+                    composureSpan.title = "This player has good composure, consider using him as penalty taker"
+                    break
+                case 2:
+                    composureSpan.classList.add("doublePositive")
+                    composureSpan.title = "This player has excellent composure, use him as penalty taker"
+                    break
+                default:
+                    console.warn("Value of taker.composure is unexpected: ", taker.composure)
+            }
+            longShotTakerListItem.appendChild(composureSpan)
+        }
+
+        console.debug('appending long shooter to proposedLongShooters')
+        proposedLongShotTakersList.appendChild(longShotTakerListItem)
+    }
+
+    const freeKickRow = discovery.getSetPiecesRoleRowWith("Free Kick", playerSelectionContainer)
+
+    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForLongShooters")
+    const additionalControls = document.createElement("div")
+    additionalControls.classList.add("flex_direction_column")
+    additionalControls.append(ignoreComposureCheckbox)
+
+    const newContentContainer = createProposedElement(
+        discovery.proposedLongShotTakersElementID,
+        "Recommended long shooters",
+        "The recommended list below is sorted by the long shot computed skill. You should have 3 recommended players on the list. If you think a player is missing here, make sure you visit his page first so that the extension can save his data, then reload the lineup page.",
+        additionalControls,
+        proposedLongShotTakersList
+    )
+    freeKickRow.append(newContentContainer)
+}
+
 function removeProposedLongShootersControls() {
     const longShootersElement = document.querySelector(`#${discovery.proposedLongShotTakersElementID}`)
     if (longShootersElement) {
         console.debug(`removing ${longShootersElement}`)
         longShootersElement.remove()
     }
+}
+
+// Private
+function createProposedElement(
+    id,
+    headerText,
+    hintText,
+    additionalControls,
+    proposedList
+) {
+    const headerElement = document.createElement("div")
+    headerElement.classList.add(discovery.proposedListHeaderClass)
+    const headerSpan = document.createElement("span")
+    headerSpan.textContent = headerText + " "
+    headerElement.appendChild(headerSpan)
+    const infoSpan = document.createElement("span")
+    infoSpan.textContent = ui.infoSymbol
+    infoSpan.title = hintText
+    ui.makeCursorHelp(infoSpan)
+    headerElement.appendChild(infoSpan)
+
+    const newContentContainer = document.createElement("div")
+    newContentContainer.id = id
+    newContentContainer.classList.add(discovery.proposedContainerClass)
+    newContentContainer.append(headerElement)
+    if (additionalControls != null) {
+        newContentContainer.append(additionalControls)
+    }
+    newContentContainer.append(proposedList)
+    return newContentContainer
 }
 
 async function createComposureTresholdInput() {
@@ -821,5 +823,34 @@ async function createComposureTresholdInput() {
     labelSpan.title = `Composure treshold - if the player has composure personality trait and his penalty kick skill is above this treshold, ${ui.personalitiesSymbols["composure"]} symbol will appear next to his name. If the penalty kick skill of the player is above this treshold he will be taken into account when recommending penalty takers.`
     label.appendChild(labelSpan)
     label.htmlFor = "composure-treshold"
+    return label
+}
+
+async function createIgnoreComposureCheckbox(identifier) {
+    const checkbox = document.createElement("input")
+    checkbox.type = "checkbox"
+    checkbox.id = identifier
+    checkbox.classList.add("form-check-input")
+    const checkboxes = await db.getCheckboxes()
+    checkbox.checked = checkboxes[identifier]
+    checkbox.addEventListener("change", async () => {
+        const cd = await db.getCheckboxes()
+        if (checkbox.checked) {
+            cd[identifier] = true
+        } else {
+            cd[identifier] = false
+        }
+        await db.putCheckboxes(cd)
+        removeProposedPenaltyTakersControls()
+        removeProposedLongShootersControls()
+    });
+
+    const label = document.createElement("label")
+    label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
+    label.appendChild(checkbox)
+    const labelSpan = document.createElement("span")
+    labelSpan.textContent = "Ignore composure"
+    label.appendChild(labelSpan)
+    label.htmlFor = identifier
     return label
 }

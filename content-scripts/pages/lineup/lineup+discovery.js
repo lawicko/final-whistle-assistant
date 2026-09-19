@@ -73,6 +73,10 @@ export function getAllPlayerSelects() {
     return document.querySelectorAll("div.player-select")
 }
 
+export function getAllPlayerOrdersRows() {
+    return document.querySelectorAll("div.player-orders-row")
+}
+
 export function getPlayerSelectFor(playerID) {
     const allPlayerSelects = getAllPlayerSelects()
     const playerSelect = Array.from(allPlayerSelects).find(playerSelect => {

@@ -205,7 +205,7 @@ const IgnoredTalentsGoalKeepers = [
     // specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
 ]
 
-function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
+export function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
     // console.info(`Updating (${add ? "adding" : "removing"}) talents:`, specialTalents)
     const stClass = utils.pluginNodeClass + "SpecialTalentModified"
     const stTooltipClass = stClass + "Tooltip"
