@@ -246,7 +246,7 @@ function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
             if (!tooltipNode) {
                 tooltipNode = document.createElement("span")
                 tooltipNode.classList.add(stTooltipClass)
-                tooltipNode.textContent = uiUtils.questionMarkSymbol
+                tooltipNode.textContent = uiUtils.infoSymbol
                 tooltipNode.title = tooltips[index]
                 valueNodes[index].after(tooltipNode)
             }

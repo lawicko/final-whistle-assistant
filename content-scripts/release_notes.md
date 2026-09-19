@@ -78,3 +78,8 @@
 
 # 6.6.1
 - Added database backup compression and decompression
+
+# 6.7.0
+- Fixed the special talent modifier tooltip positioning on `/players`
+- Replaced the old question mark tooltip icon with the new `i` icon
+- Refactored the `/lineup` to support descriptive form indicators

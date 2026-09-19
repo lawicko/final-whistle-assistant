@@ -1,5 +1,5 @@
-import * as utils from "../../utils.js"
 import * as ui from "../../ui_utils.js"
+import * as utils from "../../utils.js"
 
 export const proposedAnchorsListID = "proposed-anchors"
 export const proposedCrossTakersListID = "proposed-cross-takers"
@@ -17,6 +17,36 @@ export const allPenaltyTakersElementID = proposedContainerClass + "_AllPenaltyTa
 export const proposedAnchorsElementID = proposedContainerClass + "_Anchors"
 export const proposedCrossTakersElementID = proposedContainerClass + "_CrossTakers"
 export const proposedLongShotTakersElementID = proposedContainerClass + "_LongShotTakers"
+
+export const formIndicatorclass = "form-indicator-top"
+
+////////////////////// Navigation ///////////////////////////////
+export function hasActiveFormation() {
+    const link = document.querySelector(`${ui.navTabsQuery} > li.nav-item a.nav-link.active`);
+    if (!link) {
+        console.debug(`hasActiveFormation: No link element`)
+    }
+
+    return link && link.textContent.trim() === "Formation";
+}
+
+export function hasActiveSetPieces() {
+    const link = document.querySelector(`${ui.navTabsQuery} > li.nav-item a.nav-link.active`);
+    if (!link) {
+        console.debug(`hasActiveSetPieces: No link element`)
+    }
+
+    return link && link.textContent.trim() === "Set Pieces";
+}
+
+export function hasActivePlayerOrders() {
+    const link = document.querySelector(`${ui.navTabsQuery} > li.nav-item a.nav-link.active`);
+    if (!link) {
+        console.debug(`hasActivePlayerOrders: No link element`)
+    }
+
+    return link && link.textContent.trim() === "Player Orders";
+}
 
 /////////////////////// Common //////////////////////////////////
 function getContainerForHeaderName(headerName) {

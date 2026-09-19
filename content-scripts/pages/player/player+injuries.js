@@ -116,7 +116,7 @@ export async function showInjuries(currentPlayerData) {
             const headerCellMinutes = document.createElement('th')
             headerCellMinutes.classList.add('table-header-minutes')
             const questionMarkSpan = document.createElement("span")
-            questionMarkSpan.textContent = uiUtils.questionMarkSymbol
+            questionMarkSpan.textContent = uiUtils.infoSymbol
             questionMarkSpan.title = "Indicates how many minutes player has played until he sustained the injury (if this is his first known injury this number may be smaller than in reality because of the time the extension started collecting data)"
             headerCellMinutes.appendChild(document.createTextNode('Minutes'))
             headerCellMinutes.appendChild(questionMarkSpan)

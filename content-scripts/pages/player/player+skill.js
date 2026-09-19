@@ -158,7 +158,7 @@ function addTooltipAfter(node, tooltip) {
     node.classList.add(stClass)
     const tooltipNode = document.createElement("span")
     tooltipNode.classList.add(stTooltipClass)
-    tooltipNode.textContent = uiUtils.questionMarkSymbol
+    tooltipNode.textContent = uiUtils.infoSymbol
     tooltipNode.title = tooltip
     node.after(tooltipNode)
 }

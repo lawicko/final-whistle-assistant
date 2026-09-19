@@ -25,11 +25,11 @@ function shortcutForConfig(config) {
 }
 
 function addShortcutToNavbar(shortcutElement) {
-    console.info(`${version} ⏭️ Adding shortcuts to NavBar`)
     const navbar = document.querySelector("ul.navbar-nav")
     if (navbar) {
         const existingElement = navbar.querySelector(`#${shortcutElement.id}`)
         if (!existingElement) {
+            console.info(`${version} ⏭️ Adding shortcuts to NavBar`)
             navbar.appendChild(shortcutElement)
         }
     }

@@ -79,6 +79,37 @@ export function classFromTalent(talent, advancedDevelopmentFromScout) {
     }
 }
 
+/**
+ * Converts a value from class name as in 20 in `form-20` to skill value description like `poor`
+ * @param {Number} value e.g. 40
+ * @returns {String} skill value description e.g. `dec`
+ */
+export function skillDescriptionFromClass(value) {
+    switch (value) {
+        case 10:
+            return "awf"
+        case 20:
+            return "poor"
+        case 30:
+            return "weak"
+        case 40:
+            return "dec"
+        case 50:
+            return "good"
+        case 60:
+            return "exc"
+        case 70:
+            return "sup"
+        case 80:
+            return "bri"
+        case 90:
+            return "awe"
+        default:
+            console.warn("Unknown class: ", className)
+            return "dec"
+    }
+}
+
 export function normalizeAdvancedDevelopment(talent, advancedDevelopmentFromScout) {
     switch (talent) {
         case 2:

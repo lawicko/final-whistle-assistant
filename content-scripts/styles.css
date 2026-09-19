@@ -435,13 +435,8 @@ div.player-select>fw-player-card>div.p-block::after {
 
 span.FinalWhistlePluginSpecialTalentModifiedTooltip {
   position: absolute;
-  right: -3px;
   font-size: 0.6em;
   cursor: help;
-}
-
-table.player-skill-table span.FinalWhistlePluginSpecialTalentModifiedTooltip {
-  right: auto;
 }
 
 th#FinalWhistlePluginDetailsHeader {
@@ -602,4 +597,16 @@ span.badge-default {
 
 span.badge-specific {
   color: green;
+}
+
+/* Lineup */
+div.squad-mobile-card-list[touranchor="lineup.select"] div.formation-skill-header {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+div.squad-mobile-card-list[touranchor="lineup.select"] div.formation-skill-header div.formation-skill-header__skills {
+  margin-right: 0px;
 }

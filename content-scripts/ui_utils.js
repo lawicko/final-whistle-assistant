@@ -13,7 +13,7 @@ export function nextMatching(el, selector) {
     return null
 }
 
-export const questionMarkSymbol = "\u2370"
+export const questionMarkSymbol = "\u2370" // Not used
 export const infoSymbol = "\u24D8"
 export const matchLinkQuery = "i.bi-file-text"
 export const navTabsQuery = "ul.nav-tabs"
@@ -385,24 +385,6 @@ export function updateDetailedProperty(element, propertyDescription, propertyVal
     } else if (container) {
         container.remove()
     }
-}
-
-export function hasActiveFormation() {
-    const link = document.querySelector(`${navTabsQuery} > li.nav-item a.nav-link.active`);
-    if (!link) {
-        console.debug(`hasActiveFormation: No link element`)
-    }
-
-    return link && link.textContent.trim() === "Formation";
-}
-
-export function hasActiveSetPieces() {
-    const link = document.querySelector(`${navTabsQuery} > li.nav-item a.nav-link.active`);
-    if (!link) {
-        console.debug(`hasActiveSetPieces: No link element`)
-    }
-
-    return link && link.textContent.trim() === "Set Pieces";
 }
 
 export function applyTeamwork(element, teamwork) {
