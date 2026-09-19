@@ -110,16 +110,11 @@ ol#proposed-anchors {
 
 input#composure-treshold,
 input#arrogance-treshold {
-  width: 160px;
-  /* make it wider */
+  width: 50px;
   height: 26px;
-  /* control the height */
   padding: 4px 4px;
-  /* inner spacing */
   border-radius: 8px;
-  /* rounded corners */
   font-size: 12px;
-  /* adjust font size */
   box-sizing: border-box;
 }
 

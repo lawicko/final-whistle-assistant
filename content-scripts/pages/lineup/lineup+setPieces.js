@@ -26,9 +26,9 @@ export async function processSetPiecesTab() {
     //     }
     // })
     common.updateFormIndicators()
-    const h5Element = document.querySelector('h5[touranchor="lineup.tour"]');
-    if (h5Element && !h5Element.querySelector('#arrogance-treshold')) {
-        await insertArroganceTresholdInput(h5Element)
+    const formationListToolbar = document.querySelector(`.formation-list-toolbar`)
+    if (formationListToolbar && !formationListToolbar.querySelector('#arrogance-treshold')) {
+        await insertArroganceTresholdInput(formationListToolbar)
     }
 
     const pLinks = discovery.getPlayerLinks('div.squad-mobile-card-list')
@@ -305,13 +305,14 @@ export async function processSetPiecesTab() {
 
 async function insertArroganceTresholdInput(parent) {
     // Create the input element
-    const input = document.createElement("input");
-    input.type = "number";
-    input.setAttribute("min", "0");
-    input.setAttribute("max", "99");
-    input.setAttribute("step", "1");
-    input.id = "arrogance-treshold";
-    input.placeholder = "Arrogance treshold";
+    const input = document.createElement("input")
+    input.type = "number"
+    input.setAttribute("min", "0")
+    input.setAttribute("max", "99")
+    input.setAttribute("step", "1")
+    input.id = "arrogance-treshold"
+    input.classList.add("form-check-input")
+    input.placeholder = "Arrogance treshold"
 
     const tresholds = await db.getTresholds()
     const arrogance_treshold = tresholds.arrogance ?? 50
@@ -320,22 +321,26 @@ async function insertArroganceTresholdInput(parent) {
 
     // Add a listener for changes
     input.addEventListener("change", async (e) => {
-        const newValue = e.target.value;
+        const newValue = e.target.value
         const tresholds = await db.getTresholds()
-        tresholds['arrogance'] = parseInt(newValue, 10)
+        const newArrogance = parseInt(newValue, 10)
+        console.debug("Arrogance changed, new value:", newArrogance, ", saving to db...")
+        tresholds['arrogance'] = newArrogance
 
         await db.putTresholds(tresholds)
-        console.debug("Updated tresholds =", tresholds);
+        console.debug("Updated tresholds =", tresholds)
 
-        processSetPiecesTab()
-    });
+        await processSetPiecesTab()
+    })
 
     // Inject into the page
-    parent.appendChild(input)
-    const questionMarkSpan = document.createElement("span")
-    questionMarkSpan.textContent = `  ${ui.infoSymbol} `
-    questionMarkSpan.title = `Arrogance treshold - if the player has negative arrogance personality trait and is positioned in the defence, or is a substitute and his DP is above this treshold, ${ui.personalitiesSymbols["arrogance"]} symbol will appear next to his name.`
-    parent.appendChild(questionMarkSpan)
+    const detailsMenuElement = parent.querySelector(`div.formation-list-toolbar__end`)
+    parent.insertBefore(input, detailsMenuElement)
+    const infoSpan = document.createElement("span")
+    infoSpan.textContent = `  ${ui.infoSymbol} `
+    infoSpan.title = `Arrogance treshold - ${ui.personalitiesSymbols["arrogance"]} symbol will appear next to a player name if he is in the lineup as a defender and has negative arrogance. In case of substitutes, if a player has negative arrogance personality trait and his DP is above this treshold, it will also display the arrogance symbol.`
+    ui.makeCursorHelp(infoSpan)
+    parent.insertBefore(infoSpan, detailsMenuElement)
 }
 
 function applyLeadership(element, leadership) {

@@ -83,3 +83,4 @@
 - Fixed the special talent modifier tooltip positioning on `/players`
 - Replaced the old question mark tooltip icon with the new `i` icon
 - Refactored the `/lineup` to support descriptive form indicators
+- Moved the arrogance treshold input field to the formation list toolbar
