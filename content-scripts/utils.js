@@ -16,7 +16,6 @@ export const version = browser.runtime.getManifest().version;
 export const DEBOUNCE_WAIT_MS = 150;
 export const DEBOUNCE_WAIT_MS_ADDITION = 5;
 export const DEBOUNCE_WAIT_MS_LATER = DEBOUNCE_WAIT_MS + DEBOUNCE_WAIT_MS_ADDITION;
-export const DEBOUNCE_WAIT_MS_LATER_XL = DEBOUNCE_WAIT_MS_LATER + DEBOUNCE_WAIT_MS_LATER;
 
 export function isString(value) {
     return typeof value === "string" || value instanceof String

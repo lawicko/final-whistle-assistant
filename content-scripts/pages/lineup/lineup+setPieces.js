@@ -971,6 +971,6 @@ function disablePocessingAndRunAction(action) {
         action()
         setTimeout(() => {
             skipSetPiecesTabUpdate = false
-        }, utils.DEBOUNCE_WAIT_MS_LATER_XL)
+        }, utils.DEBOUNCE_WAIT_MS_LATER)
     })
 }
