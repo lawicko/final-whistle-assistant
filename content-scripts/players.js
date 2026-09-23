@@ -121,7 +121,7 @@ function createSpecialTalentsCell(specialTalents) {
 }
 
 // Calculates and adds the cells with the midfield dominance values for each player
-async function appendAdditionalInfo(checkboxesData) {
+async function appendAdditionalInfo(checkboxesData, animate = false) {
     console.debug(`appending the midfield dominance...`)
     console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
 
@@ -137,7 +137,8 @@ async function appendAdditionalInfo(checkboxesData) {
             (row) => playerID,
             (row) => row.querySelector("td a span:not(.flag)").textContent.trim(),
             (row) => row.querySelector(uiUtils.playerStatusQuery),
-            true
+            true,
+            animate
         )
 
         const playerData = loadedPlayerData
@@ -345,7 +346,7 @@ export async function processPlayersPage() {
             insertCheckboxesForData(
                 { node: checkboxInsertionPoint, method: "default" },
                 { checkboxesDataFromStorage: checkboxesData },
-                (cData) => { appendAdditionalInfo(cData) }
+                (cData, animate) => { appendAdditionalInfo(cData, animate) }
             )
         } else {
             console.warn("Could not find checkbox insertion point. Query:", checkboxInsertionPointQuery)

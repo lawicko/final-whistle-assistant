@@ -114,7 +114,8 @@ export function processTableRow(
     idCallback,
     nameCallback,
     additionalInfoInsertionPointCallback,
-    accountForSpecialTalents = false
+    accountForSpecialTalents = false,
+    animate = false
 ) {
     // console.info("checkboxesData", checkboxesData)
     // Select the first <a> inside the container whose href contains "/player/"
@@ -186,7 +187,7 @@ export function processTableRow(
             const applySpecialTalents = checkboxesData['specialTalents'] ?? false
             const specialTalents = playerData["specialTalents"]
             if (specialTalents) {
-                updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+                updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents, animate)
             }
         }
     } else {
@@ -205,7 +206,7 @@ const IgnoredTalentsGoalKeepers = [
     // specialTalentsUtils.SpecialTalentsKeys.SetPieceSpecialist
 ]
 
-export function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add) {
+export function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, add, animate = false) {
     // console.info(`Updating (${add ? "adding" : "removing"}) talents:`, specialTalents)
     const stClass = utils.pluginNodeClass + "SpecialTalentModified"
     const stTooltipClass = stClass + "Tooltip"
@@ -241,6 +242,14 @@ export function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, a
             const updatedText = valueNodes[index].textContent.replace(/\d+/, paddedValue)
             valueNodes[index].textContent = updatedText
             valueNodes[index].classList.add(stClass)
+            
+            // Add highlight animation only if explicitly requested
+            if (animate) {
+                valueNodes[index].classList.add("fw-special-talent-highlight")
+                setTimeout(() => {
+                    valueNodes[index].classList.remove("fw-special-talent-highlight")
+                }, 1000)
+            }
 
             let tooltipNode = valueNodes[index].parentNode.querySelector(`span.${stTooltipClass}`)
             if (!tooltipNode) {
@@ -268,6 +277,14 @@ export function updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, a
             const updatedText = valueNodes[index].textContent.replace(/\d+/, paddedValue)
             valueNodes[index].textContent = updatedText
             valueNodes[index].classList.remove(stClass)
+            
+            // Add highlight animation only if explicitly requested
+            if (animate) {
+                valueNodes[index].classList.add("fw-special-talent-highlight")
+                setTimeout(() => {
+                    valueNodes[index].classList.remove("fw-special-talent-highlight")
+                }, 1000)
+            }
 
             const denomination = utils.denomination(updatedValue)
             const denomClass = "denom" + denomination

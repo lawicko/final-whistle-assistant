@@ -594,6 +594,22 @@ span.badge-specific {
   color: green;
 }
 
+/* Highlight animation for updated value nodes */
+@keyframes highlightAnimation {
+  0% { 
+    background-color: green; 
+    color: black;
+  }
+  100% { 
+    background-color: transparent; 
+    color: inherit;
+  }
+}
+
+.fw-special-talent-highlight {
+  animation: highlightAnimation 1s ease-out;
+}
+
 /* Lineup */
 div.squad-mobile-card-list[touranchor="lineup.select"] div.formation-skill-header {
   padding-top: 5px;

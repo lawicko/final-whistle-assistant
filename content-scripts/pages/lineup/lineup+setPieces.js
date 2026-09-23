@@ -1,3 +1,4 @@
+import * as checkboxesModule from "../../shared/checkboxes.js"
 import * as common from "./lineup+common.js"
 import * as db from "../../db_access.js"
 import * as discovery from "./lineup+discovery.js"
@@ -5,7 +6,13 @@ import * as ui from "../../ui_utils.js"
 import * as utils from "../../utils.js"
 import * as listUtils from "../../list_utils.js"
 
-export async function processSetPiecesTab(checkboxesData) {
+let skipSetPiecesTabUpdate = false
+
+export async function processSetPiecesTab(animate = false) {
+    if (skipSetPiecesTabUpdate) {
+        console.info(`${utils.version} ⚽♟️ Skipping set pieces tab update (skipSetPiecesTabUpdate set to true)`)
+        return
+    }
     console.info(`${utils.version} ⚽♟️ Processing set pieces tab...`)
     // common.fixHeader({
     //     formationContainerSelector: "fw-set-pieces > div.row > div.col-md-6 > div.squad-mobile-card-list",
@@ -28,29 +35,54 @@ export async function processSetPiecesTab(checkboxesData) {
     // })
     common.updateFormIndicators()
     const formationListToolbar = document.querySelector(`.formation-list-toolbar`)
-    if (formationListToolbar && !formationListToolbar.querySelector('#arrogance-treshold')) {
+    if (formationListToolbar && !formationListToolbar.querySelector(`#${discovery.arroganceTresholdImputID}`)) {
         await insertArroganceTresholdInput(formationListToolbar)
     }
 
-    // Cleanup
-    removeProposedPenaltyTakersControls()
-    removeProposedAnchorsControls()
-    removeProposedCrossControls()
-    removeProposedLongShootersControls()
+    let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
+    const checkboxes = checkboxesData
 
-    // New pass after cleanup
+    const {
+        penaltyTakersData,
+        penaltyTakersWithoutComposure,
+        anchors,
+        crossingPlayers,
+        longShootersData
+    } = await generateProposed(checkboxes, animate)
+
+    // Propose anchors
+    const ignoreSportsmanship = checkboxes["ignoreSportsmanshipForAnchors"] || false
+    await calculateAndProposeAnchors(anchors, ignoreSportsmanship)
+
+    // Propose cross takers
+    crossingPlayers.sort((a, b) => {
+        return b.cross - a.cross
+    })
+    proposeCrossTakers(crossingPlayers.slice(0, 3))
+
+    // Propose long shooters
+    const ignoreComposureForLongShooters = checkboxes["ignoreComposureForLongShooters"] || false
+    await calculateAndProposeLongShotTakers(longShootersData, ignoreComposureForLongShooters)
+
+    // Propose penalty takers
+    const ignoreComposureForPenaltyTakers = checkboxes["ignoreComposureForPenaltyTakers"] || false
+    await calculateAndProposePenaltyTakers(
+        penaltyTakersData,
+        penaltyTakersWithoutComposure,
+        ignoreComposureForPenaltyTakers
+    )
+}
+
+async function generateProposed(checkboxes, animate=false) {
     const rows = discovery.getAllPlayerSelects()
     const pLinks = discovery.getPlayerLinks('div.squad-mobile-card-list')
     const hrefs = discovery.getHrefList('div.squad-mobile-card-list')
     const playerIDs = hrefs.map(utils.lastPathComponent)
     const profiles = await db.bulkGetPlayers(playerIDs)
-    console.debug('Profiles: ', profiles)
 
     // Load tresholds from storage
     const tresholds = await db.getTresholds()
     console.debug(`Loaded tresholds from storage: `, tresholds)
-
-    const checkboxes = checkboxesData
 
     // Check if special talents will be applied
     const applySpecialTalents = checkboxes["specialTalents"] || false
@@ -69,7 +101,6 @@ export async function processSetPiecesTab(checkboxesData) {
         discouraged: []
     }
     var anchors = []
-
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
         const profile = profiles[i]
@@ -119,7 +150,7 @@ export async function processSetPiecesTab(checkboxesData) {
             let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
             const specialTalents = profile["specialTalents"]
             if (specialTalents) {
-                listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+                listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents, animate)
             }
         }
 
@@ -258,71 +289,13 @@ export async function processSetPiecesTab(checkboxesData) {
             anchors.push({ id: playerIDs[i], name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
     }
-
-    // Propose anchors
-    const ignoreSportsmanship = checkboxes["ignoreSportsmanshipForAnchors"] || false
-    let anchorsToPropose = anchors.sort((a, b) => {
-        const AEDiff = b.AE - a.AE
-        if (AEDiff !== 0) return AEDiff
-        return b.sportsmanship - a.sportsmanship
-    })
-    if (!ignoreSportsmanship) {
-        const withoutFouls = anchorsToPropose.filter(player => player.sportsmanship >= 0)
-        await proposeAnchors(withoutFouls.slice(0, 3))
+    return {
+        penaltyTakersData,
+        penaltyTakersWithoutComposure,
+        anchors,
+        crossingPlayers,
+        longShootersData
     }
-    await proposeAnchors(anchors.slice(0, 3))
-
-    // Propose cross takers
-    crossingPlayers.sort((a, b) => {
-        return b.cross - a.cross
-    })
-    proposeCrossTakers(crossingPlayers.slice(0, 3))
-
-    // Propose long shooters
-    const ignoreComposureForLongShooters = checkboxes["ignoreComposureForLongShooters"] || false
-    let allTakers = longShootersData.recommended.concat(longShootersData.other)
-    if (ignoreComposureForLongShooters) {
-        allTakers = allTakers.concat(longShootersData.discouraged)
-    }
-    allTakers.sort((a, b) => b.longShot - a.longShot)
-    await proposeLongShotTakers(allTakers.slice(0, 3))
-
-    // Propose penalty takers
-    const ignoreComposureForPenaltyTakers = checkboxes["ignoreComposureForPenaltyTakers"] || false
-
-    if (ignoreComposureForPenaltyTakers) {
-        let allTakers = penaltyTakersData.recommended.concat(penaltyTakersData.discouraged).concat(penaltyTakersWithoutComposure)
-        allTakers.sort((a, b) => b.penaltyKick - a.penaltyKick)
-        penaltyTakersData.recommended = allTakers.slice(0, 5)
-        penaltyTakersData.other = allTakers.slice(5, 10)
-    } else {
-        penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
-        console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
-        const recommendedWithComposure = penaltyTakersData.recommended
-        console.debug('recommendedWithComposure: ', recommendedWithComposure)
-        const proposedCount = 5
-        console.debug(`proposedCount (${proposedCount}) versus recommendedWithComposure.count (${recommendedWithComposure.length})`)
-        if (recommendedWithComposure.length < proposedCount) {
-            var mergedArray = recommendedWithComposure.concat(penaltyTakersWithoutComposure.slice(0, 5 - recommendedWithComposure.length));
-            console.debug('mergedArray: ', mergedArray)
-
-            mergedArray.sort((a, b) => {
-                const pkDiff = b.penaltyKick - a.penaltyKick;
-                if (pkDiff !== 0) return pkDiff;          // sort by penaltyKick first
-                return b.composure - a.composure;         // tie-breaker by composure
-            });
-
-            console.debug('mergedArray sorted: ', mergedArray)
-            penaltyTakersData.recommended = mergedArray
-
-            // add other for the players with high penalty kick skill but for some reason not recommended (e.g. no positive or negative composure etc.)
-            const other = penaltyTakersWithoutComposure.slice(5 - recommendedWithComposure.length, penaltyTakersWithoutComposure.length)
-            penaltyTakersData.other = other
-        }
-    }
-
-    console.debug('passing to proposePenaltyTakers: ', penaltyTakersData)
-    await proposePenaltyTakers(penaltyTakersData)
 }
 
 async function insertArroganceTresholdInput(parent) {
@@ -332,7 +305,7 @@ async function insertArroganceTresholdInput(parent) {
     input.setAttribute("min", "0")
     input.setAttribute("max", "99")
     input.setAttribute("step", "1")
-    input.id = "arrogance-treshold"
+    input.id = discovery.arroganceTresholdImputID
     input.classList.add("form-check-input")
     input.placeholder = "Arrogance treshold"
 
@@ -352,7 +325,21 @@ async function insertArroganceTresholdInput(parent) {
         await db.putTresholds(tresholds)
         console.debug("Updated tresholds =", tresholds)
 
-        await processSetPiecesTab()
+        skipSetPiecesTabUpdate = true
+        document.startViewTransition(async () => {
+            let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
+            const {
+                penaltyTakersData,
+                penaltyTakersWithoutComposure,
+                anchors,
+                crossingPlayers,
+                longShootersData
+            } = await generateProposed(checkboxesData)
+
+            setTimeout(() => {
+                skipSetPiecesTabUpdate = false
+            }, utils.DEBOUNCE_WAIT_MS_LATER)
+        })
     })
 
     // Inject into the page
@@ -419,7 +406,9 @@ async function proposePenaltyTakers(takers) {
             const playerSelect = discovery.getPlayerSelectFor(taker.id)
 
             if (playerSelect) {
-                playerSelect.click()
+                disablePocessingAndRunAction(() => {
+                    playerSelect.click()
+                })
             }
         })
 
@@ -469,7 +458,18 @@ async function proposePenaltyTakers(takers) {
     }
 
     const composureTresholdInput = await createComposureTresholdInput()
-    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForPenaltyTakers")
+    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForPenaltyTakers", async (checkboxesData) => {
+        const proposed = await generateProposed(checkboxesData)
+        const penaltyTakersData = proposed.penaltyTakersData
+        const penaltyTakersWithoutComposure = proposed.penaltyTakersWithoutComposure
+        const ignoreComposureForPenaltyTakers = checkboxesData["ignoreComposureForPenaltyTakers"] || false
+        removeProposedPenaltyTakersControls()
+        await calculateAndProposePenaltyTakers(
+            penaltyTakersData,
+            penaltyTakersWithoutComposure,
+            ignoreComposureForPenaltyTakers
+        )
+    })
     const additionalControls = document.createElement("div")
     additionalControls.classList.add("flex_direction_column")
     additionalControls.append(composureTresholdInput)
@@ -502,6 +502,45 @@ async function proposePenaltyTakers(takers) {
     penaltyTakersContainer.insertBefore(allPenaltyTakersContainer, penaltyTakersBodyNode)
 }
 
+async function calculateAndProposePenaltyTakers(
+    penaltyTakersData,
+    penaltyTakersWithoutComposure,
+    ignoreComposureForPenaltyTakers
+) {
+    if (ignoreComposureForPenaltyTakers) {
+        let allTakers = penaltyTakersData.recommended.concat(penaltyTakersData.discouraged).concat(penaltyTakersWithoutComposure)
+        allTakers.sort((a, b) => b.penaltyKick - a.penaltyKick)
+        penaltyTakersData.recommended = allTakers.slice(0, 5)
+        penaltyTakersData.other = allTakers.slice(5, 10)
+    } else {
+        penaltyTakersWithoutComposure.sort((a, b) => b.penaltyKick - a.penaltyKick);
+        console.debug('sorted penaltyTakersWithoutComposure: ', penaltyTakersWithoutComposure)
+        const recommendedWithComposure = penaltyTakersData.recommended
+        console.debug('recommendedWithComposure: ', recommendedWithComposure)
+        const proposedCount = 5
+        console.debug(`proposedCount (${proposedCount}) versus recommendedWithComposure.count (${recommendedWithComposure.length})`)
+        if (recommendedWithComposure.length < proposedCount) {
+            var mergedArray = recommendedWithComposure.concat(penaltyTakersWithoutComposure.slice(0, 5 - recommendedWithComposure.length));
+            console.debug('mergedArray: ', mergedArray)
+
+            mergedArray.sort((a, b) => {
+                const pkDiff = b.penaltyKick - a.penaltyKick;
+                if (pkDiff !== 0) return pkDiff;          // sort by penaltyKick first
+                return b.composure - a.composure;         // tie-breaker by composure
+            });
+
+            console.debug('mergedArray sorted: ', mergedArray)
+            penaltyTakersData.recommended = mergedArray
+
+            // add other for the players with high penalty kick skill but for some reason not recommended (e.g. no positive or negative composure etc.)
+            const other = penaltyTakersWithoutComposure.slice(5 - recommendedWithComposure.length, penaltyTakersWithoutComposure.length)
+            penaltyTakersData.other = other
+        }
+    }
+
+    await proposePenaltyTakers(penaltyTakersData)
+}
+
 function removeProposedPenaltyTakersControls() {
     const allPenaltyTakersElement = document.querySelector(`#${discovery.allPenaltyTakersElementID}`)
     if (allPenaltyTakersElement) {
@@ -513,6 +552,7 @@ function removeProposedPenaltyTakersControls() {
 async function proposeAnchors(anchors) {
     // Do we already have it?
     if (discovery.proposedAnchorsDisplayed()) {
+        console.info("Anchors already proposed, skipping...")
         return
     }
 
@@ -533,7 +573,9 @@ async function proposeAnchors(anchors) {
             const playerSelect = discovery.getPlayerSelectFor(anchor.id)
 
             if (playerSelect) {
-                playerSelect.click()
+                disablePocessingAndRunAction(() => {
+                    playerSelect.click()
+                })
             }
         })
         var playerNameSpan = document.createElement('span')
@@ -588,7 +630,19 @@ async function proposeAnchors(anchors) {
             cd["ignoreSportsmanshipForAnchors"] = false
         }
         await db.putCheckboxes(cd)
-        removeProposedAnchorsControls()
+
+        skipSetPiecesTabUpdate = true
+        document.startViewTransition(async () => {
+            removeProposedAnchorsControls()
+            const proposed = await generateProposed(cd)
+            const anchors = proposed.anchors
+
+            const ignoreSportsmanship = cd["ignoreSportsmanshipForAnchors"] || false
+            await calculateAndProposeAnchors(anchors, ignoreSportsmanship)
+            setTimeout(() => {
+                skipSetPiecesTabUpdate = false
+            }, utils.DEBOUNCE_WAIT_MS_LATER)
+        })
     })
 
     const label = document.createElement("label")
@@ -607,6 +661,20 @@ async function proposeAnchors(anchors) {
         proposedAnchorsList
     )
     anchorsRow.append(newContentContainer)
+}
+
+async function calculateAndProposeAnchors(anchors, ignoreSportsmanship) {
+    let anchorsToPropose = anchors.sort((a, b) => {
+        const AEDiff = b.AE - a.AE
+        if (AEDiff !== 0) return AEDiff
+        return b.sportsmanship - a.sportsmanship
+    })
+    if (!ignoreSportsmanship) {
+        const withoutFouls = anchorsToPropose.filter(player => player.sportsmanship >= 0)
+        await proposeAnchors(withoutFouls.slice(0, 3))
+    } else {
+        await proposeAnchors(anchors.slice(0, 3))
+    }
 }
 
 function removeProposedAnchorsControls() {
@@ -640,7 +708,9 @@ function proposeCrossTakers(takers) {
             const playerSelect = discovery.getPlayerSelectFor(taker.id)
 
             if (playerSelect) {
-                playerSelect.click()
+                disablePocessingAndRunAction(() => {
+                    playerSelect.click()
+                })
             }
         })
         var playerNameSpan = document.createElement('span')
@@ -694,7 +764,9 @@ async function proposeLongShotTakers(takers) {
             const playerSelect = discovery.getPlayerSelectFor(taker.id)
 
             if (playerSelect) {
-                playerSelect.click()
+                disablePocessingAndRunAction(() => {
+                    playerSelect.click()
+                })
             }
         })
         var playerNameSpan = document.createElement('span')
@@ -736,7 +808,13 @@ async function proposeLongShotTakers(takers) {
 
     const freeKickRow = discovery.getSetPiecesRoleRowWith("Free Kick", playerSelectionContainer)
 
-    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForLongShooters")
+    const ignoreComposureCheckbox = await createIgnoreComposureCheckbox("ignoreComposureForLongShooters", async (checkboxesData) => {
+        const proposed = await generateProposed(checkboxesData)
+        const longShootersData = proposed.longShootersData
+        const ignoreComposureForLongShooters = checkboxesData["ignoreComposureForLongShooters"] || false
+        removeProposedLongShootersControls()
+        await calculateAndProposeLongShotTakers(longShootersData, ignoreComposureForLongShooters)
+    })
     const additionalControls = document.createElement("div")
     additionalControls.classList.add("flex_direction_column")
     additionalControls.append(ignoreComposureCheckbox)
@@ -749,6 +827,15 @@ async function proposeLongShotTakers(takers) {
         proposedLongShotTakersList
     )
     freeKickRow.append(newContentContainer)
+}
+
+async function calculateAndProposeLongShotTakers(longShootersData, ignoreComposureForLongShooters) {
+    let allTakers = longShootersData.recommended.concat(longShootersData.other)
+    if (ignoreComposureForLongShooters) {
+        allTakers = allTakers.concat(longShootersData.discouraged)
+    }
+    allTakers.sort((a, b) => b.longShot - a.longShot)
+    await proposeLongShotTakers(allTakers.slice(0, 3))
 }
 
 function removeProposedLongShootersControls() {
@@ -811,7 +898,25 @@ async function createComposureTresholdInput() {
 
         await db.putTresholds(tresholds)
         console.debug("Updated tresholds =", tresholds)
-        removeProposedPenaltyTakersControls()
+
+        let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
+        const proposed = await generateProposed(checkboxesData)
+        const penaltyTakersData = proposed.penaltyTakersData
+        const penaltyTakersWithoutComposure = proposed.penaltyTakersWithoutComposure
+        const ignoreComposureForPenaltyTakers = checkboxesData["ignoreComposureForPenaltyTakers"] || false
+
+        skipSetPiecesTabUpdate = true
+        document.startViewTransition(async () => {
+            removeProposedPenaltyTakersControls()
+            await calculateAndProposePenaltyTakers(
+                penaltyTakersData,
+                penaltyTakersWithoutComposure,
+                ignoreComposureForPenaltyTakers
+            )
+            setTimeout(() => {
+                skipSetPiecesTabUpdate = false
+            }, utils.DEBOUNCE_WAIT_MS_LATER)
+        })
     })
 
     const label = document.createElement("label")
@@ -826,7 +931,7 @@ async function createComposureTresholdInput() {
     return label
 }
 
-async function createIgnoreComposureCheckbox(identifier) {
+async function createIgnoreComposureCheckbox(identifier, callback) {
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
     checkbox.id = identifier
@@ -841,9 +946,14 @@ async function createIgnoreComposureCheckbox(identifier) {
             cd[identifier] = false
         }
         await db.putCheckboxes(cd)
-        removeProposedPenaltyTakersControls()
-        removeProposedLongShootersControls()
-    });
+        skipSetPiecesTabUpdate = true
+        document.startViewTransition(async () => {
+            await callback(cd)
+            setTimeout(() => {
+                skipSetPiecesTabUpdate = false
+            }, utils.DEBOUNCE_WAIT_MS_LATER)
+        })
+    })
 
     const label = document.createElement("label")
     label.classList.add(discovery.proposedListAdditionalControlsLabelClass)
@@ -853,4 +963,14 @@ async function createIgnoreComposureCheckbox(identifier) {
     label.appendChild(labelSpan)
     label.htmlFor = identifier
     return label
+}
+
+function disablePocessingAndRunAction(action) {
+    skipSetPiecesTabUpdate = true
+    document.startViewTransition(async () => {
+        action()
+        setTimeout(() => {
+            skipSetPiecesTabUpdate = false
+        }, utils.DEBOUNCE_WAIT_MS_LATER_XL)
+    })
 }

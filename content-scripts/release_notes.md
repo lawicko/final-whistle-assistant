@@ -85,3 +85,5 @@
 - Refactored the `/lineup` to support descriptive form indicators
 - Moved the arrogance treshold input field to the formation list toolbar
 - Implemented special talents toggle for `/lineup` pages
+- Refactored the `/lineup` for better user experience
+- Added skill highlight when switching between special talents

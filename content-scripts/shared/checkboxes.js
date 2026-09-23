@@ -88,7 +88,7 @@ export function insertCheckboxesForData(insertionPointConfig, checkboxesConfig, 
                 cd[checkboxKey] = false
             }
             await db.putCheckboxes(cd)
-            await afterCheckboxDataSetCallback(cd)
+            await afterCheckboxDataSetCallback(cd, true)
         })
 
         checkboxContainer.appendChild(checkbox)

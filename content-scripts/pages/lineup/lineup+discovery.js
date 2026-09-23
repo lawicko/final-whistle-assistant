@@ -1,6 +1,7 @@
 import * as ui from "../../ui_utils.js"
 import * as utils from "../../utils.js"
 
+export const arroganceTresholdImputID = "arrogance-treshold"
 export const proposedAnchorsListID = "proposed-anchors"
 export const proposedCrossTakersListID = "proposed-cross-takers"
 export const proposedLongShootersListID = "proposed-long-shooters"

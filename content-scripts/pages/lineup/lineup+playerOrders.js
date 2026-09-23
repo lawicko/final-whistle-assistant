@@ -1,10 +1,11 @@
+import * as checkboxesModule from "../../shared/checkboxes.js"
 import * as common from "./lineup+common.js"
 import * as db from "../../db_access.js"
 import * as discovery from "./lineup+discovery.js"
 import * as listUtils from "../../list_utils.js"
 import * as utils from "../../utils.js"
 
-export async function processPlayerOrdersTab(checkboxesData) {
+export async function processPlayerOrdersTab(animate = false) {
     console.info(`${utils.version} ⚽♟️ Processing player orders tab...`)
     // common.fixHeader({
     //     formationContainerSelector: "fw-player-orders > div.row > div.col-md-12 > div.squad-mobile-card-list",
@@ -27,6 +28,7 @@ export async function processPlayerOrdersTab(checkboxesData) {
     // })
     common.updateFormIndicators()
 
+    let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
     const checkboxes = checkboxesData
     // Check if special talents will be applied
     const applySpecialTalents = checkboxes["specialTalents"] || false
@@ -42,7 +44,7 @@ export async function processPlayerOrdersTab(checkboxesData) {
             let valueNodes = row.querySelectorAll("fw-player-skill > span > span:first-child")
             const specialTalents = profile["specialTalents"]
             if (specialTalents) {
-                listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents)
+                listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents, animate)
             }
         }
     }

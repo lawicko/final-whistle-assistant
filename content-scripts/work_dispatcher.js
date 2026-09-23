@@ -16,9 +16,6 @@ import { processTrainingPage } from "./pages/training/training.js"
 import * as dbUtils from './db_utils.js'
 import { setNavBarItems } from './shared/shortcuts.js'
 
-// How long to wait after the last mutation before processing the DOM (in ms)
-const DEBOUNCE_WAIT_MS = 150;
-
 // Options for the observer (which mutations to observe)
 const observationConfig = { attributes: false, childList: true, subtree: true, characterData: false }
 
@@ -178,7 +175,7 @@ const debouncedProcessAcademyPage = makeDebouncedWithReconnect(
             processAcademyPage();
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
@@ -187,7 +184,7 @@ const debouncedProcessFixturesPage = makeDebouncedWithReconnect(
             await processFixturesPage(uiUtils.ownClubFixturesTableQuery);
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessLeaguePage = makeDebouncedWithReconnect(
@@ -196,7 +193,7 @@ const debouncedProcessLeaguePage = makeDebouncedWithReconnect(
             await processLeaguePage();
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessMatchPage = makeDebouncedWithReconnect(
@@ -205,7 +202,7 @@ const debouncedProcessMatchPage = makeDebouncedWithReconnect(
             await processMatch();
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
@@ -214,7 +211,7 @@ const debouncedProcessPlayerPage = makeDebouncedWithReconnect(
             await processPlayerPage();
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
@@ -229,14 +226,14 @@ const debouncedProcessPlayersPage = makeDebouncedWithReconnect(
             await addTableRowsHighlighting();
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessOpponentClubPage = makeDebouncedWithReconnect(
     async () => {
         await processOpponentClubPage()
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessLineupPage = makeDebouncedWithReconnect(
@@ -245,14 +242,14 @@ const debouncedProcessLineupPage = makeDebouncedWithReconnect(
             await processLineupPage()
         }
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 );
 
 const debouncedProcessTrainingPage = makeDebouncedWithReconnect(
     async () => {
         await processTrainingPage()
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 )
 
 const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
@@ -262,5 +259,5 @@ const debouncedProcessTransfersPage = makeDebouncedWithReconnect(
         }
         await processTransferPage()
         await setNavBarItems()
-    }, DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
+    }, utils.DEBOUNCE_WAIT_MS, uiUtils.alwaysPresentNode, observationConfig, universalObserver
 )
