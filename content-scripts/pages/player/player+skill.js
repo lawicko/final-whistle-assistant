@@ -8,7 +8,7 @@ import { skillIndexGoalkeepers, skillIndexOutfielders } from "../../shared/skill
 const stClass = utils.pluginNodeClass + "SpecialTalentModified"
 const stTooltipClass = stClass + "Tooltip"
 
-export function applyAdditionalInfo(checkboxesData, playerData) {
+export function applyAdditionalInfo(checkboxesData, playerData, animate = false) {
     const specialTalents = playerData?.specialTalents
     // console.info("Special talents for ", playerData.name, playerData.specialTalents)
     console.info("Applying addtional info for checkboxesData:", checkboxesData)
@@ -22,7 +22,7 @@ export function applyAdditionalInfo(checkboxesData, playerData) {
                 console.debug("Player skills:", skills)
                 const skillsWithST = applySpecialTalents(skills, specialTalents, stCheckbox)
                 console.debug("skillsWithST", skillsWithST)
-                setPlayerSkills(skillsWithST, skillRows)
+                setPlayerSkills(skillsWithST, skillRows, animate)
             }
         }
     } catch (error) {
@@ -122,13 +122,13 @@ const skillMappingGK = {
     "OR": "Organization"
 }
 
-function setPlayerSkills(skills, rows) {
+function setPlayerSkills(skills, rows, animate=false) {
     console.debug("setting skills", skills, "to rows", rows)
     for (const row of rows) {
         const allCells = row.querySelectorAll('td')
         const label = allCells[0].textContent.trim()
         const valueSpan = allCells[1].querySelector('span')
-        updateValueAndDenominationFor(valueSpan, skills[label].value)
+        updateValueAndDenominationFor(valueSpan, skills[label].value, animate)
 
         const tooltip = skills[label].tooltip
         if (tooltip != undefined) {
@@ -142,15 +142,21 @@ function setPlayerSkills(skills, rows) {
     }
 }
 
-function updateValueAndDenominationFor(node, value) {
+function updateValueAndDenominationFor(node, value, animate=false) {
+    if (animate && node.textContent != value) {
+        node.classList.add("fw-special-talent-highlight")
+        setTimeout(() => {
+            node.classList.remove("fw-special-talent-highlight")
+        }, 1000)
+    }
     node.textContent = value
     const denomination = utils.denomination(value)
     const denomClass = "denom" + denomination
     // Find the class that starts with "denom"
     const currentDenomClass = Array.from(node.classList).find(cls => cls.startsWith("denom"))
     if (currentDenomClass) {
-        node.classList.remove(currentDenomClass) // remove old denomX
-        node.classList.add(denomClass) // add new denomX
+        node.classList.remove(currentDenomClass)
+        node.classList.add(denomClass)
     }
 }
 

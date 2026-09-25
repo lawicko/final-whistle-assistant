@@ -43,7 +43,7 @@ export async function processPlayerPage() {
         insertCheckboxesForData(
             { node: checkboxInsertionPoint, method: "after" },
             { requestedCheckboxes: { specialTalents: true }, checkboxesDataFromStorage: checkboxesData },
-            (cData) => { applyAdditionalInfo(cData, playerDataFromPage) }
+            (cData) => { applyAdditionalInfo(cData, playerDataFromPage, true) }
         )
     } else {
         console.warn("Could not find checkbox insertion point. Query:", checkboxInsertionPointQuery)
@@ -51,7 +51,7 @@ export async function processPlayerPage() {
 
     const coreSkillsTable = discovery.getCoreSkillsTable()
     if (coreSkillsTable && coreSkillsTable.rows && coreSkillsTable.rows.length > 1) {
-        applyAdditionalInfo(checkboxesData, playerDataFromPage)
+        applyAdditionalInfo(checkboxesData, playerDataFromPage, false)
         prepareNodeAndAppendComputedSkills(coreSkillsTable)
         addTrainingSimulationButtonIfNeeded()
     }
