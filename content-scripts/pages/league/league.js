@@ -7,7 +7,7 @@ export async function processLeaguePage() {
     console.info(`${version} ⚽📊 Processing league page`)
 
     if (isShowingOverviewLastRound() || isShowingFixtures()) {
-        const playedMatchesContainers = document.querySelectorAll(`table.league-round-table--results tr:has(td a ${matchLinkQuery})`)
+        const playedMatchesContainers = document.querySelectorAll(`fw-fixtures table.fixture-table tr:has(td a ${matchLinkQuery})`)
         console.debug("playedMatchesContainers", playedMatchesContainers)
         if (playedMatchesContainers.length > 0) {
             await processPlayedMatches(playedMatchesContainers, {
