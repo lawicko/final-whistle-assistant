@@ -387,6 +387,21 @@ i.fa-tag::before {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
+/* Football icon - make it look like ⚽ emoji */
+i.fa-futbol-o::before {
+  content: "⚽";
+  font-size: 0.7em;
+  font-family: sans-serif;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .badge i.fa-tag {
   font: 14px/1 FontAwesome;
 }
