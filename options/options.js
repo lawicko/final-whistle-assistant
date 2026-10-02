@@ -115,6 +115,30 @@ dropZoneDiv.ondragover = event => {
     event.dataTransfer.dropEffect = 'copy';
 };
 
+async function decompressDroppedFile(file, format = 'gzip') {
+    // 1. Get the standard ReadableStream from the dropped File
+    const fileStream = file.stream();
+
+    // 2. Create the DecompressionStream ('gzip', 'deflate', or 'deflate-raw')
+    const decompressor = new DecompressionStream(format);
+
+    // 3. Pipe through the decompressor
+    const decompressedStream = fileStream.pipeThrough(decompressor);
+
+    // 4. Read the chunks using a standard ReadableStream reader
+    const reader = decompressedStream.getReader();
+    const chunks = [];
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+    }
+
+    // 5. Reconstruct the Blob
+    return new Blob(chunks, { type: 'application/json' });
+}
+
 // Handle file drop:
 dropZoneDiv.ondrop = async ev => {
     ev.stopPropagation();
@@ -128,16 +152,12 @@ dropZoneDiv.ondrop = async ev => {
         const dbInstance = getDB()
         // If we opened in options context, clean up
         if (dbInstance) {
-            dbInstance.close()
+            await dbInstance.close()
             await dbInstance.delete()
         }
         showLoading('Decompressing Backup...')
-        const decompressedStream = file
-            .stream()
-            .pipeThrough(new DecompressionStream('gzip'))
-        const decompressedBlob = await new Response(decompressedStream, {
-            headers: { 'Content-Type': 'application/json' }
-        }).blob()
+        const decompressedBlob = await decompressDroppedFile(file)
+        console.info("⚙️ WILL_IMPORT_DB");
         // Notify other contexts that we are about to import
         browser.runtime.sendMessage({ type: "WILL_IMPORT_DB" })
         modalMessage.textContent = 'Importing into Database...'
@@ -270,18 +290,18 @@ const modalMessage = document.getElementById('modalMessage')
 const modalProgress = document.getElementById('modalProgress')
 
 function showLoading(message) {
-  modalMessage.textContent = message
-  modalProgress.removeAttribute('value') // Set to indeterminate mode (spinning/animating)
-  modal.showModal() // Opens modal with dark backdrop
+    modalMessage.textContent = message
+    modalProgress.removeAttribute('value') // Set to indeterminate mode (spinning/animating)
+    modal.showModal() // Opens modal with dark backdrop
 }
 
 function updateProgress(completed, total) {
-  if (total > 0) {
-    modalProgress.max = total
-    modalProgress.value = completed
-  }
+    if (total > 0) {
+        modalProgress.max = total
+        modalProgress.value = completed
+    }
 }
 
 function hideLoading() {
-  modal.close()
+    modal.close()
 }
