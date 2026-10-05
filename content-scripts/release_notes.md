@@ -87,3 +87,6 @@
 - Implemented special talents toggle for `/lineup` pages
 - Refactored the `/lineup` for better user experience
 - Added skill highlight when switching between special talents
+- Fixed the goal icon missing from the `/player` matches tab after the game UI updates - replaced with emoji
+- Fixed `/league` fixtures tab not being properly processed (no data collection indicator) because the table class has changed in the game
+- Fixed database decompression on chromium
