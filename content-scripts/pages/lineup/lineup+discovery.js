@@ -49,6 +49,15 @@ export function hasActivePlayerOrders() {
     return link && link.textContent.trim() === "Player Orders";
 }
 
+export function hasActiveTriggers() {
+    const link = document.querySelector(`${ui.navTabsQuery} > li.nav-item a.nav-link.active`);
+    if (!link) {
+        console.debug(`hasActiveTriggers: No link element`)
+    }
+
+    return link && link.textContent.trim().includes("Triggers")
+}
+
 /////////////////////// Common //////////////////////////////////
 function getContainerForHeaderName(headerName) {
     // Find all h2 elements

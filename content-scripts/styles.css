@@ -636,3 +636,7 @@ div.squad-mobile-card-list[touranchor="lineup.select"] div.formation-skill-heade
 div.squad-mobile-card-list[touranchor="lineup.select"] div.formation-skill-header div.formation-skill-header__skills {
   margin-right: 0px;
 }
+
+div:has(> div.conditional-toolbar-actions) {
+  margin-top: 4px;
+}

@@ -3,6 +3,7 @@ import * as discovery from "./lineup+discovery.js"
 import * as formationTab from "./lineup+formation.js"
 import * as playerOrdersTab from "./lineup+playerOrders.js"
 import * as setPiecesTab from "./lineup+setPieces.js"
+import * as triggerTab from "./lineup+triggers.js"
 import * as utils from "../../utils.js"
 
 export async function processLineupPage() {
@@ -35,5 +36,8 @@ async function processActiveTab(animate = false) {
     }
     if (discovery.hasActivePlayerOrders()) {
         await playerOrdersTab.processPlayerOrdersTab(animate)
+    }
+    if (discovery.hasActiveTriggers()) {
+        await triggerTab.processTriggersTab(animate)
     }
 }
