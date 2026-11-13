@@ -4,6 +4,7 @@ import * as listUtils from "./list_utils.js"
 import * as db from "./db_access.js"
 import { specialTalentsSymbols, specialTalentsDescriptions } from "./special_talents_utils.js"
 import { getCheckboxesDataFromDB, insertCheckboxesForData } from "./shared/checkboxes.js"
+import * as discovery from "./pages/players/players+discovery.js"
 
 /**
  * Creates a <td> or <th> element with a hover-card.
@@ -37,7 +38,12 @@ async function createHeaders() {
     console.debug(`appending headers...`)
     const headerRow = document.querySelector("table > thead > tr:first-of-type");
 
-    console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
+    console.debug(
+        "isShowingAttackers:", discovery.isShowingAttackers(),
+        "isShowingMidfielders:", discovery.isShowingMidfielders(),
+        "isShowingDefenders:", discovery.isShowingDefenders(),
+        "isShowingGoalkeepers:", discovery.isShowingGoalkeepers()
+    )
 
     const headerClass = utils.pluginNodeClass + "PlayersTableColumnHeader"
 
@@ -59,7 +65,7 @@ async function createHeaders() {
         headerRow.appendChild(specialTalentsTH)
     }
 
-    if (!isShowingGoalkeepers()) {
+    if (!discovery.isShowingGoalkeepers()) {
         const experienceTH = createHoverCardCell("th", "Exp")
         experienceTH.title = "Experience"
         experienceTH.classList.add(headerClass, "experience-header")
@@ -84,7 +90,7 @@ async function createHeaders() {
         headerRow.appendChild(thOA);
     }
 
-    if (!isShowingAttackers()) {
+    if (!discovery.isShowingAttackers()) {
         const thDA = createHoverCardCell("th", "DA");
         thDA.title = "Defensive Assistance"
         headerRow.appendChild(thDA);
@@ -123,7 +129,12 @@ function createSpecialTalentsCell(specialTalents) {
 // Calculates and adds the cells with the midfield dominance values for each player
 async function appendAdditionalInfo(checkboxesData, animate = false) {
     console.debug(`appending the midfield dominance...`)
-    console.debug("isShowingAttackers:", isShowingAttackers(), "isShowingMidfielders:", isShowingMidfielders(), "isShowingDefenders:", isShowingDefenders(), "isShowingGoalkeepers:", isShowingGoalkeepers())
+    console.debug(
+        "isShowingAttackers:", discovery.isShowingAttackers(),
+        "isShowingMidfielders:", discovery.isShowingMidfielders(),
+        "isShowingDefenders:", discovery.isShowingDefenders(),
+        "isShowingGoalkeepers:", discovery.isShowingGoalkeepers()
+    )
 
     let rows = document.querySelectorAll("table > tbody > tr:has(fw-player-hover)")
     const overrides = await db.getOverrides()
@@ -234,7 +245,7 @@ async function appendAdditionalInfo(checkboxesData, animate = false) {
 
             const assistanceCalculations = uiUtils.calculateAssistance({ OP: OP, BC: BC, TA: TA, DP: DP, teamwork: teamwork });
 
-            if (!isShowingGoalkeepers()) {
+            if (!discovery.isShowingGoalkeepers()) {
                 // Find the form cell and insert before it
                 const formCell = row.querySelector('fw-player-form').parentNode
                 let expContent
@@ -289,7 +300,7 @@ async function appendAdditionalInfo(checkboxesData, animate = false) {
                 row.appendChild(tdOA);
             }
 
-            if (!isShowingAttackers()) {
+            if (!discovery.isShowingAttackers()) {
                 const tdDA = createHoverCardCell(
                     "td",
                     assistanceCalculations.defensiveAssistance,
@@ -305,26 +316,6 @@ function cleanUpNodeForPlayers(tableNode) {
     console.debug(`removing the old cells...`)
     tableNode.querySelectorAll(`td.${utils.pluginNodeClass}`).forEach(el => el.remove());
     tableNode.querySelectorAll(`th.${utils.pluginNodeClass}`).forEach(el => el.remove());
-}
-
-function isShowingAttackers() {
-    let attackerFilter = document.querySelector("div.lineup-filter > span.attack-zone > span")
-    return (attackerFilter && attackerFilter.textContent.trim() != "-")
-}
-
-function isShowingMidfielders() {
-    let midfielderFilter = document.querySelector("div.lineup-filter > span.middle-zone > span")
-    return (midfielderFilter && midfielderFilter.textContent.trim() != "-")
-}
-
-function isShowingDefenders() {
-    let defenderFilter = document.querySelector("div.lineup-filter > span.defence-zone > span")
-    return (defenderFilter && defenderFilter.textContent.trim() != "-")
-}
-
-function isShowingGoalkeepers() {
-    let goalkeeperFilter = document.querySelector("div.lineup-filter > span.goalkeeper > span")
-    return (goalkeeperFilter && goalkeeperFilter.textContent.trim() != "-")
 }
 
 export async function processPlayersPage() {
