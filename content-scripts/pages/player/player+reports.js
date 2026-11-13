@@ -20,8 +20,9 @@ export async function processPlayerReports(currentPlayerRepresentationInStorage)
                     .find(td => td.textContent.trim() === "Report Accuracy")
                 )
                 .find(td => td !== undefined)
-            const accuracyValueCell = accuracyLabelCell.nextElementSibling
-            const reportAccuracy = parseFloat(accuracyValueCell.textContent.trim())
+            const reportAccuracy = accuracyLabelCell 
+                ? parseFloat(accuracyLabelCell.nextElementSibling.textContent.trim())
+                : 100.0
             reports.set(reportAccuracy, reportElement)
         }
 
