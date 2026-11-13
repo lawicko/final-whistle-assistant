@@ -285,10 +285,11 @@ async function appendAdditionalInfo(checkboxesData, animate = false) {
                     `denom${longShotDenominationNormalized}`);
                 row.appendChild(tdLS);
 
+                let dominanceValue = PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)
                 const tdMD = createHoverCardCell(
                     "td",
                     midfieldDominanceContribution,
-                    `formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})\n${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})\n${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${PA + Math.min(OP + BC, TA + DP) + Math.max(0, CO - constitutionTreshold)}`,
+                    `formula: PA + min(OP + BC, TA + DP) + max(0, CO - ${constitutionTreshold})\n${PA} + min(${OP} + ${BC}, ${TA} + ${DP}) + max(0, ${CO - constitutionTreshold})\n${PA} + min(${OP + BC}, ${TA + DP}) + ${Math.max(0, CO - constitutionTreshold)}\n${PA} + ${Math.min(OP + BC, TA + DP)} + ${Math.max(0, CO - constitutionTreshold)} = ${dominanceValue}\n\nWhen playing advanced position: ${dominanceValue} / 2 = ${dominanceValue / 2}\n\nWhen playing flexible all outfilders contribute 100%`,
                     `denom${midfieldDominanceDenominationNormalized}`);
                 row.appendChild(tdMD);
 
