@@ -175,8 +175,8 @@ export function processTableRow(
                 insertionPoint: insertionPoint,
                 hiddenSkills: hiddenSkills,
                 config: {
-                    showAdvancedDevelopment: showAD && ageFromListing < 25,
-                    showEstimatedPotential: showEP && ageFromListing < 21
+                    showAdvancedDevelopment: showAD,
+                    showEstimatedPotential: showEP
                 }
             })
         }
