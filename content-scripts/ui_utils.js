@@ -385,6 +385,13 @@ export function applyArrogance(element, arrogance) {
     }
 }
 
+export function removeArrogance(element) {
+    const arroganceElement = element.querySelector("span.arrogance")
+    if (arroganceElement != null) {
+        arroganceElement.remove()
+    }
+}
+
 export function updateDetailedProperty(element, propertyDescription, propertyValue, config) {
     const normalizedDescription = utils.pluginNodeClass + propertyDescription.replace(/\s+/g, "_")
     const containerClass = utils.pluginNodeClass + "_detailedPropertyContainer"

@@ -6,7 +6,13 @@ import * as listUtils from "../../list_utils.js"
 import * as ui from "../../ui_utils.js"
 import * as utils from "../../utils.js"
 
+let skipPlayerOrdersTabUpdate = false
+
 export async function processPlayerOrdersTab(animate = false) {
+    if (skipPlayerOrdersTabUpdate) {
+        console.info(`${utils.version} ⚽♟️ Skipping player orders tab update (skipPlayerOrdersTabUpdate set to true)`)
+        return
+    }
     console.info(`${utils.version} ⚽♟️ Processing player orders tab...`)
     // common.fixHeader({
     //     formationContainerSelector: "fw-player-orders > div.row > div.col-md-12 > div.squad-mobile-card-list",
@@ -29,6 +35,23 @@ export async function processPlayerOrdersTab(animate = false) {
     // })
     common.updateFormIndicators()
 
+    const formationListToolbar = document.querySelector(`.formation-list-toolbar`)
+    if (formationListToolbar && !formationListToolbar.querySelector(`#${discovery.arroganceTresholdImputID}`)) {
+        await common.insertArroganceTresholdInput(formationListToolbar, () => {
+            skipPlayerOrdersTabUpdate = true
+            document.startViewTransition(async () => {
+                await updatePage()
+                setTimeout(() => {
+                    skipPlayerOrdersTabUpdate = false
+                }, utils.DEBOUNCE_WAIT_MS_LATER)
+            })
+        })
+    }
+
+    await updatePage(animate)
+}
+
+async function updatePage(animate) {
     let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
     const checkboxes = checkboxesData
     // Check if special talents will be applied
@@ -37,6 +60,7 @@ export async function processPlayerOrdersTab(animate = false) {
     const hrefs = discovery.getHrefList('div.squad-mobile-card-list')
     const playerIDs = hrefs.map(utils.lastPathComponent)
     const profiles = await db.bulkGetPlayers(playerIDs)
+    const tresholds = await db.getTresholds()
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
         const profile = profiles[i]
@@ -71,6 +95,29 @@ export async function processPlayerOrdersTab(animate = false) {
         }
         if (sportsmanship) {
             ui.applySportsmanship(personalityDestinationContainer, sportsmanship)
+        }
+
+        // Check if the player is in the attack zone
+        const isInAttackZone = discovery.isInAttackZone(row)
+        // Also check midfielders because of the long shot option
+        const isInMidfieldZone = discovery.isInMidfieldZone(row)
+        const isInDefenceZone = discovery.isInDefenceZone(row)
+        const isSub = discovery.isSub(row)
+
+        if (discovery.isOutfielder(row)) {
+            const reasonableSkills = discovery.isReasonableSkill(row, tresholds)
+
+            const shouldApplyComposure = common.shouldApplyComposure(isInAttackZone, isInMidfieldZone, isSub, reasonableSkills.penaltyKick)
+            if (composure && shouldApplyComposure) {
+                ui.applyComposure(personalityDestinationContainer, composure)
+            }
+
+            const shouldApplyArrogance = common.shouldApplyArrogance(isInDefenceZone, isSub, reasonableSkills.DP)
+            if (arrogance && arrogance < 0 && shouldApplyArrogance) {
+                ui.applyArrogance(personalityDestinationContainer, arrogance)
+            } else {
+                ui.removeArrogance(personalityDestinationContainer)
+            }
         }
     }
 }

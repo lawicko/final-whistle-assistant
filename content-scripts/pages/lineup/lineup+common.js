@@ -1,5 +1,15 @@
+import * as db from "../../db_access.js"
 import * as discovery from "./lineup+discovery.js"
+import * as ui from "../../ui_utils.js"
 import * as utils from "../../utils.js"
+
+export function shouldApplyComposure(isInAttackZone, isInMidfieldZone, isSub, reasonablePenaltyKick) {
+    return isInAttackZone || isInMidfieldZone || (isSub && reasonablePenaltyKick)
+}
+
+export function shouldApplyArrogance(isInDefenceZone, isSub, reasonableDP) {
+    return isInDefenceZone || (isSub && reasonableDP)
+}
 
 export function fixHeader(config) {
     const formationContainer = document.querySelector(config.formationContainerSelector)
@@ -100,4 +110,44 @@ function createContainerForFormDescription(skillDescription, formValue) {
     container.appendChild(span)
 
     return container
+}
+
+export async function insertArroganceTresholdInput(parent, callback) {
+    // Create the input element
+    const input = document.createElement("input")
+    input.type = "number"
+    input.setAttribute("min", "0")
+    input.setAttribute("max", "99")
+    input.setAttribute("step", "1")
+    input.id = discovery.arroganceTresholdImputID
+    input.classList.add("form-check-input")
+    input.placeholder = "Arrogance treshold"
+
+    const tresholds = await db.getTresholds()
+    const arrogance_treshold = tresholds.arrogance ?? 50
+
+    input.value = arrogance_treshold
+
+    // Add a listener for changes
+    input.addEventListener("change", async (e) => {
+        const newValue = e.target.value
+        const tresholds = await db.getTresholds()
+        const newArrogance = parseInt(newValue, 10)
+        console.debug("Arrogance changed, new value:", newArrogance, ", saving to db...")
+        tresholds['arrogance'] = newArrogance
+
+        await db.putTresholds(tresholds)
+        console.debug("Updated tresholds =", tresholds)
+
+        callback()
+    })
+
+    // Inject into the page
+    const detailsMenuElement = parent.querySelector(`div.formation-list-toolbar__end`)
+    parent.insertBefore(input, detailsMenuElement)
+    const infoSpan = document.createElement("span")
+    infoSpan.textContent = `  ${ui.infoSymbol} `
+    infoSpan.title = `Arrogance treshold - ${ui.personalitiesSymbols["arrogance"]} symbol will appear next to a player name if he is in the lineup as a defender and has negative arrogance. In case of substitutes, if a player has negative arrogance personality trait and his DP is above this treshold, it will also display the arrogance symbol.`
+    ui.makeCursorHelp(infoSpan)
+    parent.insertBefore(infoSpan, detailsMenuElement)
 }

@@ -59,6 +59,47 @@ export function hasActiveTriggers() {
 }
 
 /////////////////////// Common //////////////////////////////////
+export function getSkills(playerRow) {
+    return Array.from(playerRow.querySelectorAll("fw-player-skill"))
+}
+
+export function isOutfielder(playerRow) {
+    const skills = getSkills(playerRow)
+    return skills.length == 8
+}
+
+export function isReasonableSkill(playerRow, tresholds) {
+    const skills = getSkills(playerRow)
+
+    const SC = skills[0].querySelector('span[class*="denom"]').textContent.trim()
+    const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim()
+    const DP = skills[7].querySelector('span[class*="denom"]').textContent.trim()
+    const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
+    const composure_treshold = tresholds.composure ?? 50
+    const arrogance_treshold = tresholds.arrogance ?? 50
+
+    return {
+        penaltyKick: penaltyKick > composure_treshold,
+        DP: DP > arrogance_treshold
+    }
+}
+
+export function isInAttackZone(playerRow) {
+    return playerRow.querySelector(".attack-zone") != null
+}
+
+export function isInMidfieldZone(playerRow) {
+    return playerRow.querySelector(".middle-zone") != null
+}
+
+export function isInDefenceZone(playerRow) {
+    return playerRow.querySelector(".defence-zone") != null
+}
+
+export function isSub(playerRow) {
+    return playerRow.querySelector(".substitute") != null
+}
+
 function getContainerForHeaderName(headerName) {
     // Find all h2 elements
     const headers = document.querySelectorAll("h2")

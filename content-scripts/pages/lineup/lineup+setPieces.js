@@ -36,7 +36,23 @@ export async function processSetPiecesTab(animate = false) {
     common.updateFormIndicators()
     const formationListToolbar = document.querySelector(`.formation-list-toolbar`)
     if (formationListToolbar && !formationListToolbar.querySelector(`#${discovery.arroganceTresholdImputID}`)) {
-        await insertArroganceTresholdInput(formationListToolbar)
+        await common.insertArroganceTresholdInput(formationListToolbar, () => {
+            skipSetPiecesTabUpdate = true
+            document.startViewTransition(async () => {
+                let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
+                const {
+                    penaltyTakersData,
+                    penaltyTakersWithoutComposure,
+                    anchors,
+                    crossingPlayers,
+                    longShootersData
+                } = await generateProposed(checkboxesData)
+
+                setTimeout(() => {
+                    skipSetPiecesTabUpdate = false
+                }, utils.DEBOUNCE_WAIT_MS_LATER)
+            })
+        })
     }
 
     let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
@@ -158,46 +174,40 @@ async function generateProposed(checkboxes, animate=false) {
             ui.applyLeadership(pLinks[i], profile['personalities']['leadership'])
         }
 
-        // For adding composure and recommended penalty takers
-        // First check if on FW position
-        // Get all siblings
-        const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
-
-        // Check if any sibling has a <span> with the class "attack-zone"
-        const isInAttackZone = siblings.some(sib => sib.querySelector('span.attack-zone') !== null);
+        // Check if the player is in the attack zone
+        const isInAttackZone = discovery.isInAttackZone(row)
         // Also check midfielders because of the long shot option
-        const isInMidfieldZone = siblings.some(sib => sib.querySelector('span.middle-zone') !== null);
-        const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
+        const isInMidfieldZone = discovery.isInMidfieldZone(row)
+        const isInDefenceZone = discovery.isInDefenceZone(row)
+        const isSub = discovery.isSub(row)
 
-        // Alternatively check if the effective penalty kick skill is reasonable
-        const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
-        var reasonablePenaltyKick = false
-        if (skills.length == 8) { // goalkeepers have only 6 skills
+        // Alternatively check if certain skills are reasonable enough to show the icons
+        const skills = discovery.getSkills(row)
+        if (discovery.isOutfielder(row)) {
+            const reasonableSkills = discovery.isReasonableSkill(row, tresholds)
             const SC = skills[0].querySelector('span[class*="denom"]').textContent.trim();
+            const BC = skills[2].querySelector('span[class*="denom"]').textContent.trim();
             const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim();
+            const AE = skills[4].querySelector('span[class*="denom"]').textContent.trim();
             const penaltyKick = Math.floor(Math.max(1.2 * SC, 0.8 * PA))
             const longShot = Math.floor((+SC + Math.min(2 * +SC, +PA)) / 2)
             const composure_treshold = tresholds.composure ?? 50
             if (!tresholds) {
                 console.warn("Tresholds could not be loaded from storage! Using default composure_treshold of ", 50)
             }
+
+            // Composure related stuff
             if (composure) {
                 console.debug(`${name} - comparing penaltyKick ${penaltyKick} with composure_treshold ${composure_treshold}`)
                 if (penaltyKick > composure_treshold) {
                     if (composure > 0) {
-                        console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, composure ${composure} > 0, setting reasonablePenaltyKick to true`);
-                        reasonablePenaltyKick = true
                         penaltyTakersData.recommended.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: composure });
                     } else {
-                        console.debug(`processing composure, penaltyKick = ${penaltyKick} reasonable, but composure ${composure} < 0, leaving reasonablePenaltyKick as false`);
                         penaltyTakersData.discouraged.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: composure });
                     }
-                } else {
-                    console.debug(`processing composure, penaltyKick = ${penaltyKick} below reasonable level, leaving reasonablePenaltyKick as false`);
                 }
 
-
-                if (isInAttackZone || isInMidfieldZone || (isSub && reasonablePenaltyKick)) {
+                if (common.shouldApplyComposure(isInAttackZone, isInMidfieldZone, isSub, reasonableSkills.penaltyKick)) {
                     console.debug(`applying composure: ${composure} to ${name}`)
                     ui.applyComposure(pLinks[i].parentNode.parentNode.parentNode, composure)
                 } else {
@@ -217,44 +227,33 @@ async function generateProposed(checkboxes, animate=false) {
                     longShootersData.discouraged.push({ id: playerIDs[i], name: name, longShot: longShot, composure: composure })
                 }
             } else {
-                console.debug(`processing composure, but the player is not an outfielder, leaving reasonablePenaltyKick as false`);
                 if (penaltyKick > composure_treshold) {
                     penaltyTakersWithoutComposure.push({ id: playerIDs[i], name: name, penaltyKick: penaltyKick, composure: 0 })
                 }
                 longShootersData.other.push({ id: playerIDs[i], name: name, longShot: longShot })
             }
-        }
 
-        if (arrogance && arrogance < 0) { // only bother with this if the arrogance is negative, otherwise there is no impact on offsides
-            console.debug(`${name} arrogance negative, proceeding...`);
-            // First check if on a defensive position
-            // Get all siblings
-            const siblings = Array.from(pLinks[i].parentNode.parentNode.parentNode.parentNode.children)
+            // Arrogance related stuff
+            if (arrogance && arrogance < 0) { // only bother with this if the arrogance is negative, otherwise there is no impact on offsides
+                console.debug(`${name} arrogance negative, proceeding...`)
+                const arrogance_treshold = tresholds.arrogance ?? 50
+                console.debug('arrogance_treshold: ', arrogance_treshold)
 
-            // Check if any sibling has a <span> with the class "defence-zone"
-            const isInDefenceZone = siblings.some(sib => sib.querySelector('span.defence-zone') !== null);
-            const isSub = siblings.some(sib => sib.querySelector('span.substitute') !== null);
-
-            // Alternatively check if the defensive skill is reasonable
-            const skills = siblings.filter(el => el.querySelector('fw-player-skill') !== null);
-            var reasonableDP = false
-            const arrogance_treshold = tresholds.arrogance ?? 50
-            console.debug('arrogance_treshold: ', arrogance_treshold)
-            if (skills.length == 8) { // goalkeepers have only 6 skills
-                const DP = skills[7].querySelector('span[class*="denom"]').textContent.trim();
-                if (DP > arrogance_treshold) {
-                    console.debug(`DP = ${DP} reasonable, setting reasonableDP to true for ${name}`);
-                    reasonableDP = true
+                if (common.shouldApplyArrogance(isInDefenceZone, isSub, reasonableSkills.DP)) {
+                    console.debug(`applying arrogance: ${arrogance} to ${name}`)
+                    ui.applyArrogance(pLinks[i].parentNode.parentNode.parentNode, arrogance)
                 } else {
-                    console.debug(`DP = ${DP} below reasonable level, leaving reasonableDP as false for ${name}`);
+                    console.debug(`${name} has arrogance in profile, but not in the defence zone or DP under reasonable level, removing symbol if necessary`);
+                    const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
+                        el => el.textContent.trim() === ui.personalitiesSymbols["arrogance"]
+                    );
+                    if (arroganceSpan) {
+                        console.debug(`removing arrogance from ${name}`)
+                        arroganceSpan.remove()
+                    }
                 }
-            }
-
-            if (isInDefenceZone || (isSub && reasonableDP)) {
-                console.debug(`applying arrogance: ${arrogance} to ${name}`)
-                ui.applyArrogance(pLinks[i].parentNode.parentNode.parentNode, arrogance)
             } else {
-                console.debug(`${name} has arrogance in profile, but not in the defence zone or DP under reasonable level, removing symbol if necessary`);
+                console.debug(`${name} arrogance positive or not in profile, removing symbol if necessary`);
                 const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
                     el => el.textContent.trim() === ui.personalitiesSymbols["arrogance"]
                 );
@@ -263,30 +262,17 @@ async function generateProposed(checkboxes, animate=false) {
                     arroganceSpan.remove()
                 }
             }
-        } else {
-            console.debug(`${name} arrogance positive or not in profile, removing symbol if necessary`);
-            const arroganceSpan = Array.from(pLinks[i].parentNode.parentNode.parentNode.querySelectorAll('span')).find(
-                el => el.textContent.trim() === ui.personalitiesSymbols["arrogance"]
-            );
-            if (arroganceSpan) {
-                console.debug(`removing arrogance from ${name}`)
-                arroganceSpan.remove()
-            }
+
+            // calculate the cross skill and use it for crossing players
+            const cross = Math.floor(0.7 * PA + 0.3 * BC)
+            crossingPlayers.push({ id: playerIDs[i], name: name, cross: cross })
+
+            // use AE for anchors
+            anchors.push({ id: playerIDs[i], name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
 
         if (sportsmanship) {
             ui.applySportsmanship(pLinks[i].parentNode.parentNode.parentNode, sportsmanship)
-        }
-
-        // calculate the cross skill and use AE for anchors
-        if (skills.length == 8) { // goalkeepers have only 6 skills
-            const BC = skills[2].querySelector('span[class*="denom"]').textContent.trim();
-            const PA = skills[3].querySelector('span[class*="denom"]').textContent.trim();
-            const cross = Math.floor(0.7 * PA + 0.3 * BC)
-            crossingPlayers.push({ id: playerIDs[i], name: name, cross: cross })
-
-            const AE = skills[4].querySelector('span[class*="denom"]').textContent.trim();
-            anchors.push({ id: playerIDs[i], name: name, AE: AE, sportsmanship: sportsmanship ?? 0 })
         }
     }
     return {
@@ -296,60 +282,6 @@ async function generateProposed(checkboxes, animate=false) {
         crossingPlayers,
         longShootersData
     }
-}
-
-async function insertArroganceTresholdInput(parent) {
-    // Create the input element
-    const input = document.createElement("input")
-    input.type = "number"
-    input.setAttribute("min", "0")
-    input.setAttribute("max", "99")
-    input.setAttribute("step", "1")
-    input.id = discovery.arroganceTresholdImputID
-    input.classList.add("form-check-input")
-    input.placeholder = "Arrogance treshold"
-
-    const tresholds = await db.getTresholds()
-    const arrogance_treshold = tresholds.arrogance ?? 50
-
-    input.value = arrogance_treshold
-
-    // Add a listener for changes
-    input.addEventListener("change", async (e) => {
-        const newValue = e.target.value
-        const tresholds = await db.getTresholds()
-        const newArrogance = parseInt(newValue, 10)
-        console.debug("Arrogance changed, new value:", newArrogance, ", saving to db...")
-        tresholds['arrogance'] = newArrogance
-
-        await db.putTresholds(tresholds)
-        console.debug("Updated tresholds =", tresholds)
-
-        skipSetPiecesTabUpdate = true
-        document.startViewTransition(async () => {
-            let checkboxesData = await checkboxesModule.getCheckboxesDataFromDB()
-            const {
-                penaltyTakersData,
-                penaltyTakersWithoutComposure,
-                anchors,
-                crossingPlayers,
-                longShootersData
-            } = await generateProposed(checkboxesData)
-
-            setTimeout(() => {
-                skipSetPiecesTabUpdate = false
-            }, utils.DEBOUNCE_WAIT_MS_LATER)
-        })
-    })
-
-    // Inject into the page
-    const detailsMenuElement = parent.querySelector(`div.formation-list-toolbar__end`)
-    parent.insertBefore(input, detailsMenuElement)
-    const infoSpan = document.createElement("span")
-    infoSpan.textContent = `  ${ui.infoSymbol} `
-    infoSpan.title = `Arrogance treshold - ${ui.personalitiesSymbols["arrogance"]} symbol will appear next to a player name if he is in the lineup as a defender and has negative arrogance. In case of substitutes, if a player has negative arrogance personality trait and his DP is above this treshold, it will also display the arrogance symbol.`
-    ui.makeCursorHelp(infoSpan)
-    parent.insertBefore(infoSpan, detailsMenuElement)
 }
 
 async function proposePenaltyTakers(takers) {
