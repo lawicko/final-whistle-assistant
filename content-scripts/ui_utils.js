@@ -243,6 +243,41 @@ export function addNoDataSymbol(container) {
     }
 }
 
+export function applyLeadership(element, leadership) {
+    const hasLeadershipSymbol = Array.from(element.children).some(
+        child => child.textContent.trim() === personalitiesSymbols["leadership"]
+    );
+    if (!hasLeadershipSymbol) {
+        console.debug(`Applying Leadership: ${leadership}`)
+
+        const leadershipSpan = document.createElement("span");
+        leadershipSpan.classList.add('leadership')
+        leadershipSpan.textContent = " " + personalitiesSymbols["leadership"]
+        switch (leadership) {
+            case -2:
+                leadershipSpan.classList.add('doubleNegative');
+                leadershipSpan.title = "This player is a terrible leader, avoid using him as your teams captain";
+                break;
+            case -1:
+                leadershipSpan.classList.add('negative');
+                leadershipSpan.title = "This player is a bad leader, avoid using him as your teams captain";
+                break;
+            case 1:
+                leadershipSpan.classList.add('positive');
+                leadershipSpan.title = "This player is a good leader, consider using him as your teams captain for extra opportunities during games";
+                break;
+            case 2:
+                leadershipSpan.classList.add('doublePositive');
+                leadershipSpan.title = "This player is an excellent leader, make him a captain of your team for extra opportunities during games";
+                break;
+            default:
+                console.warn("Value of leadership is unexpected: ", leadership);
+        }
+
+        element.appendChild(leadershipSpan)
+    }
+}
+
 export function applySportsmanship(element, sportsmanship) {
     const hasSportsmanshipSymbol = Array.from(element.children).some(
         child => child.textContent.trim() === personalitiesSymbols["sportsmanship"]

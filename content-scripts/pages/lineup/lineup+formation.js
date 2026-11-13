@@ -3,6 +3,7 @@ import * as common from "./lineup+common.js"
 import * as db from "../../db_access.js"
 import * as discovery from "./lineup+discovery.js"
 import * as listUtils from "../../list_utils.js"
+import * as ui from "../../ui_utils.js"
 import * as utils from "../../utils.js"
 
 export async function processFormationTab(animate = false) {
@@ -46,6 +47,30 @@ export async function processFormationTab(animate = false) {
             if (specialTalents) {
                 listUtils.updateSkillNodesWithSpecialTalents(specialTalents, valueNodes, applySpecialTalents, animate)
             }
+        }
+
+        // Apply personality traits indicators
+        var personalityDestinationContainer = row.querySelector("div.p-name")
+        var personalities = profile['personalities']
+        if (!personalities) {
+            console.debug(`No personalities in player profile for ${name}, skipping...`)
+
+            ui.addNoDataSymbol(personalityDestinationContainer)
+
+            continue
+        } else {
+            ui.removeNoDataSymbol(personalityDestinationContainer)
+        }
+
+        const leadership = personalities['leadership']
+        const composure = personalities['composure']
+        const arrogance = personalities['arrogance']
+        const sportsmanship = personalities['sportsmanship']
+        if (leadership) {
+            ui.applyLeadership(personalityDestinationContainer, leadership)
+        }
+        if (sportsmanship) {
+            ui.applySportsmanship(personalityDestinationContainer, sportsmanship)
         }
     }
 }

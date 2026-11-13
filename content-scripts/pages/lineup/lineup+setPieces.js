@@ -155,7 +155,7 @@ async function generateProposed(checkboxes, animate=false) {
         }
 
         if (leadership) {
-            applyLeadership(pLinks[i], profile['personalities']['leadership'])
+            ui.applyLeadership(pLinks[i], profile['personalities']['leadership'])
         }
 
         // For adding composure and recommended penalty takers
@@ -350,41 +350,6 @@ async function insertArroganceTresholdInput(parent) {
     infoSpan.title = `Arrogance treshold - ${ui.personalitiesSymbols["arrogance"]} symbol will appear next to a player name if he is in the lineup as a defender and has negative arrogance. In case of substitutes, if a player has negative arrogance personality trait and his DP is above this treshold, it will also display the arrogance symbol.`
     ui.makeCursorHelp(infoSpan)
     parent.insertBefore(infoSpan, detailsMenuElement)
-}
-
-function applyLeadership(element, leadership) {
-    const hasLeadershipSymbol = Array.from(element.parentNode.parentNode.parentNode.children).some(
-        child => child.textContent.trim() === ui.personalitiesSymbols["leadership"]
-    );
-    if (!hasLeadershipSymbol) {
-        console.debug(`Applying Leadership: ${leadership}`)
-
-        const leadershipSpan = document.createElement("span");
-        leadershipSpan.classList.add('leadership')
-        leadershipSpan.textContent = " " + ui.personalitiesSymbols["leadership"]
-        switch (leadership) {
-            case -2:
-                leadershipSpan.classList.add('doubleNegative');
-                leadershipSpan.title = "This player is a terrible leader, avoid using him as your teams captain";
-                break;
-            case -1:
-                leadershipSpan.classList.add('negative');
-                leadershipSpan.title = "This player is a bad leader, avoid using him as your teams captain";
-                break;
-            case 1:
-                leadershipSpan.classList.add('positive');
-                leadershipSpan.title = "This player is a good leader, consider using him as your teams captain for extra opportunities during games";
-                break;
-            case 2:
-                leadershipSpan.classList.add('doublePositive');
-                leadershipSpan.title = "This player is an excellent leader, make him a captain of your team for extra opportunities during games";
-                break;
-            default:
-                console.warn("Value of leadership is unexpected: ", leadership);
-        }
-
-        element.parentNode.parentNode.parentNode.appendChild(leadershipSpan)
-    }
 }
 
 async function proposePenaltyTakers(takers) {
