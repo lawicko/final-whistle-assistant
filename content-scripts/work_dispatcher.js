@@ -6,6 +6,7 @@ import { processAcademyPage } from "./pages/academy/academy.js"
 import { processFixturesPage } from './calendar.js'
 import { processMatch } from './match.js'
 import { processPlayersPage } from './players.js'
+// import { processPlayersPage } from './pages/players/players.js'
 import { processLineupPage } from './pages/lineup/lineup.js'
 import { processPlayerPage } from './pages/player/player.js'
 import { addTableRowsHighlighting } from './row_highlight.js'
