@@ -1,9 +1,46 @@
+import * as discovery from "./match_analyser+discovery.js"
+
+/**
+ * The match repot string we get for analisys may not be perfectly formatted
+ * Run this method on it to normalize it and get it in shape for parsing
+ * @param {String} matchReport 
+ * @returns {String} normalized match report
+ */
+function normalizeMatchReport(matchReport) {
+    // Normally, the events end with <hr> tag but this is not always the case
+    // For example, when a player looks tired it ends with <br> tag
+    // This fragment searches for each event and inserts <hr> tag in front so that
+    // all events can be split using <hr> tag
+    let normalizedReport = matchReport.replace(
+        /(<span\s+class=['"]?engine-minute['"]?>Minute\s*\d+<\/span>)/g,
+        "<hr>$1"
+    )
+    return normalizedReport
+}
+
 export async function analyseMatch(matchReportAsString) {
-    const textTrim = s => (s || '').trim();
+    const parser = new DOMParser()
+    let normalizedMatchReport = normalizeMatchReport(matchReportAsString)
+    let allPlayersWhoPlayed = discovery.getAllPlayersWhoPlayed(normalizedMatchReport, parser)
+    // console.info("allPlayersWhoPlayed: ", allPlayersWhoPlayed)
+    // filter(Boolean) removes empty strings - can happen because after normalizing
+    // <hr> is at the start
+    let events = normalizedMatchReport.split("<hr>").filter(Boolean)
+    // console.info("all events: ", events)
+    for (const eventAsString of events) {
+        const event = parser.parseFromString(eventAsString, 'text/html')
+        const minute = discovery.getMinute(event)
+        const eventType = discovery.getEventType(eventAsString)
+        const involvedPlayers = discovery.getInvolvedPlayers(event, allPlayersWhoPlayed)
+        console.info("minute: ", minute, eventType, "involvedPlayers: ", involvedPlayers)
+    }
+
+    // --------------- OLD CODE BELOW ---------------------
+    const textTrim = s => (s || '').trim()
     const playerIdFromHref = href => {
-        const m = href && href.match(/player\/(\d+)/);
-        return m ? m[1] : null;
-    };
+        const m = href && href.match(/player\/(\d+)/)
+        return m ? m[1] : null
+    }
     const positionFromSub = (anchor) => {
         const sub = anchor.nextElementSibling && anchor.nextElementSibling.tagName === 'SUB'
             ? anchor.nextElementSibling.textContent
@@ -43,18 +80,12 @@ export async function analyseMatch(matchReportAsString) {
         }
         return null;
     };
-
-    let opportunities = matchReportAsString.replace(
-        /(<span\s+class=['"]?engine-minute['"]?>Minute\s*\d+<\/span>)/g,
-        "<hr>$1"
-    );
-    opportunities = opportunities.split("<hr>")
+    let opportunitiesArray = events
         .filter(str => !str.includes("Half Time, players are  heading back to the locker rooms to rest a bit"))
         .filter(str => str.includes("Opportunity for"))
 
     let results = []
-    const parser = new DOMParser()
-    for (const opportunity of opportunities) {
+    for (const opportunity of opportunitiesArray) {
         // console.info("opportunity:", opportunity)
         const doc = parser.parseFromString(opportunity, 'text/html');
 
