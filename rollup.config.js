@@ -163,7 +163,12 @@ function createManifestForTarget(target) {
 
                     switch (getBrowser(target)) {
                         case "firefox":
-                            replacement = `{ "scripts": ["background-scripts.bundle.js"], "type": "module" }`;
+                            replacement = `
+                                { 
+                                    "scripts": ["background-scripts.bundle.js"], 
+                                    "type": "module" 
+                                }
+                            `;
                             break;
                         case "safari":
                             // replacement = `{ "scripts": ["background-scripts.safari.bundle.js"], "persistent": false }`;
@@ -184,11 +189,25 @@ function createManifestForTarget(target) {
                                     id: 'lawicko@gmail.com'
                                 }
                             };
+                            manifest.action = {
+                                "default_title": "Final Whistle Assistant",
+                                "default_icon": {
+                                    "16": "icons/fwa-logo-16.png",
+                                    "32": "icons/fwa-logo-32.png"
+                                }
+                            };
                             break;
                         case "firefox":
                             manifest.browser_specific_settings = {
                                 gecko: {
                                     id: '{ced6d24e-3379-4594-be2f-af52229c80f2}'
+                                }
+                            };
+                            manifest.action = {
+                                "default_title": "Final Whistle Assistant",
+                                "default_icon": {
+                                    "16": "icons/fwa-logo-16.png",
+                                    "32": "icons/fwa-logo-32.png"
                                 }
                             };
                             break;
