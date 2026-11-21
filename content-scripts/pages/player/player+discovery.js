@@ -227,6 +227,10 @@ export function getPlayerData() {
     }
 }
 
+export function getPlayerActionToolbar() {
+    return document.querySelector("div.player-action-toolbar")
+}
+
 export function getBidButton() {
     return document.querySelector("button:has(> i.bi-hammer)")
 }
@@ -379,6 +383,15 @@ export function checkSiteLoaded() {
     }
 
     return true
+}
+
+export function areSkillsVisible() {
+    const coreSkillsTable = getCoreSkillsTable()
+    const fistSkillSpans = coreSkillsTable.querySelectorAll("tbody > tr > td > span")
+    const isPlainInteger = (text) => /^\d+$/.test(text.trim())
+
+    const numericSpans = [...fistSkillSpans].filter(span => isPlainInteger(span.textContent))
+    return numericSpans.length > 0
 }
 
 export function getCoreSkillsTable() {

@@ -507,7 +507,7 @@ function addExternalAnalyzeButtonIfNeeded() {
         // }
     });
 
-    // Insert as a sibling (after the Scout button)
+    // Insert as a sibling (after the fast forward button)
     fastForwardButton.insertAdjacentElement('afterend', newButton)
 }
 
@@ -525,7 +525,7 @@ function addAnalyzeButtonIfNeeded() {
     newButton.textContent = 'Analyze';
     newButton.addEventListener('click', handleAnalyzeButton);
 
-    // Insert as a sibling (after the Scout button)
+    // Insert as a sibling (after the fast forward button)
     fastForwardButton.insertAdjacentElement('afterend', newButton)
 }
 

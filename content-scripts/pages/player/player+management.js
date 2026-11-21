@@ -1,15 +1,15 @@
 import * as utils from "../../utils.js"
 import * as uiUtils from "../../ui_utils.js"
 import * as playerUtils from "./player+utils.js"
-import { getScoutButton, getBidButton } from "./player+discovery.js"
+import * as discovery from "./player+discovery.js"
 import * as integrationUtils from "../../integrations/integrations_utls.js"
 import * as personalitiesUtils from "../../personalities_utils.js"
 import * as specialTalentsUtils from "../../special_talents_utils.js"
 
 export function addTrainingSimulationButtonIfNeeded() {
     if (document.getElementById("TRAINING-SIMULATION-BUTTON")) return
+    if (!discovery.areSkillsVisible()) return
 
-    const scoutButton = getScoutButton()
     // Create the new button
     const newButton = document.createElement('button')
     newButton.id = "TRAINING-SIMULATION-BUTTON"
@@ -32,8 +32,9 @@ export function addTrainingSimulationButtonIfNeeded() {
         // }
     });
 
-    // Insert as a sibling (after the Scout button)
-    scoutButton?.insertAdjacentElement('afterend', newButton)
+    // Insert as last button on the player action toolbar
+    const toolbar = discovery.getPlayerActionToolbar()
+    toolbar.appendChild(newButton)
 }
 
 /**
@@ -41,7 +42,7 @@ export function addTrainingSimulationButtonIfNeeded() {
  * @param {Object} playerData Data as gathered in the getPlayerData function
  */
 export function showBuyingGuide(playerData) {
-    const bidButton = getBidButton()
+    const bidButton = discovery.getBidButton()
 
     const buyingGuideIdentifier = `${utils.pluginNodeClass}-buying-guide`
     if (document.getElementById(buyingGuideIdentifier)) {

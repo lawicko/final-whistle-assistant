@@ -90,3 +90,13 @@
 - Fixed the goal icon missing from the `/player` matches tab after the game UI updates - replaced with emoji
 - Fixed `/league` fixtures tab not being properly processed (no data collection indicator) because the table class has changed in the game
 - Fixed database decompression on chromium
+
+# 6.7.1
+- Scout report player data save to db broken after scouting update some time ago
+- Add 50% reduction for advanced positions for midfield dominance popup
+- Move lineup -> triggers -> save button below the conditions
+- Lift restrictions for displaying advanced development and estimated potential
+- Display personalities on Lineup->Formation and Lineup->Player Orders
+
+# 6.7.2
+- Fixed training simulation button on the player profile (not showing after Scout button was removed in some scenarios)
